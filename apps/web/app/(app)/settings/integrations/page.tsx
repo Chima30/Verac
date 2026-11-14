@@ -1,5 +1,5 @@
 import { Badge, Card, KV, PageHeader } from "@/components/ui";
-import { aiStatus, chainSnapshot } from "@/lib/server";
+import { aiStatus, chainSnapshot, contractSnapshot } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Integrations" };
@@ -9,6 +9,8 @@ const present = (v: string | undefined) => (v && v.trim() ? "set" : "not set");
 export default async function Integrations() {
   const ai = aiStatus();
   const chain = await chainSnapshot();
+  const contracts = await contractSnapshot();
+  const live = contracts.rows.length > 0 && contracts.rows.every((r) => r.hasCode === true);
   const env = process.env;
   return (
     <>
@@ -25,8 +27,8 @@ export default async function Integrations() {
         <Card title="Supabase" right={<Badge tone={env.NEXT_PUBLIC_SUPABASE_URL ? "pending" : "unavailable"}>{env.NEXT_PUBLIC_SUPABASE_URL ? "URL SET, NOT CONNECTED IN UI" : "UNAVAILABLE"}</Badge>}>
           <KV rows={[["URL", present(env.NEXT_PUBLIC_SUPABASE_URL)], ["Anon key", present(env.NEXT_PUBLIC_SUPABASE_ANON_KEY)], ["Service role key", present(env.SUPABASE_SERVICE_ROLE_KEY)]]} />
         </Card>
-        <Card title="Contracts" right={<Badge tone={env.CONTRACT_TREASURY_VAULT ? "pending" : "unavailable"}>{env.CONTRACT_TREASURY_VAULT ? "ADDRESS SET, UNVERIFIED" : "NOT DEPLOYED"}</Badge>}>
-          <KV rows={[["TreasuryVault", env.CONTRACT_TREASURY_VAULT || "not set"], ["MilestoneEscrow", env.CONTRACT_MILESTONE_ESCROW || "not set"], ["AuditAnchor", env.CONTRACT_AUDIT_ANCHOR || "not set"]]} />
+        <Card title="Contracts" right={<Badge tone={live ? "live" : "unavailable"}>{live ? "DEPLOYED, CODE VERIFIED ON-CHAIN" : "UNVERIFIED"}</Badge>}>
+          <KV rows={contracts.rows.map((r): [string, string] => [r.name, `${r.address} (${r.hasCode === null ? "unknown" : r.hasCode ? "code present" : "NO CODE"})`])} />
         </Card>
       </div>
     </>

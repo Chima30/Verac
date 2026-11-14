@@ -54,7 +54,7 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Gemini provider (free-tier limits, retries, quota pause, schema validation) | Implemented, mocked tests only | 24 Vitest tests; **no live Gemini call yet** (needs your key) |
 | Postgres schema + RLS (31 tables) | Implemented | 14 tenant-isolation tests on PGlite (not a Supabase project) |
 | Live testnet **reads** (chain id, block, AA config, limits) | Verified 2026-11-14 | `pnpm chain:probe` |
-| Web app shell: 27 routes, light/dark, mobile nav | Implemented; `next build` and `tsc` pass; all routes return 200 | built 2026-11-14 |
+| Web app shell: 27 routes, light/dark, mobile nav | Implemented and deployed read-only at https://verac-web.vercel.app (all 27 routes return 200) | checked 2026-11-14 |
 | Web pages with live behaviour | Dashboard (chain + AI status), agent registry, permission matrix, policy validator, address lookup (balance, PQC, KEM, window, rules) on Diana testnet, integrations | read-only; no signing |
 | Web pages for the 12 modules' workflows | **Placeholders that state what exists and what is missing**; no working controls | needs Supabase, auth, deployed contracts |
 | Wallet connect, PQC key registration, hybrid-signed tx, EVM window open | **Not started** | needs a funded throwaway testnet account |

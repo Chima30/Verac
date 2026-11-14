@@ -1,5 +1,6 @@
 import { loadAiConfig } from "@qoreops/ai-provider";
 import { QoreReader } from "@qoreops/qorechain";
+import deployment from "../../../deployments/diana-testnet.json";
 
 export function reader(): QoreReader {
   return new QoreReader();
@@ -37,5 +38,27 @@ export async function chainSnapshot(): Promise<ChainSnapshot> {
     };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export interface ContractRow { name: string; address: string; hasCode: boolean | null; balanceQor: string | null }
+
+/** Live check of each deployed contract: is there bytecode at the address, and what is its native balance. */
+export async function contractSnapshot(): Promise<{ rows: ContractRow[]; error?: string }> {
+  const entries = Object.entries(deployment.contracts) as Array<[string, { address: string }]>;
+  try {
+    const q = reader();
+    const rows = await Promise.all(entries.map(async ([name, c]) => {
+      const address = c.address as `0x${string}`;
+      const [code, bal] = await Promise.allSettled([q.evm.getCode({ address }), q.evm.getBalance({ address })]);
+      return {
+        name, address,
+        hasCode: code.status === "fulfilled" ? !!code.value && code.value !== "0x" : null,
+        balanceQor: bal.status === "fulfilled" ? (Number(bal.value / 10n ** 12n) / 1e6).toString() : null,
+      };
+    }));
+    return { rows };
+  } catch (e) {
+    return { rows: entries.map(([name, c]) => ({ name, address: c.address, hasCode: null, balanceQor: null })), error: e instanceof Error ? e.message : String(e) };
   }
 }
