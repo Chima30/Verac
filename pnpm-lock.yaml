@@ -26,6 +26,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@qorechain/qoreseal':
+        specifier: 0.1.0
+        version: 0.1.0
       '@qoreops/agent-coordinator':
         specifier: workspace:*
         version: link:../../services/agent-coordinator

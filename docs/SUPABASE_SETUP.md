@@ -6,7 +6,7 @@ designed to be public, and row-level security is what protects the data. Do **no
 1. Create a project at https://supabase.com (free). Pick any region. Save the database password somewhere safe; this app does not need it.
 2. **Create the tables:** Dashboard -> SQL Editor -> New query -> paste the whole of `supabase/migrations/0001_core.sql` -> Run.
    It should finish with "Success". (It creates 31 tables with row-level security forced on.)
-   Then do the same, one at a time and in order, for `0002_creator_membership.sql` and `0003_approvals.sql`. Skipping 0002 breaks creating an organisation; skipping 0003 breaks Approvals and Tasks.
+   Then do the same, one at a time and in order, for `0002_creator_membership.sql`, `0003_approvals.sql` and `0004_procurement.sql`. Skipping 0002 breaks creating an organisation; skipping 0003 breaks Approvals and Tasks; skipping 0004 breaks Procurement.
 3. **Auth settings:** Dashboard -> Authentication -> Providers -> Email. For a quick demo turn **Confirm email** off, otherwise new
    accounts must click a link in an email first.
 4. **Copy the two public values:** Dashboard -> Project Settings -> API -> `Project URL` and `anon public` key.

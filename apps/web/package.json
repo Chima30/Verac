@@ -9,6 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@qorechain/qoreseal": "0.1.0",
     "@qoreops/agent-coordinator": "workspace:*",
     "@qoreops/ai-provider": "workspace:*",
     "@qoreops/policy-engine": "workspace:*",

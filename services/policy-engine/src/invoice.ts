@@ -47,7 +47,7 @@ export const isPayoutAddress = (s: string) => EVM.test(s) || QOR.test(s.toLowerC
 
 const PRESSURE = /\b(urgent|urgently|immediately|asap|today only|final notice|do not (verify|call|check)|keep (this )?confidential|(new|changed|updated) (bank|account|wallet|address|payout)|wire (it )?now)\b/i;
 
-const INJECTION = /\b(ignore|disregard|override|bypass)\b.{0,30}\b(rules|instructions|policy|checks?)\b|\b(system|assistant|admin)\s*:|\bmark (this|it|the invoice)\b.{0,20}\b(safe|approved|paid|clean)\b|\bapprove (this|the) (invoice|payment)\b/i;
+export const INJECTION = /\b(ignore|disregard|override|bypass)\b.{0,30}\b(rules|instructions|policy|checks?)\b|\b(system|assistant|admin)\s*:|\bmark (this|it|the invoice)\b.{0,20}\b(safe|approved|paid|clean)\b|\bapprove (this|the) (invoice|payment)\b|\brank (this|it|our|my)\b.{0,25}\b(first|highest|top|best|number one)\b|\b(give|score) (this|it|us|me)\b.{0,15}\b(10|ten|full marks|highest)\b/i;
 
 function levenshtein(a: string, b: string): number {
   const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)] as number[]);
