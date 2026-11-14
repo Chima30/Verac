@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computePaymentHash, describePolicy, evaluatePayment, validatePolicy, type EvaluationContext } from "./index";
+import { PolicyDraftSchema, computePaymentHash, describePolicy, evaluatePayment, policyFromDraft, qorToWei, validatePolicy, type EvaluationContext } from "./index";
 import { NATIVE_TOKEN, PaymentProposalSchema, type Policy } from "@qoreops/shared-types";
 import { keccak256, toBytes } from "viem";
 
@@ -133,5 +133,41 @@ describe("validatePolicy", () => {
     const lines = describePolicy(policy);
     expect(lines[0]).toContain("50 QOR per transaction");
     expect(lines[0]).toContain("200 QOR per UTC day");
+  });
+});
+
+describe("AI policy drafts", () => {
+  const draft = { name: "Ops", perTxQor: 10, dailyQor: 20, autoApproveQor: 5, approvalThreshold: 2, requireApprovalForNewRecipients: true, validForDays: 30, summary: "x" };
+
+  it("converts QOR to 18-decimal base units exactly", () => {
+    expect(qorToWei(1)).toBe("1000000000000000000");
+    expect(qorToWei(0.000001)).toBe("1000000000000");
+    expect(qorToWei(60)).toBe("60000000000000000000");
+    expect(() => qorToWei(0.0000001)).toThrow(/decimal/);
+    expect(() => qorToWei(-1)).toThrow();
+    expect(() => qorToWei(Number.NaN)).toThrow();
+  });
+
+  it("builds a policy that passes validation, with native QOR and the PaymentAgent fixed by code", () => {
+    const r = validatePolicy(policyFromDraft(PolicyDraftSchema.parse(draft)));
+    expect(r.ok).toBe(true);
+    expect(r.policy?.agent).toBe("PaymentAgent");
+    expect(r.policy?.token).toBe("0x0000000000000000000000000000000000000000");
+    expect(r.policy?.perTxCap).toBe("10000000000000000000");
+  });
+
+  it("a contradictory draft is built but flagged by validation, never silently fixed", () => {
+    const r = validatePolicy(policyFromDraft(PolicyDraftSchema.parse({ ...draft, perTxQor: 10, dailyQor: 5 })));
+    expect(r.ok).toBe(false);
+    expect(r.findings.some((f) => f.code === "DAILY_LT_PERTX")).toBe(true);
+  });
+
+  it("the draft schema has no way to carry a token, recipient, agent or extra field", () => {
+    for (const extra of [{ token: "0x" + "1".repeat(40) }, { allowedRecipients: ["0x" + "2".repeat(40)] }, { agent: "TreasuryAgent" }, { callData: "0x" }]) {
+      expect(PolicyDraftSchema.safeParse({ ...draft, ...extra }).success).toBe(false);
+    }
+    expect(PolicyDraftSchema.safeParse({ ...draft, perTxQor: -1 }).success).toBe(false);
+    expect(PolicyDraftSchema.safeParse({ ...draft, perTxQor: 1e12 }).success).toBe(false);
+    expect(PolicyDraftSchema.safeParse({ ...draft, approvalThreshold: 0 }).success).toBe(false);
   });
 });

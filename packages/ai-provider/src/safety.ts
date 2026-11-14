@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 const HEX_PRIVATE_KEY = /\b(?:0x)?[0-9a-fA-F]{64}\b/;
 // 12/15/18/21/24 lowercase words in a row: typical BIP-39 mnemonic shape
 const MNEMONIC_SHAPE = /\b(?:[a-z]{3,8}\s+){11,23}[a-z]{3,8}\b/;
-const API_KEY_SHAPE = /\bAIza[0-9A-Za-z_\-]{35}\b/;
+const API_KEY_SHAPE = /\bAIza[0-9A-Za-z_\-]{30,}/;
 const PEM = /-----BEGIN [A-Z ]*PRIVATE KEY-----/;
 
 export function findSecret(text: string): string | undefined {

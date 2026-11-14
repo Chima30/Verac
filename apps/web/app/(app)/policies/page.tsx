@@ -17,6 +17,23 @@ export default function Policies() {
   const [out, setOut] = useState<Out | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [ask, setAsk] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [draft, setDraft] = useState<{ model: string; aiSummary: string; description: string[]; findings: Finding[]; ok: boolean } | null>(null);
+  const [draftErr, setDraftErr] = useState<string | null>(null);
+
+  async function makeDraft() {
+    setDrafting(true); setDraft(null); setDraftErr(null);
+    try {
+      const r = await fetch("/api/policy/draft", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: ask }) });
+      const j = (await r.json()) as { error?: string; policy?: unknown; model: string; aiSummary: string; description: string[]; findings: Finding[]; ok: boolean };
+      if (!r.ok) { setDraftErr(j.error ?? `Request failed (${r.status})`); return; }
+      setDraft({ model: j.model, aiSummary: j.aiSummary, description: j.description, findings: j.findings, ok: j.ok });
+      setText(JSON.stringify(j.policy, null, 2));
+      setOut({ ok: j.ok, findings: j.findings, summary: j.description });
+    } catch (e) { setDraftErr(e instanceof Error ? e.message : String(e)); }
+    finally { setDrafting(false); }
+  }
 
   async function validate() {
     setErr(null); setOut(null); setBusy(true);
@@ -32,6 +49,22 @@ export default function Policies() {
   return (
     <>
       <PageHeader title="Policies" description="Validate a spending policy against the real policy-engine schema and see it described in plain language. Saving and activating policies needs the database and an approver, and is not built yet." badge={<Badge tone="sim">VALIDATION ONLY</Badge>} />
+      <Card title="Describe a policy in words" className="mb-4" right={<Badge tone="sim">AI DRAFT ONLY</Badge>}>
+        <label htmlFor="ask" className="sr-only">Describe the policy</label>
+        <textarea id="ask" className={`${inputCls} h-24`} value={ask} maxLength={1500} onChange={(e) => setAsk(e.target.value)}
+          placeholder="Example: let the payment agent pay up to 10 QOR per payment and 25 QOR a day, auto-approve anything under 2 QOR to known vendors, and require 2 approvers for the rest." />
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button type="button" className={btnCls} onClick={makeDraft} disabled={drafting || ask.trim().length < 5}>{drafting ? "Drafting…" : "Draft with Gemini"}</button>
+          <span className="text-xs text-muted">Gemini only drafts. Amounts are converted and checked by deterministic code, and nothing is activated. Do not include secrets or personal data.</span>
+        </div>
+        {draftErr && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{draftErr}</p>}
+        {draft && (
+          <div className="mt-4 space-y-3 text-sm">
+            <p><span className="text-muted">Model {draft.model} understood:</span> {draft.aiSummary}</p>
+            <p className="text-muted">The draft is loaded in the editor below and was checked by the policy engine: <strong>{draft.ok ? "no blocking problems" : "blocking problems found"}</strong>. Compare the plain-language description on the right with what you asked for, not just the AI&apos;s summary.</p>
+          </div>
+        )}
+      </Card>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Policy JSON">
           <label htmlFor="policy" className="sr-only">Policy JSON</label>

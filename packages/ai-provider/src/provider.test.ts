@@ -134,6 +134,9 @@ describe("generateStructured", () => {
     await expect(p.generateStructured(req({ input: `key ${key}` }))).rejects.toMatchObject({ code: "SECRET_DETECTED" });
     const phrase = "abandon ability able about above absent absorb abstract absurd abuse access accident";
     await expect(p.generateStructured(req({ input: phrase }))).rejects.toMatchObject({ code: "SECRET_DETECTED" });
+    // Google-style API keys: the real 39-character shape and a slightly longer near miss.
+    await expect(p.generateStructured(req({ input: "k AIza" + "A1b2C3d4".repeat(4).slice(0, 35) }))).rejects.toMatchObject({ code: "SECRET_DETECTED" });
+    await expect(p.generateStructured(req({ input: "k AIzaSyA1234567890abcdefghijklmnopqrstuv1" }))).rejects.toMatchObject({ code: "SECRET_DETECTED" });
     expect(c.calls.length).toBe(0);
   });
 });

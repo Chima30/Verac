@@ -1,4 +1,5 @@
 import { encodeAbiParameters, keccak256, parseAbiParameters, getAddress } from "viem";
+import { z } from "zod";
 import { type Policy, type PaymentProposal, PolicySchema } from "@qoreops/shared-types";
 
 // ------------------------------------------------------------------ payment hash (must equal TreasuryVault.paymentHash)
@@ -185,4 +186,52 @@ export function describePolicy(p: Policy): string[] {
     `Everything above that${p.requireApprovalForNewRecipients ? ", and any payment to a new recipient," : ""} needs ${p.approvalThreshold} approval(s).`,
     `Permission expires after ${Math.round(p.validForSeconds / 3600)} hour(s) and can be revoked at any time.`,
   ];
+}
+
+// ------------------------------------------------------------------ AI policy drafts
+/**
+ * What the model is allowed to produce. Amounts are plain QOR numbers, NOT base units: a model must never be trusted to
+ * write 18-digit integers. Code converts them (`policyFromDraft`), and the result still goes through `validatePolicy`.
+ * Anything outside this shape is rejected; there is no field for token addresses, recipients or contract calls.
+ */
+export const PolicyDraftSchema = z
+  .object({
+    name: z.string().min(1).max(120),
+    perTxQor: z.number().min(0).max(1_000_000_000),
+    dailyQor: z.number().min(0).max(1_000_000_000),
+    autoApproveQor: z.number().min(0).max(1_000_000_000),
+    approvalThreshold: z.number().int().min(1).max(10),
+    requireApprovalForNewRecipients: z.boolean(),
+    validForDays: z.number().int().min(1).max(365),
+    summary: z.string().max(500),
+  })
+  .strict();
+export type PolicyDraft = z.infer<typeof PolicyDraftSchema>;
+
+const UQOR_PER_QOR = 1_000_000;
+const WEI_PER_UQOR = 10n ** 12n;
+
+/** QOR (at most 6 decimals) to 18-decimal base units. Throws on more precision than the chain can represent. */
+export function qorToWei(qor: number): string {
+  if (!Number.isFinite(qor) || qor < 0) throw new Error("amount must be a non-negative number");
+  const uqor = Math.round(qor * UQOR_PER_QOR);
+  if (Math.abs(uqor / UQOR_PER_QOR - qor) > 1e-9) throw new Error(`amount ${qor} has more than 6 decimal places`);
+  return (BigInt(uqor) * WEI_PER_UQOR).toString();
+}
+
+/** Deterministically builds a full policy (native QOR, PaymentAgent) from a model draft. Not yet validated: call validatePolicy. */
+export function policyFromDraft(d: PolicyDraft): unknown {
+  return {
+    schemaVersion: 1,
+    name: d.name,
+    agent: "PaymentAgent",
+    token: "0x0000000000000000000000000000000000000000",
+    tokenDecimals: 18,
+    perTxCap: qorToWei(d.perTxQor),
+    dailyCap: qorToWei(d.dailyQor),
+    autoApproveCap: qorToWei(d.autoApproveQor),
+    approvalThreshold: d.approvalThreshold,
+    requireApprovalForNewRecipients: d.requireApprovalForNewRecipients,
+    validForSeconds: d.validForDays * 86_400,
+  };
 }
