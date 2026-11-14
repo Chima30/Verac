@@ -1,0 +1,21 @@
+[profile.default]
+src = "src"
+test = "test"
+script = "script"
+out = "out"
+libs = []
+
+solc_version = "0.8.24"
+# paris avoids PUSH0 / transient storage; QoreChain's supported EVM hardfork is not
+# documented, so we compile conservatively. Verify with a live deploy before relying on it.
+evm_version = "paris"
+optimizer = true
+optimizer_runs = 200
+remappings = ["forge-std/=lib/forge-std/src/", "@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/"]
+
+[fuzz]
+runs = 512
+
+[invariant]
+runs = 64
+depth = 32

@@ -1,0 +1,23 @@
+{
+  "name": "qoreops",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Working title: QoreChain AI Operations OS. Controlled, auditable AI agents for organisations, settled on QoreChain.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.34.9",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:contracts": "cd contracts && forge test -vv",
+    "build:contracts": "cd contracts && forge build",
+    "chain:probe": "tsx packages/qorechain/scripts/probe.ts",
+    "ai:probe": "tsx packages/ai-provider/scripts/probe.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
