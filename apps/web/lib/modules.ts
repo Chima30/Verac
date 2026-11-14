@@ -11,12 +11,6 @@ export interface ModuleInfo {
 }
 
 export const MODULES: Record<string, ModuleInfo> = {
-  tasks: { title: "Tasks", description: "Queue of agent work items and their pipeline states.", agent: "agent-coordinator",
-    exists: ["Operation state machine (PROPOSED to CONFIRMED, FAILED terminal)", "Idempotent pipeline in services/agent-coordinator"],
-    missing: ["Database-backed task list (needs a Supabase project)", "Task detail view"] },
-  approvals: { title: "Approvals", description: "Human approval queue for payments that policy marks REQUIRE_APPROVAL.", agent: "PolicyAgent",
-    exists: ["Policy engine decisions ALLOW / REQUIRE_APPROVAL / REJECT", "approvals and approval_signatures tables in migration 0001", "On-chain approval hash bound to chain, vault, agent, token, recipient, amount, purpose, nonce"],
-    missing: ["Wallet connection and approval signing UI", "Supabase auth"] },
   activity: { title: "Activity", description: "Chronological feed of agent and user actions.",
     exists: ["Append-only audit_events table with trigger"], missing: ["Live feed (needs database and auth)"] },
   invoices: { title: "Bills and Invoices", description: "Invoice intake, fraud checks, and paying approved bills.", agent: "InvoiceFraudAgent",

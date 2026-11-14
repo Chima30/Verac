@@ -43,9 +43,10 @@ beforeAll(async () => {
     create schema auth;
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     create role app_user nologin;
+    create role authenticated nologin; grant authenticated to app_user;
     grant usage on schema auth to app_user;
   `);
-  for (const f of ["0001_core.sql", "0002_creator_membership.sql"]) {
+  for (const f of ["0001_core.sql", "0002_creator_membership.sql", "0003_approvals.sql"]) {
     await db.exec(readFileSync(resolve(__dirname, "../../supabase/migrations", f), "utf8"));
   }
   await db.exec(`grant usage on schema public to app_user; grant all on all tables in schema public to app_user; grant all on all sequences in schema public to app_user; grant execute on all functions in schema public to app_user;`);
@@ -153,14 +154,15 @@ describe("vendor and applicant confidentiality", () => {
 });
 
 describe("financial and audit controls", () => {
-  it("only finance roles may create transactions or approvals", async () => {
+  it("nobody can write transactions or approvals directly; they only change through the audited functions", async () => {
     const insert = `insert into transactions(organization_id,idempotency_key,agent_id,payment_hash,token,recipient,amount,policy_version,expires_at) values ('${ORG_A}','k2','PaymentAgent','0x${"b".repeat(64)}','0x0','0x1',5,1,now())`;
-    await as(U.procA, async () => {
-      await expect(db.exec(insert)).rejects.toThrow(/row-level security/);
-    });
-    await as(U.financeA, async () => {
-      await db.exec(insert);
-    });
+    for (const u of [U.procA, U.financeA, U.ownerA]) {
+      await as(u, async () => {
+        await expect(db.exec(insert)).rejects.toThrow(/row-level security/);
+        expect((await db.query(`update transactions set state = 'APPROVED' where organization_id = '${ORG_A}' returning id`)).rows.length).toBe(0);
+        await expect(db.exec(`insert into approvals(organization_id,subject_type,subject_id,payment_hash,approver,decision) values ('${ORG_A}','transaction','${PROC}','0x${"a".repeat(64)}','${u}','approve')`)).rejects.toThrow(/row-level security/);
+      });
+    }
   });
 
   it("idempotency key and payment hash are unique per organisation", async () => {
