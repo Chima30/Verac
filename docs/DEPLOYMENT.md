@@ -1,4 +1,4 @@
-# Deployment (plan; nothing deployed yet)
+# Deployment (script written and dry-run locally; nothing deployed)
 
 ## What you supply
 
@@ -14,12 +14,24 @@ Do not paste a mnemonic or private key into chat. Put it in `.env` locally or a 
 
 ## Contracts (explicit approval needed before any broadcast)
 
+`contracts/script/Deploy.s.sol` deploys PolicyManager, TreasuryVault, MilestoneEscrow, AuditAnchor and
+OrganizationRegistry. It **reverts unless the chain id is 9800**. No key is read from env or the repo: sign with a
+Foundry keystore. Dry-run verified on a local anvil node only (2026-11-14); it has **not** been run against Diana.
+
 ```bash
 cd contracts
 forge build
-# deployment script is not written yet; it will use a keystore/env key and print addresses + tx hashes
+# one-time: import the throwaway key into an encrypted keystore (prompts locally; never paste it in chat)
+cast wallet import qoreops-deployer --interactive
+# optional: OWNER=0x... gives ownership of all Ownable contracts to another account (use a multisig when real)
+forge script script/Deploy.s.sol --rpc-url https://evm-rpc-diana.qorechain.io --account qoreops-deployer   # simulation
+forge script script/Deploy.s.sol --rpc-url https://evm-rpc-diana.qorechain.io --account qoreops-deployer --broadcast   # real, needs approval
 ```
+Then put the printed addresses in `.env` (`TREASURY_VAULT_ADDRESS`, ...). The Integrations page shows them as
+"ADDRESS SET, UNVERIFIED" until a chain read confirms code exists there.
 Deploy needs an **unscoped** EVM window (contract creation is refused under a scoped window); close it afterwards.
+Window opening is a hybrid-signed native message and is not implemented in this repo yet.
+The `paris` EVM target is untested on Diana; a failed deploy may mean a different hardfork is needed.
 
 ## Web + worker
 
