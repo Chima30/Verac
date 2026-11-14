@@ -1,9 +1,9 @@
-# QoreOps (working title)
+# Verac
 
 AI agents that do real operational work for a DAO or business (paying invoices, running tenders, releasing
 milestone payments) without any agent ever holding unrestricted access to the treasury. Built for the
 **Build Before Q-Day** hackathon, category **Post-Quantum AI Agents**, on **QoreChain Diana testnet**
-(native `qorechain-diana`, EVM chain id `9800`). The product name is not final; it lives in one env var
+(native `qorechain-diana`, EVM chain id `9800`). The product is called Verac; the name lives in one env var
 (`NEXT_PUBLIC_PRODUCT_NAME`).
 
 > **Status: early foundation (2026-11-14).** The security core is implemented and tested; the web app is a
