@@ -1,0 +1,16 @@
+{
+  "network": "qorechain-diana",
+  "evmChainId": 9800,
+  "deployedAt": "2026-11-14",
+  "deployer": "0x5B108321e824faf53AA198fcD1682A07a68970F2",
+  "owner": "0x5B108321e824faf53AA198fcD1682A07a68970F2",
+  "note": "Throwaway testnet account. Owner is that same single key: acceptable for testnet, not for anything real.",
+  "contracts": {
+    "PolicyManager": { "address": "0xE4ba9fBfB11Bb947284D7e08acec871Ad42a0ab1", "tx": "0xdaae493070c48cfd413b6334daf06a8cf428d06ec3bd280678167d8a80529c91" },
+    "TreasuryVault": { "address": "0xa343930CE94b1d1629791823A75fb14a1D7C7Ab8", "tx": "0xcaf49894a6f85325ac18d6d0f2c142d3320c78a09375f17a1055279e047fe9fa" },
+    "MilestoneEscrow": { "address": "0xd577FFB031358d46B369E9fE293c5a21a1C1FA90", "tx": "0xc38a903ecb2aba5fcf8e2bae3023f2f813e177790dd2888cb687945034cbf9ca" },
+    "AuditAnchor": { "address": "0x4D1dc4ff95dc9443552c3A8Efa7d1a21B4Bdc1C2", "tx": "0xb9614e6a5d259d40ba2ebc43c7e94e5e43b711faa9b1a8bd22849017f82af658" },
+    "OrganizationRegistry": { "address": "0x0FDDFFf7a39FFa5C0cA401D7d4cd7B8C492ec55E", "tx": "0xaf0721f6d5371fe2170c6e2117a72acffb24987ec5cf9b35f058ae2bc32a5549" }
+  },
+  "verified": "bytecode present at each address and vault.owner()/policyManager() read back correctly on 2026-11-14; not source-verified on an explorer; no external audit"
+}

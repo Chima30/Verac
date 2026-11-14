@@ -47,7 +47,7 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 
 | Area | State | Evidence |
 |---|---|---|
-| Solidity: registry, policy manager, vault, escrow, anchor | Implemented, **not deployed** | 55 Foundry tests incl. fuzz and reentrancy |
+| Solidity: registry, policy manager, vault, escrow, anchor | Implemented, deployed to testnet | 55 Foundry tests incl. fuzz and reentrancy |
 | Deterministic policy engine + payment hash (matches Solidity byte for byte) | Implemented | 14 Vitest tests + cross-language vector |
 | Payment pipeline, state machine, idempotency | Implemented (in-memory store) | 22 Vitest tests |
 | 15 agent specs, tool allow-lists, signed replay-protected messaging | Implemented | same suite |
@@ -59,7 +59,8 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Web pages for the 12 modules' workflows | **Placeholders that state what exists and what is missing**; no working controls | needs Supabase, auth, deployed contracts |
 | Wallet connect, PQC key registration, hybrid-signed tx, EVM window open | **Not started** | needs a funded throwaway testnet account |
 | QoreSeal encrypt/decrypt in the vault | **Not started** (package verified on npm) | n/a |
-| Contract deployment, real payment, real rejection | **Not done** | needs a deployer account and your approval |
+| Contract deployment | **Deployed to Diana testnet 2026-11-14** (5 contracts, see deployments/diana-testnet.json) | bytecode + owner read back on-chain |
+| Real payment through the vault, real rejection | **Not done** | vault has no agent limits or funds yet |
 | AI agent behaviours (fraud review, procurement scoring, policy NL→JSON) | Provider ready; agent prompts/schemas **not written** | n/a |
 | DCA / arbitrage / dispute / governance / payroll modules | **Not started** | n/a |
 
