@@ -16,6 +16,7 @@
     "chain:probe": "tsx packages/qorechain/scripts/probe.ts",
     "account:new": "tsx packages/qorechain/scripts/new-account.ts",
     "account:inspect": "tsx packages/qorechain/scripts/account.ts",
+    "chain:tx": "tsx packages/qorechain/scripts/chain-tx.ts",
     "ai:probe": "tsx packages/ai-provider/scripts/probe.ts"
   },
   "devDependencies": {
