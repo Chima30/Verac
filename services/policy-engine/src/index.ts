@@ -239,3 +239,4 @@ export * from "./invoice";
 export * from "./procurement";
 export * from "./payroll";
 export * from "./grants";
+export * from "./strategies";
