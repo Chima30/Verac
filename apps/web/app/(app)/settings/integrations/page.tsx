@@ -19,7 +19,7 @@ export default async function Integrations() {
         <Card title="Gemini AI" right={<Badge tone={ai.status === "configured" ? "live" : "unavailable"}>{ai.status === "configured" ? "CONFIGURED" : "UNAVAILABLE"}</Badge>}>
           {ai.status === "configured"
             ? <KV rows={[["Model", ai.model], ["Fallback", ai.fallbackModel ?? "none"], ["Free tier only", String(ai.freeTierOnly)], ["Requests/min", String(ai.rpm)], ["Requests/day", String(ai.rpd)], ["Concurrency", String(ai.concurrency)]]} />
-            : <p className="text-sm text-text-2">{ai.message}</p>}
+            : <p className="text-sm text-muted">{ai.message}</p>}
         </Card>
         <Card title="QoreChain Diana testnet" right={<Badge tone={chain.ok ? "live" : "unavailable"} />}>
           <KV rows={[["REST", env.NEXT_PUBLIC_QORE_REST ?? "default"], ["EVM RPC", env.NEXT_PUBLIC_QORE_EVM_RPC ?? "default"], ["Status", chain.ok ? `chain ${chain.chainId}, block ${chain.block ?? "n/a"}` : (chain.error ?? "unreachable")]]} />

@@ -31,7 +31,7 @@ export default async function Dashboard() {
       <Card title="Deployed contracts (Diana testnet)" className="mt-4" right={<Badge tone={contracts.error ? "unavailable" : "live"} />}>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[34rem] text-left text-sm">
-            <thead><tr className="border-b border-line text-xs text-text-2"><th className="py-2 pr-3 font-medium">Contract</th><th className="py-2 pr-3 font-medium">Address</th><th className="py-2 pr-3 font-medium">Code on-chain</th><th className="py-2 font-medium">Balance (QOR)</th></tr></thead>
+            <thead><tr className="border-b border-line text-xs text-muted"><th className="py-2 pr-3 font-medium">Contract</th><th className="py-2 pr-3 font-medium">Address</th><th className="py-2 pr-3 font-medium">Code on-chain</th><th className="py-2 font-medium">Balance (QOR)</th></tr></thead>
             <tbody>{contracts.rows.map((c) => (
               <tr key={c.name} className="border-b border-line last:border-0">
                 <td className="py-2 pr-3">{c.name}</td><td className="py-2 pr-3 font-mono text-xs break-all">{c.address}</td>
@@ -39,7 +39,7 @@ export default async function Dashboard() {
               </tr>))}</tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-text-2">Not source-verified on an explorer; no external audit.</p>
+        <p className="mt-3 text-xs text-muted">Not source-verified on an explorer; no external audit.</p>
       </Card>
     </>
   );

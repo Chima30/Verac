@@ -41,7 +41,7 @@ export function OpenDocument({ id, orgId, userId }: { id: string; orgId: string;
         <div className="flex flex-wrap items-center gap-3">
           <button className={btnCls} disabled={busy || hasKey === false} onClick={open}>{busy ? "Opening…" : "Open in this browser"}</button>
           <Badge tone="neutral">DECRYPTED ONLY IN YOUR BROWSER</Badge>
-          {hasKey === false && <span className="text-[var(--fail-text)]">This browser has no reading key.</span>}
+          {hasKey === false && <span className="text-[var(--bad)]">This browser has no reading key.</span>}
         </div>
       ) : out.kind === "text" ? (
         <p className="whitespace-pre-wrap break-words rounded-md border border-line p-3">{out.text}</p>
@@ -52,7 +52,7 @@ export function OpenDocument({ id, orgId, userId }: { id: string; orgId: string;
           <button className={btnCls} onClick={() => download(out)}>Download file</button>
         </div>
       )}
-      {err && <p role="alert" className="text-[var(--fail-text)]">{err}</p>}
+      {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
     </div>
   );
 }

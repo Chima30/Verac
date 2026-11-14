@@ -19,8 +19,8 @@ export function ReviewButton({ id, again }: { id: string; again: boolean }) {
   return (
     <div className="text-sm">
       <button className={btnCls} disabled={busy} onClick={run}>{busy ? "Reviewing…" : again ? "Run AI review again" : "Run AI review"}</button>
-      <span className="ml-2 text-xs text-text-2">Sends the pitch to Gemini (free tier).</span>
-      {err && <p role="alert" className="mt-1 text-[var(--fail-text)]">{err}</p>}
+      <span className="ml-2 text-xs text-muted">Sends the pitch to Gemini (free tier).</span>
+      {err && <p role="alert" className="mt-1 text-[var(--bad)]">{err}</p>}
     </div>
   );
 }

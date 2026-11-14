@@ -20,7 +20,7 @@ interface P {
 
 function List({ title, items }: { title: string; items?: string[] }) {
   if (!items?.length) return null;
-  return <div><p className="text-xs font-medium text-text-2">{title}</p><ul className="list-disc pl-5 text-sm">{items.map((x, i) => <li key={i}>{x}</li>)}</ul></div>;
+  return <div><p className="text-xs font-medium text-muted">{title}</p><ul className="list-disc pl-5 text-sm">{items.map((x, i) => <li key={i}>{x}</li>)}</ul></div>;
 }
 
 export default async function Governance({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
@@ -42,8 +42,8 @@ export default async function Governance({ searchParams }: { searchParams: Promi
   return (
     <>
       <PageHeader title="Governance" description="Members discuss and vote on proposals. Voting is one vote per member, with a quorum and a pass threshold set when the proposal is created. The result is counted by the database, not by AI." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-panel px-3 py-2 text-sm">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{sp.error ?? error?.message}</p>}
+      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-surface px-3 py-2 text-sm">{sp.msg}</p>}
+      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error ?? error?.message}</p>}
 
       {admin && (
         <Card title="New proposal" className="mb-4">
@@ -51,8 +51,8 @@ export default async function Governance({ searchParams }: { searchParams: Promi
             <input name="title" required minLength={3} maxLength={160} className={inputCls} placeholder="Title" />
             <textarea name="body" required minLength={10} maxLength={8000} rows={5} className={inputCls} placeholder="What is being proposed, and why?" />
             <div className="flex flex-wrap items-end gap-3">
-              <div><label className="mb-1 block text-xs text-text-2">Quorum (votes needed)</label><input name="quorum" type="number" min={1} defaultValue={1} className={`${inputCls} w-28`} /></div>
-              <div><label className="mb-1 block text-xs text-text-2">Pass if “for” is above (% of for + against)</label><input name="pass_pct" type="number" min={50} max={99} defaultValue={50} className={`${inputCls} w-28`} /></div>
+              <div><label className="mb-1 block text-xs text-muted">Quorum (votes needed)</label><input name="quorum" type="number" min={1} defaultValue={1} className={`${inputCls} w-28`} /></div>
+              <div><label className="mb-1 block text-xs text-muted">Pass if “for” is above (% of for + against)</label><input name="pass_pct" type="number" min={50} max={99} defaultValue={50} className={`${inputCls} w-28`} /></div>
               <button className={btnCls}>Create proposal</button>
             </div>
           </form>
@@ -66,7 +66,7 @@ export default async function Governance({ searchParams }: { searchParams: Promi
           return (
             <Card key={p.id} title={p.title} right={<Badge tone={TONE[p.status] ?? "neutral"}>{p.status.toUpperCase()}</Badge>}>
               <p className="whitespace-pre-wrap break-words text-sm">{p.body}</p>
-              <p className="mt-2 text-xs text-text-2">Application vote, not an on-chain governance vote. Quorum {p.quorum}; passes above {p.pass_pct}% for.{p.voting_ends_at && ` Voting ${ended ? "ended" : "ends"} ${new Date(p.voting_ends_at).toUTCString()}.`}</p>
+              <p className="mt-2 text-xs text-muted">Application vote, not an on-chain governance vote. Quorum {p.quorum}; passes above {p.pass_pct}% for.{p.voting_ends_at && ` Voting ${ended ? "ended" : "ends"} ${new Date(p.voting_ends_at).toUTCString()}.`}</p>
 
               {p.analysis?.summary && (
                 <div className="mt-3 space-y-2 rounded-md border border-line p-3">
@@ -82,7 +82,7 @@ export default async function Governance({ searchParams }: { searchParams: Promi
               {p.status === "discussion" && admin && (
                 <form action={openVoting} className="mt-3 flex flex-wrap items-end gap-2">
                   <input type="hidden" name="id" value={p.id} />
-                  <div><label className="mb-1 block text-xs text-text-2">Voting lasts (hours)</label><input name="hours" type="number" min={1} max={720} defaultValue={72} className={`${inputCls} w-24`} /></div>
+                  <div><label className="mb-1 block text-xs text-muted">Voting lasts (hours)</label><input name="hours" type="number" min={1} max={720} defaultValue={72} className={`${inputCls} w-24`} /></div>
                   <button className={btnCls}>Open voting</button>
                 </form>
               )}
@@ -90,8 +90,8 @@ export default async function Governance({ searchParams }: { searchParams: Promi
                 <form action={castVote} className="mt-3 flex flex-wrap gap-2">
                   <input type="hidden" name="id" value={p.id} />
                   <button name="choice" value="for" className={btnCls}>Vote for</button>
-                  <button name="choice" value="against" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--well)]">Vote against</button>
-                  <button name="choice" value="abstain" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--well)]">Abstain</button>
+                  <button name="choice" value="against" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--neutral-bg)]">Vote against</button>
+                  <button name="choice" value="abstain" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--neutral-bg)]">Abstain</button>
                 </form>
               ))}
               {p.status === "voting" && ended && (
@@ -102,7 +102,7 @@ export default async function Governance({ searchParams }: { searchParams: Promi
           );
         })}</div>
       )}
-      <p className="mt-4 text-xs text-text-2">A passed proposal executes nothing. Any spending that follows still goes through the Approvals page.</p>
+      <p className="mt-4 text-xs text-muted">A passed proposal executes nothing. Any spending that follows still goes through the Approvals page.</p>
     </>
   );
 }

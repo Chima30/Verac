@@ -39,7 +39,7 @@ export default async function Tender({ params, searchParams }: { params: Promise
     <>
       <PageHeader title={t.title} description={`Budget ${formatQor(t.budget)} QOR${t.bids_open_at ? ` · bidding closes ${new Date(t.bids_open_at).toISOString().replace("T", " ").slice(0, 16)} UTC` : ""}`} badge={<Badge tone={TONE[t.status] ?? "neutral"}>{t.status.toUpperCase()}</Badge>} />
       <p className="mb-4 text-sm"><Link href="/procurement" className="underline">All tenders</Link></p>
-      {sp.error && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{sp.error}</p>}
+      {sp.error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error}</p>}
       <div className="space-y-4">
         <Card title="Requirements"><p className="whitespace-pre-wrap text-sm">{t.requirements}</p></Card>
 
@@ -47,15 +47,15 @@ export default async function Tender({ params, searchParams }: { params: Promise
           <Card title="Open for bids">
             <form action={openTender} className="flex flex-wrap items-end gap-3">
               <input type="hidden" name="id" value={t.id} />
-              <div><label htmlFor="deadline" className="mb-1 block text-xs text-text-2">Bidding closes (optional)</label><input id="deadline" name="deadline" type="datetime-local" className={inputCls} /></div>
+              <div><label htmlFor="deadline" className="mb-1 block text-xs text-muted">Bidding closes (optional)</label><input id="deadline" name="deadline" type="datetime-local" className={inputCls} /></div>
               <button className={btnCls}>Open tender</button>
             </form>
-            <p className="mt-2 text-xs text-text-2">You need a published reading key first (Procurement page). Vendors cannot see a draft.</p>
+            <p className="mt-2 text-xs text-muted">You need a published reading key first (Procurement page). Vendors cannot see a draft.</p>
           </Card>
         )}
         {reviewer && t.status === "open" && (
           <Card title="Bidding" right={<Badge tone="sim">{bidCount ?? 0} SEALED BID{bidCount === 1 ? "" : "S"}</Badge>}>
-            <p className="mb-3 text-sm text-text-2">Bids are ciphertext. Closing bidding releases them to reviewers, who open them with their own reading keys. Closing cannot be undone. Closing early is allowed and is recorded in the audit log.</p>
+            <p className="mb-3 text-sm text-muted">Bids are ciphertext. Closing bidding releases them to reviewers, who open them with their own reading keys. Closing cannot be undone. Closing early is allowed and is recorded in the audit log.</p>
             <form action={closeBidding}><input type="hidden" name="id" value={t.id} /><button className={btnCls} disabled={!bidCount}>Close bidding</button></form>
           </Card>
         )}
@@ -67,18 +67,18 @@ export default async function Tender({ params, searchParams }: { params: Promise
         {milestones && milestones.length > 0 && (
           <Card title="Milestone plan" right={<Badge tone="pending">ESCROW NOT FUNDED FROM THIS APP</Badge>}>
             <ul className="divide-y divide-line text-sm">{milestones.map((m) => <li key={m.idx} className="flex justify-between py-2"><span>{m.idx}. {m.title}</span><span>{formatQor(m.amount)} QOR · {m.status}</span></li>)}</ul>
-            <p className="mt-3 text-xs text-text-2">The plan is recorded. Funding the escrow and releasing milestones on chain still need a signing step that is not wired to the web app. The deployed MilestoneEscrow contract and a real testnet run are on the Live Proof page.</p>
+            <p className="mt-3 text-xs text-muted">The plan is recorded. Funding the escrow and releasing milestones on chain still need a signing step that is not wired to the web app. The deployed MilestoneEscrow contract and a real testnet run are on the Live Proof page.</p>
           </Card>
         )}
 
         {isVendor && (
           <Card title="Your bid">
             {own ? <p className="text-sm">You submitted a sealed bid on {new Date(own.created_at).toISOString().slice(0, 10)}. <Badge tone="live">SEALED</Badge> It can only be read by the organisation&apos;s reviewers after bidding closes.</p>
-              : t.status !== "open" ? <p className="text-sm text-text-2">This tender is not open for bids.</p>
+              : t.status !== "open" ? <p className="text-sm text-muted">This tender is not open for bids.</p>
               : <BidForm tenderId={t.id} reviewers={(keys ?? []) as Array<{ user_id: string; mlkem_public: string; x25519_public: string }>} budgetQor={formatQor(t.budget)} />}
           </Card>
         )}
-        {!reviewer && !isVendor && <p className="text-sm text-text-2">Your role ({s.org.role}) can view this tender but not bid on it or open bids.</p>}
+        {!reviewer && !isVendor && <p className="text-sm text-muted">Your role ({s.org.role}) can view this tender but not bid on it or open bids.</p>}
       </div>
     </>
   );

@@ -73,8 +73,8 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader title="Approvals" description="Payments that need a human yes. Each request is tied to its exact amount, recipient and expiry by a hash that is re-checked before you can approve. The person who made a request can never approve it." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-panel px-3 py-2 text-sm">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{sp.error ?? error?.message}</p>}
+      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-surface px-3 py-2 text-sm">{sp.msg}</p>}
+      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error ?? error?.message}</p>}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
@@ -89,43 +89,43 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
             return (
               <Card key={t.id} title={`${formatQor(t.amount)} QOR`} right={<span className="flex gap-2"><Badge tone={STATE_TONE[t.state] ?? "neutral"}>{t.state.replace("_", " ")}</Badge><Badge tone="sim" /></span>}>
                 <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[8rem_1fr]">
-                  <dt className="text-text-2">To</dt><dd className="break-all font-mono text-xs">{payroll ? `Payroll ${payroll.period}: ${payroll.items.length} recipients` : t.recipient}</dd>
-                  {payroll && (<><dt className="text-text-2">Lines</dt><dd><ul className="space-y-0.5 text-xs">{payroll.items.map((l, i) => <li key={i} className="flex flex-wrap justify-between gap-2"><span>{l.name} <span className="break-all font-mono text-text-2">{l.address}</span></span><span>{l.amountQor} QOR</span></li>)}</ul></dd></>)}
-                  <dt className="text-text-2">Purpose</dt><dd>{purpose ?? "-"}</dd>
-                  <dt className="text-text-2">Approvals</dt><dd>{decisions.filter((d) => d.decision === "approve").length} of {t.required_approvals} needed{decisions.some((d) => d.decision === "reject") ? ", rejected" : ""}</dd>
-                  <dt className="text-text-2">Expires</dt><dd>{new Date(t.expires_at).toISOString().replace("T", " ").slice(0, 16)} UTC</dd>
-                  <dt className="text-text-2">Hash check</dt><dd>{ok ? <span className="text-[var(--ok-text)]">Matches the stored fields</span> : <span className="text-[var(--fail-text)]">DOES NOT MATCH, do not approve</span>} <span className="break-all font-mono text-xs text-text-2">{t.payment_hash.slice(0, 18)}…</span></dd>
+                  <dt className="text-muted">To</dt><dd className="break-all font-mono text-xs">{payroll ? `Payroll ${payroll.period}: ${payroll.items.length} recipients` : t.recipient}</dd>
+                  {payroll && (<><dt className="text-muted">Lines</dt><dd><ul className="space-y-0.5 text-xs">{payroll.items.map((l, i) => <li key={i} className="flex flex-wrap justify-between gap-2"><span>{l.name} <span className="break-all font-mono text-muted">{l.address}</span></span><span>{l.amountQor} QOR</span></li>)}</ul></dd></>)}
+                  <dt className="text-muted">Purpose</dt><dd>{purpose ?? "-"}</dd>
+                  <dt className="text-muted">Approvals</dt><dd>{decisions.filter((d) => d.decision === "approve").length} of {t.required_approvals} needed{decisions.some((d) => d.decision === "reject") ? ", rejected" : ""}</dd>
+                  <dt className="text-muted">Expires</dt><dd>{new Date(t.expires_at).toISOString().replace("T", " ").slice(0, 16)} UTC</dd>
+                  <dt className="text-muted">Hash check</dt><dd>{ok ? <span className="text-[var(--live)]">Matches the stored fields</span> : <span className="text-[var(--bad)]">DOES NOT MATCH, do not approve</span>} <span className="break-all font-mono text-xs text-muted">{t.payment_hash.slice(0, 18)}…</span></dd>
                 </dl>
                 {open && canAct && (
-                  mine ? <p className="mt-3 text-sm text-text-2">You made this request, so someone else has to decide it.</p>
-                  : iDecided ? <p className="mt-3 text-sm text-text-2">You have already decided this request.</p>
+                  mine ? <p className="mt-3 text-sm text-muted">You made this request, so someone else has to decide it.</p>
+                  : iDecided ? <p className="mt-3 text-sm text-muted">You have already decided this request.</p>
                   : (
                     <form action={decide} className="mt-3 flex gap-2">
                       <input type="hidden" name="id" value={t.id} />
                       <button name="decision" value="approve" className={btnCls}>Approve</button>
-                      <button name="decision" value="reject" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--well)]">Reject</button>
+                      <button name="decision" value="reject" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--neutral-bg)]">Reject</button>
                     </form>
                   )
                 )}
-                {open && !canAct && <p className="mt-3 text-sm text-text-2">Your role ({s.org!.role}) cannot decide payments.</p>}
-                {t.state === "APPROVED" && <p className="mt-3 text-sm text-text-2">Approved in this app only. Nothing has been executed on chain.</p>}
+                {open && !canAct && <p className="mt-3 text-sm text-muted">Your role ({s.org!.role}) cannot decide payments.</p>}
+                {t.state === "APPROVED" && <p className="mt-3 text-sm text-muted">Approved in this app only. Nothing has been executed on chain.</p>}
               </Card>
             );
           })}
         </div>
 
         <Card title="Create a test request">
-          {!canAct ? <p className="text-sm text-text-2">Only finance roles can create requests.</p> : (
+          {!canAct ? <p className="text-sm text-muted">Only finance roles can create requests.</p> : (
             <form action={requestApproval} className="space-y-3">
-              <div><label htmlFor="to" className="mb-1 block text-xs text-text-2">Recipient (0x…)</label><input id="to" name="to" required className={inputCls} placeholder="0x…" /></div>
-              <div><label htmlFor="amount" className="mb-1 block text-xs text-text-2">Amount (QOR)</label><input id="amount" name="amount" required inputMode="decimal" className={inputCls} defaultValue="5" /></div>
-              <div><label htmlFor="purpose" className="mb-1 block text-xs text-text-2">Purpose</label><input id="purpose" name="purpose" required minLength={3} maxLength={280} className={inputCls} placeholder="October design work" /></div>
+              <div><label htmlFor="to" className="mb-1 block text-xs text-muted">Recipient (0x…)</label><input id="to" name="to" required className={inputCls} placeholder="0x…" /></div>
+              <div><label htmlFor="amount" className="mb-1 block text-xs text-muted">Amount (QOR)</label><input id="amount" name="amount" required inputMode="decimal" className={inputCls} defaultValue="5" /></div>
+              <div><label htmlFor="purpose" className="mb-1 block text-xs text-muted">Purpose</label><input id="purpose" name="purpose" required minLength={3} maxLength={280} className={inputCls} placeholder="October design work" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label htmlFor="required" className="mb-1 block text-xs text-text-2">Approvals needed</label><input id="required" name="required" type="number" min={1} max={10} defaultValue={1} className={inputCls} /></div>
-                <div><label htmlFor="hours" className="mb-1 block text-xs text-text-2">Valid for (hours)</label><input id="hours" name="hours" type="number" min={1} max={168} defaultValue={24} className={inputCls} /></div>
+                <div><label htmlFor="required" className="mb-1 block text-xs text-muted">Approvals needed</label><input id="required" name="required" type="number" min={1} max={10} defaultValue={1} className={inputCls} /></div>
+                <div><label htmlFor="hours" className="mb-1 block text-xs text-muted">Valid for (hours)</label><input id="hours" name="hours" type="number" min={1} max={168} defaultValue={24} className={inputCls} /></div>
               </div>
               <button className={btnCls} type="submit">Request approval</button>
-              <p className="text-xs text-text-2">Simulation: it records the request, the decisions and an audit trail. It does not move any QOR.</p>
+              <p className="text-xs text-muted">Simulation: it records the request, the decisions and an audit trail. It does not move any QOR.</p>
             </form>
           )}
         </Card>

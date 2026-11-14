@@ -1,4 +1,73 @@
 @import "tailwindcss";
-/* The palette, type and recipes live in components/sodium (imported in the root layout). This file only brings in
-   Tailwind's base and the dark variant, which follows Sodium's data-theme attribute. */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #f0f0ec;
+  --border: #deded8;
+  --text: #1b1d1f;
+  --muted: #5d6368;
+  --accent: #0f6b62;
+  --accent-ink: #ffffff;
+  --live: #0f6b62;
+  --live-bg: #e1f1ee;
+  --sim: #7a5a00;
+  --sim-bg: #f8efd2;
+  --warn: #9a3d12;
+  --warn-bg: #fbe6da;
+  --bad: #a3202c;
+  --bad-bg: #fbe1e3;
+  --neutral-bg: #ebebe6;
+}
+.dark {
+  --bg: #121414;
+  --surface: #1a1d1d;
+  --surface-2: #222626;
+  --border: #2f3434;
+  --text: #ececE8;
+  --muted: #9aa1a5;
+  --accent: #4fb8aa;
+  --accent-ink: #0b1311;
+  --live: #6fd1c3;
+  --live-bg: #123530;
+  --sim: #e3c15c;
+  --sim-bg: #3a3012;
+  --warn: #f0a77d;
+  --warn-bg: #3b2416;
+  --bad: #f1888f;
+  --bad-bg: #3d1c20;
+  --neutral-bg: #262a2a;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* Nested radii: a control (8) sits inside a card (12) with 16 to 20 of padding between. */
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.75rem;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.5; }
+/* Hand-written buttons and links get the same quick, named transitions as the shared ones. */
+@layer base {
+  button, a, summary { transition-property: color, background-color, border-color, opacity, transform; }
+}
+/* Figures line up in columns everywhere. */
+table, dl, .tabular { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

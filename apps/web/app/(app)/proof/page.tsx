@@ -56,11 +56,11 @@ export default async function Proof() {
                   <li key={c.hash} className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                       <p className={refused ? "font-medium" : ""}>{c.label}</p>
-                      <a className="break-all font-mono text-[11px] text-text-2 underline" href={link(c)} target="_blank" rel="noreferrer">{c.hash}</a>
-                      {refused && c.reason && <p className="text-xs text-text-2">Expected refusal: <span className="font-mono">{c.reason}</span></p>}
+                      <a className="break-all font-mono text-[11px] text-muted underline" href={link(c)} target="_blank" rel="noreferrer">{c.hash}</a>
+                      {refused && c.reason && <p className="text-xs text-muted">Expected refusal: <span className="font-mono">{c.reason}</span></p>}
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      {c.height && <span className="font-mono text-xs text-text-2">block {c.height}</span>}
+                      {c.height && <span className="font-mono text-xs text-muted">block {c.height}</span>}
                       <Badge tone={!ok ? "failed" : refused ? "approval" : "live"}>{!ok ? `EXPECTED ${c.expect.toUpperCase()}, GOT ${c.actual.toUpperCase()}` : refused ? "REFUSED ON-CHAIN" : "CONFIRMED"}</Badge>
                     </div>
                   </li>
@@ -71,7 +71,7 @@ export default async function Proof() {
         ))}
       </div>
 
-      <p className="mt-6 max-w-3xl text-xs text-text-2">What this does not show: the steps were run from scripts, not from this app. No AI made any decision. The owner, approver and reviewer were the same throwaway key, so separation of duties is not demonstrated. The contracts are not source-verified on an explorer and have had no external audit. Revert reasons come from replaying the failed transactions.</p>
+      <p className="mt-6 max-w-3xl text-xs text-muted">What this does not show: the steps were run from scripts, not from this app. No AI made any decision. The owner, approver and reviewer were the same throwaway key, so separation of duties is not demonstrated. The contracts are not source-verified on an explorer and have had no external audit. Revert reasons come from replaying the failed transactions.</p>
     </>
   );
 }
