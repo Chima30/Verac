@@ -10,7 +10,12 @@ export const STATE_TONE: Record<string, "approval" | "live" | "failed" | "pendin
 
 /** Builds the exact payment the approvers will be shown and that the hash binds. Simulation only: nothing is sent to chain. */
 export function buildProposal(orgId: string, input: { to: string; amountQor: number; purpose: string; validHours: number }): { proposal: PaymentProposal; hash: `0x${string}`; weiAmount: string } {
-  const weiAmount = qorToWei(input.amountQor);
+  return buildProposalWei(orgId, { to: input.to, weiAmount: qorToWei(input.amountQor), purpose: input.purpose, validHours: input.validHours });
+}
+
+/** Same, for an amount already in base units (used where the amount is stored exactly, such as a milestone). */
+export function buildProposalWei(orgId: string, input: { to: string; weiAmount: string; purpose: string; validHours: number }): { proposal: PaymentProposal; hash: `0x${string}`; weiAmount: string } {
+  const weiAmount = input.weiAmount;
   const proposal: PaymentProposal = {
     organizationId: orgId,
     agent: "PaymentAgent",

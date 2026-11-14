@@ -43,3 +43,18 @@ export async function sealBid(tenderId: string, recipients: Array<{ mlkem: strin
 export function openBid(tenderId: string, envelopeText: string, keys: SealKeyPair): string {
   return dec.decode(open({ chainId: CHAIN_ID, purpose: `bid:${tenderId}`, aad: enc.encode(tenderId), envelope: envelopeFromText(envelopeText), keys }));
 }
+
+/** Milestone evidence uses the same construction as bids, bound to its own milestone id. */
+export async function sealEvidence(milestoneId: string, recipients: Array<{ mlkem: string; x25519: string }>, plaintext: string): Promise<{ text: string; sha256: string }> {
+  const env = seal({
+    chainId: CHAIN_ID, purpose: `evidence:${milestoneId}`, aad: enc.encode(milestoneId),
+    recipients: recipients.map((r) => recipientOf({ mlkemPublicKey: fromHex(r.mlkem), x25519PublicKey: fromHex(r.x25519) })),
+    plaintext: enc.encode(plaintext),
+  });
+  const text = envelopeToText(env);
+  const sha256 = toHex(new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(text))));
+  return { text, sha256 };
+}
+export function openEvidence(milestoneId: string, envelopeText: string, keys: SealKeyPair): string {
+  return dec.decode(open({ chainId: CHAIN_ID, purpose: `evidence:${milestoneId}`, aad: enc.encode(milestoneId), envelope: envelopeFromText(envelopeText), keys }));
+}

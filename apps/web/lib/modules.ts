@@ -24,8 +24,6 @@ export const MODULES: Record<string, ModuleInfo> = {
     exists: ["ArbitrageAgent spec (market.read only)"], missing: ["Quote collection", "Profit calculator UI"] },
   grants: { title: "Grants", description: "Grant applications, evaluation and milestone funding.", agent: "GrantAgent",
     exists: ["GrantAgent spec"], missing: ["Application UI", "Evaluation prompts"] },
-  milestones: { title: "Milestones", description: "Milestone evidence review and escrow release.", agent: "MilestoneAgent",
-    exists: ["MilestoneEscrow contract with release, dispute and refund paths"], missing: ["Evidence upload", "Release UI", "Deployed escrow"] },
   governance: { title: "DAO Governance", description: "Proposal summaries and treasury impact analysis.", agent: "GovernanceAgent",
     exists: ["GovernanceAgent spec (does not vote or execute)"], missing: ["Proposal ingestion", "Impact analysis UI"] },
   disputes: { title: "Disputes", description: "Evidence summaries and resolution proposals.", agent: "DisputeAgent",
