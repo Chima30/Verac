@@ -16,8 +16,6 @@ export const MODULES: Record<string, ModuleInfo> = {
   invoices: { title: "Bills and Invoices", description: "Invoice intake, fraud checks, and paying approved bills.", agent: "InvoiceFraudAgent",
     exists: ["InvoiceFraudAgent spec (no pay or approve tools)", "Unique constraint on org, vendor and invoice number in the schema"],
     missing: ["Invoice upload and extraction", "Payment execution wiring"] },
-  revenue: { title: "Revenue", description: "Customer invoices and on-chain receipt reconciliation.", agent: "RevenueAgent",
-    exists: ["RevenueAgent spec"], missing: ["Invoice issuing", "Receipt watcher"] },
   strategies: { title: "DCA and Rebalancing", description: "Scheduled buys and portfolio rebalancing. Simulation only until a verified venue exists.", agent: "StrategyAgent",
     exists: ["StrategyAgent spec (market.read, proposes only)"], missing: ["Strategy builder", "Verified venue (none identified, so everything stays SIMULATION)"] },
   arbitrage: { title: "Arbitrage Lab", description: "Net-profit-after-fees opportunity analysis. Simulation only.", agent: "ArbitrageAgent",
