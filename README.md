@@ -51,7 +51,7 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Deterministic policy engine + payment hash (matches Solidity byte for byte) | Implemented | 14 Vitest tests + cross-language vector |
 | Payment pipeline, state machine, idempotency | Implemented (in-memory store) | 22 Vitest tests |
 | 15 agent specs, tool allow-lists, signed replay-protected messaging | Implemented | same suite |
-| Gemini provider (free-tier limits, retries, quota pause, schema validation) | Implemented; one real call per model made 2026-11-14 (default `gemini-3.5-flash-lite` answers in about 1.5 to 3 s; 5 of 8 other models timed out or errored) | 24 mocked Vitest tests + `pnpm ai:probe`; one agent wired (Policy Builder) |
+| Gemini provider (free-tier limits, retries, quota pause, schema validation) | Implemented; one real call per model made 2026-11-14 (default `gemini-3.5-flash-lite` answers in about 1.5 to 3 s; 5 of 8 other models timed out or errored) | 24 mocked Vitest tests + `pnpm ai:probe`; two agents wired (Policy Builder, Invoice explanations) |
 | Postgres schema + RLS (31 tables, migrations 0001 and 0002) | Implemented; a policy bug found on real Supabase was fixed | 15 tenant-isolation tests on PGlite; sign-up, organisation creation and contract linking confirmed on a real Supabase project |
 | Live testnet **reads** (chain id, block, AA config, limits) | Verified 2026-11-14 | `pnpm chain:probe` |
 | Web app shell: 27 routes, light/dark, mobile nav | Implemented and deployed read-only at https://verac-web.vercel.app (all 27 routes return 200) | checked 2026-11-14 |
@@ -63,7 +63,8 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Contract deployment | **Deployed to Diana testnet 2026-11-14** (5 contracts, see deployments/diana-testnet.json) | bytecode + owner read back on-chain |
 | Real payment, human approval, escrow funding, 60 QOR milestone release, real rejections | **Done on testnet (shell scripts, not the web app)**: 3 successful payments or releases plus 4 on-chain denials | docs/LIVE_RUN_2026-11-14.md |
 | AI Policy Builder (plain English → draft spending policy) | Implemented and tried live on Gemini 2026-11-14 (normal request, prompt injection, contradictory numbers, secret in text). Output is a draft only; deterministic code converts it and the policy validator checks it; nothing is activated by AI. Only enabled where `GEMINI_API_KEY` is set (local; not on the public site) | Vitest for the converter + validator; live runs manual |
-| Other AI behaviours (fraud review, procurement scoring) | Provider ready; prompts/schemas **not written** | n/a |
+| Invoice fraud check (/invoices) | Implemented. Fixed rules decide block / hold / pass (duplicate, changed payout address, lookalike vendor, outlier, just-under-limit, bad dates, pressure wording, instructions aimed at an AI). Gemini only explains a stopped invoice; it cannot change the verdict. Tried live 2026-11-14. **SIMULATION**: you paste the invoice and sample history; no database history, upload or payment is connected yet | 12 Vitest tests for the rules; live runs manual |
+| Other AI behaviours (procurement scoring) | Provider ready; prompts/schemas **not written** | n/a |
 | DCA / arbitrage / dispute / governance / payroll modules | **Not started** | n/a |
 
 Full mapping: [docs/REQUIREMENTS_MATRIX.md](docs/REQUIREMENTS_MATRIX.md). Plan: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).

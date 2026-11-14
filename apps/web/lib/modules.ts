@@ -21,7 +21,7 @@ export const MODULES: Record<string, ModuleInfo> = {
     exists: ["Append-only audit_events table with trigger"], missing: ["Live feed (needs database and auth)"] },
   invoices: { title: "Bills and Invoices", description: "Invoice intake, fraud checks, and paying approved bills.", agent: "InvoiceFraudAgent",
     exists: ["InvoiceFraudAgent spec (no pay or approve tools)", "Unique constraint on org, vendor and invoice number in the schema"],
-    missing: ["Invoice upload and extraction", "Fraud rules and Gemini prompts", "Payment execution wiring"] },
+    missing: ["Invoice upload and extraction", "Payment execution wiring"] },
   payroll: { title: "Payroll", description: "Payroll batches prepared from contributor records.", agent: "PayrollAgent",
     exists: ["PayrollAgent spec (deterministic, proposes only)"], missing: ["Contributor records UI", "Batch builder", "Execution"] },
   revenue: { title: "Revenue", description: "Customer invoices and on-chain receipt reconciliation.", agent: "RevenueAgent",
