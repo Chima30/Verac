@@ -97,3 +97,4 @@ export class QoreReader {
 }
 export * from "./contracts";
 export * from "./execution";
+export * from "./signer";
