@@ -1,4 +1,4 @@
-import { Activity, Banknote, Bell, Boxes, Building2, ClipboardCheck, FileLock2, Flag, FlaskConical, Gauge, Gavel, HandCoins, Landmark, ListChecks, Plug, Receipt, ScanSearch, ScrollText, ShieldAlert, ShieldCheck, Swords, TrendingUp, Users, Vote, Wallet, Waypoints, Bot, type LucideIcon } from "lucide-react";
+import { Activity, BadgeCheck, Banknote, Bell, Boxes, Building2, ClipboardCheck, FileLock2, Flag, FlaskConical, Gauge, Gavel, HandCoins, Landmark, ListChecks, Plug, Receipt, ScanSearch, ScrollText, ShieldAlert, ShieldCheck, Swords, TrendingUp, Users, Vote, Wallet, Waypoints, Bot, type LucideIcon } from "lucide-react";
 
 export interface NavItem { href: string; label: string; icon: LucideIcon }
 export interface NavSection { title: string; items: NavItem[] }
@@ -10,6 +10,7 @@ export const NAV: NavSection[] = [
     { href: "/tasks", label: "Tasks", icon: ListChecks },
     { href: "/approvals", label: "Approvals", icon: ClipboardCheck },
     { href: "/activity", label: "Activity", icon: Activity },
+    { href: "/proof", label: "Live Proof", icon: BadgeCheck },
   ] },
   { title: "Finance", items: [
     { href: "/treasury", label: "Treasury", icon: Landmark },
