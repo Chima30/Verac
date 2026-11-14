@@ -6,8 +6,8 @@ milestone payments) without any agent ever holding unrestricted access to the tr
 (native `qorechain-diana`, EVM chain id `9800`). The product name is not final; it lives in one env var
 (`NEXT_PUBLIC_PRODUCT_NAME`).
 
-> **Status: early foundation (2026-11-14).** The security core is implemented and tested; the web app, live
-> on-chain flows and most agent logic are not built yet. See [Status](#status) before judging anything here.
+> **Status: early foundation (2026-11-14).** The security core is implemented and tested; the web app is a
+> read-only shell with a few live pages; module workflows, live on-chain flows and most agent logic are not built yet. See [Status](#status) before judging anything here.
 > Nothing has been deployed, no testnet transaction has been sent, and no external audit has happened.
 
 ## The problem
@@ -54,7 +54,9 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Gemini provider (free-tier limits, retries, quota pause, schema validation) | Implemented, mocked tests only | 24 Vitest tests; **no live Gemini call yet** (needs your key) |
 | Postgres schema + RLS (31 tables) | Implemented | 14 tenant-isolation tests on PGlite (not a Supabase project) |
 | Live testnet **reads** (chain id, block, AA config, limits) | Verified 2026-11-14 | `pnpm chain:probe` |
-| Web app (Next.js UI, all 12 module screens) | **Not started** | n/a |
+| Web app shell: 27 routes, light/dark, mobile nav | Implemented; `next build` and `tsc` pass; all routes return 200 | built 2026-11-14 |
+| Web pages with live behaviour | Dashboard (chain + AI status), agent registry, permission matrix, policy validator, address lookup (balance, PQC, KEM, window, rules) on Diana testnet, integrations | read-only; no signing |
+| Web pages for the 12 modules' workflows | **Placeholders that state what exists and what is missing**; no working controls | needs Supabase, auth, deployed contracts |
 | Wallet connect, PQC key registration, hybrid-signed tx, EVM window open | **Not started** | needs a funded throwaway testnet account |
 | QoreSeal encrypt/decrypt in the vault | **Not started** (package verified on npm) | n/a |
 | Contract deployment, real payment, real rejection | **Not done** | needs a deployer account and your approval |
