@@ -5,7 +5,9 @@
   "description": "Working title: QoreChain AI Operations OS. Controlled, auditable AI agents for organisations, settled on QoreChain.",
   "license": "MIT",
   "packageManager": "pnpm@10.34.9",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
@@ -15,6 +17,7 @@
     "ai:probe": "tsx packages/ai-provider/scripts/probe.ts"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@types/node": "^22.10.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",

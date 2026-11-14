@@ -167,14 +167,14 @@ describe("retry, rate limits and quota", () => {
   it("on persistent 429 pauses the provider, keeps work recoverable, and fails fast afterwards", async () => {
     const c = new FakeClient([apiErr(429, "quota"), apiErr(429, "quota")]);
     const { p, now } = make(c, { GEMINI_FALLBACK_MODEL: "gemini-3.5-flash-lite" });
-    const err = await p.generateStructured(req()).catch((e) => e as AiError);
+    const err = (await p.generateStructured(req()).catch((e: unknown) => e)) as AiError;
     expect(err).toBeInstanceOf(AiError);
     expect(err.code).toBe("QUOTA_EXHAUSTED");
     expect(err.recoverable).toBe(true);
     expect(p.status().state).toBe("quota_paused");
 
     const callsBefore = c.calls.length;
-    const again = await p.generateStructured(req()).catch((e) => e as AiError);
+    const again = (await p.generateStructured(req()).catch((e: unknown) => e)) as AiError;
     expect(again.code).toBe("QUOTA_EXHAUSTED");
     expect(c.calls.length).toBe(callsBefore); // no extra provider call while paused
 
