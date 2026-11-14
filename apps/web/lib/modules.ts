@@ -22,8 +22,6 @@ export const MODULES: Record<string, ModuleInfo> = {
     exists: ["StrategyAgent spec (market.read, proposes only)"], missing: ["Strategy builder", "Verified venue (none identified, so everything stays SIMULATION)"] },
   arbitrage: { title: "Arbitrage Lab", description: "Net-profit-after-fees opportunity analysis. Simulation only.", agent: "ArbitrageAgent",
     exists: ["ArbitrageAgent spec (market.read only)"], missing: ["Quote collection", "Profit calculator UI"] },
-  grants: { title: "Grants", description: "Grant applications, evaluation and milestone funding.", agent: "GrantAgent",
-    exists: ["GrantAgent spec"], missing: ["Application UI", "Evaluation prompts"] },
   vault: { title: "Document Vault", description: "Multi-recipient post-quantum encrypted documents (QoreSeal).", agent: "DocumentAgent",
     exists: ["DocumentAgent spec (never holds plaintext or keys)", "documents and document_recipients tables", "Live QoreSeal KEM-key lookup in the Quantum Simulator page"],
     missing: ["Browser-side encryption and decryption", "Storage upload", "Recipient key registration"] },

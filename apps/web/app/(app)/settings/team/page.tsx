@@ -6,7 +6,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Team Members" };
 
-const ROLES = ["finance_manager", "procurement_manager", "vendor", "security_reviewer", "administrator", "auditor", "employee"];
+const ROLES = ["finance_manager", "procurement_manager", "vendor", "grant_applicant", "dao_member", "security_reviewer", "administrator", "auditor", "employee"];
 
 async function addMember(formData: FormData) {
   "use server";
