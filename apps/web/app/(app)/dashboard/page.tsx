@@ -10,21 +10,21 @@ export default async function Dashboard() {
   const agents = Object.values(AGENTS);
   return (
     <>
-      <PageHeader title="Dashboard" description="Live connection status for QoreChain Diana testnet and the AI provider. Organisation data appears once a Supabase project and sign-in are configured." />
+      <PageHeader title="Dashboard" description="Status of QoreChain Diana testnet and the AI provider, read fresh each time you open this page." />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="QoreChain Diana" value={chain.ok ? "Connected" : "Unreachable"} badge={<Badge tone={chain.ok ? "live" : "unavailable"} />} sub={chain.ok ? `EVM chain id ${chain.chainId}` : chain.error} />
-        <Stat label="Latest EVM block" value={chain.block ?? "n/a"} badge={chain.block ? <Badge tone="live" /> : undefined} />
+        <div className="sm:col-span-2"><Stat large label="Latest EVM block, Diana testnet" value={chain.block ?? "n/a"} badge={chain.block ? <Badge tone="live" /> : <Badge tone="unavailable" />} sub={chain.ok ? `Chain id ${chain.chainId}. Mainnet is disabled.` : chain.error} /></div>
+        <Stat label="QoreChain Diana" value={chain.ok ? "Connected" : "Unreachable"} badge={<Badge tone={chain.ok ? "live" : "unavailable"} />} sub={chain.ok ? "Reads succeed" : "Reads are failing"} />
         <Stat label="Gemini" value={ai.status === "configured" ? ai.model : ai.status === "unconfigured" ? "No API key" : "Invalid config"} badge={<Badge tone={ai.status === "configured" ? "live" : "unavailable"}>{ai.status === "configured" ? "CONFIGURED" : "UNAVAILABLE"}</Badge>} sub={ai.status === "configured" ? "Free tier only" : ai.message} />
-        <Stat label="Agents defined" value={agents.length} sub={`${agents.filter((a) => a.canMoveFunds).length} can move funds, via the pipeline only`} />
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card title="Network"><KV rows={[["Native chain", "qorechain-diana"], ["EVM chain id", "9800"], ["Mainnet", "disabled (refused at startup)"],
-          ["Abstract accounts", chain.aa ? (chain.aa.enabled ? `enabled, max ${chain.aa.maxSessionKeys} session keys, ${chain.aa.maxSpendingRules} rules` : "disabled") : "unknown"]]} /></Card>
-        <Card title="What is not connected yet" right={<Badge tone="pending" />}>
-          <ul className="list-disc space-y-1.5 pl-5 text-sm">
-            <li>Supabase project and sign-in: organisation, task and approval data is not shown.</li>
-            <li>This app does not send transactions. The testnet payments and escrow release were run from scripts (see docs/LIVE_RUN_2026-11-14.md).</li>
-            <li>No AI call is made until a Gemini key is configured.</li>
+          ["Abstract accounts", chain.aa ? (chain.aa.enabled ? `enabled, max ${chain.aa.maxSessionKeys} session keys, ${chain.aa.maxSpendingRules} rules` : "disabled") : "unknown"],
+          ["Agents defined", `${agents.length}, of which ${agents.filter((a) => a.canMoveFunds).length} can move funds, via the pipeline only`]]} /></Card>
+        <Card title="Not wired yet" right={<Badge tone="pending" />}>
+          <ul className="list-disc space-y-2 pl-5 text-sm">
+            <li>This app does not send transactions. Payments, escrow funding and releases are recorded here as approvals. The testnet ones so far were run from scripts (see docs/LIVE_RUN_2026-11-14.md).</li>
+            <li>{ai.status === "configured" ? "AI calls use the free tier only and never change a decision made by the fixed rules." : "AI features are off until a Gemini key is configured on this server."}</li>
+            <li>Document checksums are stored but not anchored on-chain.</li>
           </ul>
         </Card>
       </div>
