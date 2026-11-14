@@ -5,7 +5,7 @@ const config: NextConfig = {
   transpilePackages: ["@qoreops/shared-types", "@qoreops/policy-engine", "@qoreops/ai-provider", "@qoreops/agent-coordinator", "@qoreops/qorechain"],
   // Monorepo: trace server dependencies from the repo root so hoisted packages (@qorechain/sdk) ship to the serverless bundle.
   outputFileTracingRoot: fileURLToPath(new URL("../..", import.meta.url)),
-  serverExternalPackages: ["@qorechain/sdk", "@qorechain/qoreseal"],
+  serverExternalPackages: [],
   poweredByHeader: false,
   async headers() {
     return [{ source: "/(.*)", headers: [
