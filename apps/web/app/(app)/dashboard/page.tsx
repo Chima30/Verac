@@ -14,7 +14,7 @@ export default async function Dashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2"><Stat large label="Latest EVM block, Diana testnet" value={chain.block ?? "n/a"} badge={chain.block ? <Badge tone="live" /> : <Badge tone="unavailable" />} sub={chain.ok ? `Chain id ${chain.chainId}. Mainnet is disabled.` : chain.error} /></div>
         <Stat label="QoreChain Diana" value={chain.ok ? "Connected" : "Unreachable"} badge={<Badge tone={chain.ok ? "live" : "unavailable"} />} sub={chain.ok ? "Reads succeed" : "Reads are failing"} />
-        <Stat label="Gemini" value={ai.status === "configured" ? ai.model : ai.status === "unconfigured" ? "No API key" : "Invalid config"} badge={<Badge tone={ai.status === "configured" ? "live" : "unavailable"}>{ai.status === "configured" ? "CONFIGURED" : "UNAVAILABLE"}</Badge>} sub={ai.status === "configured" ? "Free tier only" : ai.message} />
+        <Stat label="Gemini" value={ai.status === "configured" ? <span className="type-heading">{ai.model}</span> : ai.status === "unconfigured" ? "No API key" : "Invalid config"} badge={<Badge tone={ai.status === "configured" ? "live" : "unavailable"}>{ai.status === "configured" ? "CONFIGURED" : "UNAVAILABLE"}</Badge>} sub={ai.status === "configured" ? "Free tier only" : ai.message} />
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card title="Network"><KV rows={[["Native chain", "qorechain-diana"], ["EVM chain id", "9800"], ["Mainnet", "disabled (refused at startup)"],
