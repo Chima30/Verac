@@ -5,7 +5,7 @@ import { Badge, btnCls, inputCls } from "@/components/ui";
 import { fingerprint, isSeedHex, keysFromSeedHex, loadSeed, newSeedHex, publicKeysHex, saveSeed } from "@/lib/seal-browser";
 
 /** Creates, backs up, restores and publishes a reviewer's reading key. The private seed never leaves this browser. */
-export function ReviewerKey({ orgId, userId, publishedFingerprint }: { orgId: string; userId: string; publishedFingerprint: string | null }) {
+export function ReviewerKey({ orgId, userId, publishedFingerprint, publish: publishAction, purpose = "Bids" }: { orgId: string; userId: string; publishedFingerprint: string | null; publish?: (mlkem: string, x25519: string) => Promise<{ error?: string }>; purpose?: string }) {
   const [seed, setSeed] = useState<string | null>(null);
   const [fp, setFp] = useState<string | null>(null);
   const [restore, setRestore] = useState("");
@@ -42,7 +42,7 @@ export function ReviewerKey({ orgId, userId, publishedFingerprint }: { orgId: st
     if (!seed) return;
     setBusy(true); setErr(null);
     const k = publicKeysHex(keysFromSeedHex(seed));
-    const r = await publishReadingKey(k.mlkem, k.x25519);
+    const r = await (publishAction ?? publishReadingKey)(k.mlkem, k.x25519);
     setBusy(false);
     if (r.error) setErr(r.error);
   }
@@ -51,7 +51,7 @@ export function ReviewerKey({ orgId, userId, publishedFingerprint }: { orgId: st
   const mismatch = publishedFingerprint && fp && publishedFingerprint !== fp;
   return (
     <div className="space-y-3 text-sm">
-      <p className="text-muted">Bids are sealed so that only reviewers holding a reading key can open them. Your key is created in this browser and never sent to the server. <strong>If you lose it, the bids sealed to it cannot be recovered.</strong> Download the backup.</p>
+      <p className="text-muted">{purpose} are sealed so that only people holding a reading key can open them. Your key is created in this browser and never sent to the server. <strong>If you lose it, everything sealed to it cannot be recovered.</strong> Download the backup. The same key is used for bids, evidence and the vault.</p>
       {publishedFingerprint && <p>Published key fingerprint: <span className="font-mono text-xs">{publishedFingerprint}</span> <Badge tone="live">PUBLISHED</Badge></p>}
       {mismatch && <p role="alert" className="text-[var(--bad)]">The key stored in this browser does not match the one you published. Restore your backup, or you will not be able to open bids.</p>}
       {!seed ? (
@@ -66,7 +66,7 @@ export function ReviewerKey({ orgId, userId, publishedFingerprint }: { orgId: st
             <button className="rounded-md border border-line px-3 py-2 text-sm" onClick={download}>Download backup</button>
             {!publishedFingerprint && <button className={btnCls} disabled={busy} onClick={publish}>{busy ? "Publishing…" : "Publish my public key"}</button>}
           </div>
-          {!publishedFingerprint && <p className="text-xs text-muted">Download the backup first. Publishing shares only the public half so vendors can seal bids to you.</p>}
+          {!publishedFingerprint && <p className="text-xs text-muted">Download the backup first. Publishing shares only the public half so others can seal to you.</p>}
         </div>
       )}
       {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
