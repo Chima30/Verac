@@ -19,3 +19,4 @@ playwright-report/
 keystore*
 
 .secrets/
+.claude/skills/impeccable
