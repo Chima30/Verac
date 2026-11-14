@@ -51,9 +51,9 @@ export function ReviewerKey({ orgId, userId, publishedFingerprint, publish: publ
   const mismatch = publishedFingerprint && fp && publishedFingerprint !== fp;
   return (
     <div className="space-y-3 text-sm">
-      <p className="text-muted">{purpose} are sealed so that only people holding a reading key can open them. Your key is created in this browser and never sent to the server. <strong>If you lose it, everything sealed to it cannot be recovered.</strong> Download the backup. The same key is used for bids, evidence and the vault.</p>
+      <p className="text-text-2">{purpose} are sealed so that only people holding a reading key can open them. Your key is created in this browser and never sent to the server. <strong>If you lose it, everything sealed to it cannot be recovered.</strong> Download the backup. The same key is used for bids, evidence and the vault.</p>
       {publishedFingerprint && <p>Published key fingerprint: <span className="font-mono text-xs">{publishedFingerprint}</span> <Badge tone="live">PUBLISHED</Badge></p>}
-      {mismatch && <p role="alert" className="text-[var(--bad)]">The key stored in this browser does not match the one you published. Restore your backup, or you will not be able to open bids.</p>}
+      {mismatch && <p role="alert" className="text-[var(--fail-text)]">The key stored in this browser does not match the one you published. Restore your backup, or you will not be able to open bids.</p>}
       {!seed ? (
         <div className="space-y-2">
           <button className={btnCls} onClick={create}>Create my reading key</button>
@@ -66,10 +66,10 @@ export function ReviewerKey({ orgId, userId, publishedFingerprint, publish: publ
             <button className="rounded-md border border-line px-3 py-2 text-sm" onClick={download}>Download backup</button>
             {!publishedFingerprint && <button className={btnCls} disabled={busy} onClick={publish}>{busy ? "Publishing…" : "Publish my public key"}</button>}
           </div>
-          {!publishedFingerprint && <p className="text-xs text-muted">Download the backup first. Publishing shares only the public half so others can seal to you.</p>}
+          {!publishedFingerprint && <p className="text-xs text-text-2">Download the backup first. Publishing shares only the public half so others can seal to you.</p>}
         </div>
       )}
-      {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
+      {err && <p role="alert" className="text-[var(--fail-text)]">{err}</p>}
     </div>
   );
 }

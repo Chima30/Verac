@@ -26,7 +26,7 @@ export default async function OrganisationPage({ searchParams }: { searchParams:
   const s = await getSession();
   if (!s.configured) {
     return (<><PageHeader title="Organisation" description="Organisation profile." badge={<Badge tone="unavailable" />} />
-      <Card><p className="text-sm text-muted">No Supabase project is connected to this deployment, so organisations are unavailable. Setup steps are in docs/SUPABASE_SETUP.md.</p></Card></>);
+      <Card><p className="text-sm text-text-2">No Supabase project is connected to this deployment, so organisations are unavailable. Setup steps are in docs/SUPABASE_SETUP.md.</p></Card></>);
   }
   if (!s.user) redirect("/login?next=/settings/organization");
   if (!s.org) redirect("/onboarding");
@@ -36,7 +36,7 @@ export default async function OrganisationPage({ searchParams }: { searchParams:
   return (
     <>
       <PageHeader title="Organisation" description="Your tenant. Data below is read from your Supabase project as you, so row-level security decides what you can see." />
-      {s.error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{s.error}</p>}
+      {s.error && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{s.error}</p>}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Profile"><KV rows={[["Name", o.name], ["Your role", o.role], ["Signed in as", s.user.email ?? s.user.id], ["Organisation id", o.id]]} /></Card>
         <Card title="Treasury contracts" right={<Badge tone={isLinked ? "live" : "pending"}>{isLinked ? "LINKED" : "NOT LINKED"}</Badge>}>
@@ -44,12 +44,12 @@ export default async function OrganisationPage({ searchParams }: { searchParams:
             <KV rows={[...(Object.values(o.contracts).includes(o.treasuryAddress ?? "") ? [] : [["Treasury vault", o.treasuryAddress ?? ""] as [string, string]]), ...Object.entries(o.contracts).map(([k, v]): [string, string] => [k, String(v)])]} />
           ) : (
             <form action={linkContracts} className="space-y-3">
-              <p className="text-sm text-muted">Record the contracts deployed to Diana testnet on 2026-11-14 (see Live Proof) as this organisation&apos;s treasury. This only saves addresses to your database; it moves no funds.</p>
+              <p className="text-sm text-text-2">Record the contracts deployed to Diana testnet on 2026-11-14 (see Live Proof) as this organisation&apos;s treasury. This only saves addresses to your database; it moves no funds.</p>
               <button className={btnCls} type="submit">Link deployed testnet contracts</button>
             </form>
           )}
-          {linked && <p role="status" className="mt-3 text-sm text-[var(--live)]">Saved.</p>}
-          {error && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{error}</p>}
+          {linked && <p role="status" className="mt-3 text-sm text-[var(--ok-text)]">Saved.</p>}
+          {error && <p role="alert" className="mt-3 text-sm text-[var(--fail-text)]">{error}</p>}
         </Card>
       </div>
     </>

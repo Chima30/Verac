@@ -30,14 +30,14 @@ export default async function Procurement({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader title="Procurement" description="Run a tender: vendors seal their bids so nobody can read them until bidding closes, reviewers open them in their own browser, fixed rules check and rank them, and a person awards the winner." badge={<Badge tone="sim" />} />
-      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error ?? error?.message}</p>}
+      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{sp.error ?? error?.message}</p>}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
           {!tenders || tenders.length === 0 ? <EmptyState title="No tenders yet">{reviewer ? "Create a tender on the right. First create and publish your reading key below it, so vendors can seal bids to you." : "Nothing is open for bids right now."}</EmptyState> : (
             <Card title={`${tenders.length} tender${tenders.length === 1 ? "" : "s"}`}>
               <ul className="divide-y divide-line text-sm">{tenders.map((t) => (
                 <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-                  <span><Link className="font-medium underline" href={`/procurement/${t.id}`}>{t.title}</Link> <span className="text-xs text-muted">budget {formatQor(t.budget)} QOR</span></span>
+                  <span><Link className="font-medium underline" href={`/procurement/${t.id}`}>{t.title}</Link> <span className="text-xs text-text-2">budget {formatQor(t.budget)} QOR</span></span>
                   <Badge tone={TONE[t.status] ?? "neutral"}>{t.status.toUpperCase()}</Badge>
                 </li>
               ))}</ul>
@@ -49,14 +49,14 @@ export default async function Procurement({ searchParams }: { searchParams: Prom
             <Card title="Your reading key"><ReviewerKey orgId={s.org.id} userId={s.user.id} publishedFingerprint={published} /></Card>
             <Card title="Create a tender">
               <form action={createTender} className="space-y-3">
-                <div><label htmlFor="title" className="mb-1 block text-xs text-muted">Title</label><input id="title" name="title" required minLength={3} maxLength={160} className={inputCls} /></div>
-                <div><label htmlFor="requirements" className="mb-1 block text-xs text-muted">Requirements (shown to vendors)</label><textarea id="requirements" name="requirements" required minLength={10} maxLength={3000} rows={4} className={inputCls} /></div>
-                <div><label htmlFor="budget" className="mb-1 block text-xs text-muted">Budget (QOR)</label><input id="budget" name="budget" required inputMode="decimal" className={inputCls} /></div>
+                <div><label htmlFor="title" className="mb-1 block text-xs text-text-2">Title</label><input id="title" name="title" required minLength={3} maxLength={160} className={inputCls} /></div>
+                <div><label htmlFor="requirements" className="mb-1 block text-xs text-text-2">Requirements (shown to vendors)</label><textarea id="requirements" name="requirements" required minLength={10} maxLength={3000} rows={4} className={inputCls} /></div>
+                <div><label htmlFor="budget" className="mb-1 block text-xs text-text-2">Budget (QOR)</label><input id="budget" name="budget" required inputMode="decimal" className={inputCls} /></div>
                 <button className={btnCls} type="submit">Create draft</button>
               </form>
             </Card>
           </div>
-        ) : <Card title="Vendors"><p className="text-sm text-muted">Open a tender to read its requirements and submit a sealed bid. Only organisation reviewers can open bids, and only after bidding closes.</p></Card>}
+        ) : <Card title="Vendors"><p className="text-sm text-text-2">Open a tender to read its requirements and submit a sealed bid. Only organisation reviewers can open bids, and only after bidding closes.</p></Card>}
       </div>
     </>
   );

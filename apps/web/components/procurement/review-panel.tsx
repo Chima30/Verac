@@ -71,7 +71,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
         <>
           <div className="flex flex-wrap items-center gap-3">
             <button className={btnCls} onClick={decryptAll} disabled={hasKey === false}>Open bids in this browser</button>
-            {hasKey === false && <span className="text-[var(--bad)]">This browser has no reading key.</span>}
+            {hasKey === false && <span className="text-[var(--fail-text)]">This browser has no reading key.</span>}
             <Badge tone="neutral">DECRYPTED ONLY IN YOUR BROWSER</Badge>
           </div>
           {decrypted && bids.length > 0 && (
@@ -83,7 +83,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
           )}
         </>
       )}
-      {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
+      {err && <p role="alert" className="text-[var(--fail-text)]">{err}</p>}
 
       <div className="space-y-3">
         {bids.map((b, i) => {
@@ -99,22 +99,22 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
                   <Badge tone="neutral">SEALED {b.envelope_sha256.slice(0, 8)}…</Badge>
                 </span>
               </div>
-              {!st && <p className="mt-2 text-muted">Sealed. Open the bids in this browser to read it.</p>}
-              {st?.error && <p className="mt-2 text-[var(--bad)]">{st.error}</p>}
+              {!st && <p className="mt-2 text-text-2">Sealed. Open the bids in this browser to read it.</p>}
+              {st?.error && <p className="mt-2 text-[var(--fail-text)]">{st.error}</p>}
               {p && (
                 <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-[8rem_1fr]">
-                  <dt className="text-muted">Price</dt><dd>{p.amountQor} QOR</dd>
-                  <dt className="text-muted">Delivery</dt><dd>{p.deliveryDays} days</dd>
-                  <dt className="text-muted">Approach</dt><dd className="whitespace-pre-wrap break-words">{p.approach}</dd>
-                  {p.references && <><dt className="text-muted">References</dt><dd className="break-words">{p.references}</dd></>}
+                  <dt className="text-text-2">Price</dt><dd>{p.amountQor} QOR</dd>
+                  <dt className="text-text-2">Delivery</dt><dd>{p.deliveryDays} days</dd>
+                  <dt className="text-text-2">Approach</dt><dd className="whitespace-pre-wrap break-words">{p.approach}</dd>
+                  {p.references && <><dt className="text-text-2">References</dt><dd className="break-words">{p.references}</dd></>}
                 </dl>
               )}
-              {st?.text && !p && <p className="mt-2 text-[var(--bad)]">The bid opened but is not in the expected format.</p>}
+              {st?.text && !p && <p className="mt-2 text-[var(--fail-text)]">The bid opened but is not in the expected format.</p>}
               {r && (
                 <div className="mt-2 border-t border-line pt-2">
                   {r.eligible && <p>Price score {r.priceScore}/10 · Delivery score {r.deliveryScore}/10{r.fit !== undefined ? ` · AI fit ${r.fit}/10` : ""} · <strong>Total {r.total}</strong></p>}
-                  {r.flags.map((f) => <p key={f.code} className={f.blocking ? "text-[var(--bad)]" : "text-muted"}>{f.blocking ? "Blocking: " : "Note: "}{f.message}</p>)}
-                  {a && <div className="mt-1"><span className="text-xs text-muted">AI notes (advisory):</span>
+                  {r.flags.map((f) => <p key={f.code} className={f.blocking ? "text-[var(--fail-text)]" : "text-text-2"}>{f.blocking ? "Blocking: " : "Note: "}{f.message}</p>)}
+                  {a && <div className="mt-1"><span className="text-xs text-text-2">AI notes (advisory):</span>
                     {a.strengths.map((s) => <p key={s}>+ {s}</p>)}{a.concerns.map((s) => <p key={s}>− {s}</p>)}</div>}
                 </div>
               )}
@@ -122,8 +122,8 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
           );
         })}
       </div>
-      {out?.ai && <p className="text-xs text-muted"><Badge tone="sim">AI ADVISORY, NOT A DECISION</Badge> {out.ai.model}: {out.ai.summary}</p>}
-      {out?.aiError && <p className="text-xs text-muted">AI scoring: {out.aiError}</p>}
+      {out?.ai && <p className="text-xs text-text-2"><Badge tone="sim">AI ADVISORY, NOT A DECISION</Badge> {out.ai.model}: {out.ai.summary}</p>}
+      {out?.aiError && <p className="text-xs text-text-2">AI scoring: {out.aiError}</p>}
 
       {status === "review" && decrypted && (
         <div className="rounded-md border border-line p-3">
@@ -131,7 +131,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
           <div className="space-y-1">
             {bids.map((b, i) => <label key={b.bid_id} className="flex items-center gap-2"><input type="radio" name="pick" checked={pick === b.bid_id} onChange={() => { setPick(b.bid_id); const p = parsed(b.bid_id); if (p?.amountQor && ms.length === 1 && !ms[0]!.amount) setMs([{ title: ms[0]!.title, amount: String(p.amountQor) }]); }} /> {refOf(i)} · {b.vendor_name}{rankedBy.get(refOf(i))?.eligible === false ? " (not ranked)" : ""}</label>)}
           </div>
-          <p className="mb-1 mt-3 text-xs text-muted">Milestones (total must not exceed the budget of {budgetQor} QOR)</p>
+          <p className="mb-1 mt-3 text-xs text-text-2">Milestones (total must not exceed the budget of {budgetQor} QOR)</p>
           {ms.map((m, i) => (
             <div key={i} className="mb-2 flex gap-2">
               <input className={inputCls} value={m.title} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} placeholder="Milestone title" />
@@ -143,7 +143,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
             {ms.length < 10 && <button className="rounded-md border border-line px-3 py-2 text-xs" onClick={() => setMs([...ms, { title: "", amount: "" }])}>Add milestone</button>}
             <button className={btnCls} disabled={awarding} onClick={award}>{awarding ? "Awarding…" : "Award tender"}</button>
           </div>
-          <p className="mt-2 text-xs text-muted">Awarding records the decision and the milestone plan. It does not move any QOR: funding the escrow on chain is a separate, approved step that is not wired to this page yet.</p>
+          <p className="mt-2 text-xs text-text-2">Awarding records the decision and the milestone plan. It does not move any QOR: funding the escrow on chain is a separate, approved step that is not wired to this page yet.</p>
         </div>
       )}
     </div>

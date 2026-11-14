@@ -21,8 +21,8 @@ export default async function Arbitrage({ searchParams }: { searchParams: Promis
   return (
     <>
       {head}
-      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-surface px-3 py-2 text-sm">{sp.msg}</p>}
-      {sp.error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error}</p>}
+      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-panel px-3 py-2 text-sm">{sp.msg}</p>}
+      {sp.error && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{sp.error}</p>}
       <Card title="Net profit calculator"><ArbitrageCalc canSave={canSave} /></Card>
       <h2 className="mb-2 mt-6 text-sm font-medium">Saved inputs</h2>
       <SavedList rows={(data ?? []) as never} canCancel={canSave} back="/arbitrage" />

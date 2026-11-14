@@ -18,7 +18,7 @@ function Section({ title, part, empty }: { title: string; part: Part; empty?: st
       {part.ok ? (
         <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words font-mono text-xs">{part.data === undefined || part.data === null ? (empty ?? "No data returned.") : pretty(part.data)}</pre>
       ) : (
-        <p className="text-sm text-muted">Query failed: {part.error}</p>
+        <p className="text-sm text-text-2">Query failed: {part.error}</p>
       )}
     </Card>
   );
@@ -49,8 +49,8 @@ export function AddressLookup({ focus }: { focus: Focus }) {
           <input id="addr" className={`${inputCls} font-mono`} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="0x…" spellCheck={false} autoComplete="off" />
           <button className={btnCls} disabled={busy || address.trim().length === 0} type="submit"><Search size={16} aria-hidden /> {busy ? "Querying…" : "Query chain"}</button>
         </form>
-        <p className="mt-2 text-xs text-muted">Public address only. Never paste a private key or seed phrase here. This is a read-only query; nothing is signed or sent.</p>
-        {error && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{error}</p>}
+        <p className="mt-2 text-xs text-text-2">Public address only. Never paste a private key or seed phrase here. This is a read-only query; nothing is signed or sent.</p>
+        {error && <p role="alert" className="mt-3 text-sm text-[var(--fail-text)]">{error}</p>}
       </Card>
 
       {res && (

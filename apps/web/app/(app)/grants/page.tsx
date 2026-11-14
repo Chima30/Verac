@@ -22,7 +22,7 @@ interface A {
 
 function List({ title, items }: { title: string; items?: string[] }) {
   if (!items?.length) return null;
-  return <div><p className="text-xs font-medium text-muted">{title}</p><ul className="list-disc pl-5 text-sm">{items.map((x, i) => <li key={i}>{x}</li>)}</ul></div>;
+  return <div><p className="text-xs font-medium text-text-2">{title}</p><ul className="list-disc pl-5 text-sm">{items.map((x, i) => <li key={i}>{x}</li>)}</ul></div>;
 }
 
 export default async function Grants({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
@@ -43,14 +43,14 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
   return (
     <>
       <PageHeader title="Grants" description="An owner or administrator opens a round with a budget. Applicants apply. One administrator recommends, a different one awards, and the total awarded can never pass the budget. Gemini can give an advisory read of a pitch; it never awards or rejects." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-surface px-3 py-2 text-sm">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error ?? error?.message}</p>}
+      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-panel px-3 py-2 text-sm">{sp.msg}</p>}
+      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{sp.error ?? error?.message}</p>}
 
       {admin && (
         <Card title="Open a grant round" className="mb-4">
           <form action={createGrant} className="flex flex-wrap items-end gap-2">
-            <div className="min-w-[14rem] flex-1"><label className="mb-1 block text-xs text-muted">Title</label><input name="title" required minLength={3} maxLength={160} className={inputCls} placeholder="Developer tooling round" /></div>
-            <div><label className="mb-1 block text-xs text-muted">Budget (QOR)</label><input name="budget" required inputMode="decimal" className={`${inputCls} w-32`} placeholder="100" /></div>
+            <div className="min-w-[14rem] flex-1"><label className="mb-1 block text-xs text-text-2">Title</label><input name="title" required minLength={3} maxLength={160} className={inputCls} placeholder="Developer tooling round" /></div>
+            <div><label className="mb-1 block text-xs text-text-2">Budget (QOR)</label><input name="budget" required inputMode="decimal" className={`${inputCls} w-32`} placeholder="100" /></div>
             <button className={btnCls}>Open round</button>
           </form>
         </Card>
@@ -64,7 +64,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
           return (
             <Card key={g.id} title={g.title} right={<Badge tone={g.status === "open" ? "live" : "neutral"}>{g.status.toUpperCase()}</Badge>}>
               <p className="text-sm">Budget {formatQor(wei(g.budget))} QOR · awarded {formatQor(awarded.toString())} QOR · left {formatQor((BigInt(wei(g.budget)) - awarded).toString())} QOR</p>
-              {admin && g.status === "open" && <form action={closeGrant} className="mt-2"><input type="hidden" name="id" value={g.id} /><button className="inline-flex items-center rounded-md border border-line px-3 py-1.5 text-xs hover:bg-[var(--neutral-bg)]">Close round</button></form>}
+              {admin && g.status === "open" && <form action={closeGrant} className="mt-2"><input type="hidden" name="id" value={g.id} /><button className="inline-flex items-center rounded-md border border-line px-3 py-1.5 text-xs hover:bg-[var(--well)]">Close round</button></form>}
 
               {applicant && g.status === "open" && !applied && (
                 <form action={applyToGrant} className="mt-3 space-y-2">
@@ -75,7 +75,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                   </div>
                   <textarea name="pitch" required minLength={20} maxLength={6000} rows={5} className={inputCls} placeholder="What will you build, and why does it fit this round?" />
                   <button className={btnCls}>Apply</button>
-                  <p className="text-xs text-muted">Applications are plain text, not encrypted. Do not paste secrets.</p>
+                  <p className="text-xs text-text-2">Applications are plain text, not encrypted. Do not paste secrets.</p>
                 </form>
               )}
 
@@ -91,7 +91,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                     </div>
                     <p className="mt-2 whitespace-pre-wrap break-words text-sm">{a.pitch}</p>
                     {admin && check.flags.length > 0 && (
-                      <ul className="mt-2 space-y-1 text-sm">{check.flags.map((f) => <li key={f.code} className={f.blocking ? "text-[var(--bad)]" : "text-muted"}>{f.blocking ? "Blocking: " : "Note: "}{f.message}</li>)}</ul>
+                      <ul className="mt-2 space-y-1 text-sm">{check.flags.map((f) => <li key={f.code} className={f.blocking ? "text-[var(--fail-text)]" : "text-text-2"}>{f.blocking ? "Blocking: " : "Note: "}{f.message}</li>)}</ul>
                     )}
                     {ai?.summary && (
                       <div className="mt-3 space-y-2 rounded-md border border-line p-3">
@@ -102,26 +102,26 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                         <List title="Questions for the applicant" items={ai.questions_for_applicant} />
                       </div>
                     )}
-                    {a.review?.decision && <p className="mt-2 text-sm text-muted">Decision: {a.review.decision}{a.review.note ? ` (${a.review.note})` : ""}</p>}
+                    {a.review?.decision && <p className="mt-2 text-sm text-text-2">Decision: {a.review.decision}{a.review.note ? ` (${a.review.note})` : ""}</p>}
                     {admin && (open || a.status === "recommended") && check.aiEligible && <div className="mt-3"><ReviewButton id={a.id} again={!!ai} /></div>}
                     {admin && open && (
                       <form action={decideApplication} className="mt-3 flex flex-wrap items-end gap-2">
                         <input type="hidden" name="id" value={a.id} />
                         <input name="note" required minLength={5} maxLength={500} className={`${inputCls} max-w-sm`} placeholder="Reason for the decision" />
                         <button name="decision" value="recommend" className={btnCls}>Recommend</button>
-                        <button name="decision" value="reject" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--neutral-bg)]">Reject</button>
+                        <button name="decision" value="reject" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--well)]">Reject</button>
                       </form>
                     )}
                     {admin && a.status === "recommended" && (a.recommended_by === s.user!.id
-                      ? <p className="mt-3 text-sm text-muted">You recommended this application, so a different administrator must award it.</p>
+                      ? <p className="mt-3 text-sm text-text-2">You recommended this application, so a different administrator must award it.</p>
                       : (
                         <form action={awardApplication} className="mt-3 flex flex-wrap items-end gap-2">
                           <input type="hidden" name="id" value={a.id} />
-                          <div><label className="mb-1 block text-xs text-muted">Equal milestones</label><input name="count" type="number" min={1} max={10} defaultValue={2} className={`${inputCls} w-24`} /></div>
+                          <div><label className="mb-1 block text-xs text-text-2">Equal milestones</label><input name="count" type="number" min={1} max={10} defaultValue={2} className={`${inputCls} w-24`} /></div>
                           <button className={btnCls}>Award</button>
                         </form>
                       ))}
-                    {a.status === "awarded" && <p className="mt-2 text-sm text-muted">Awarded. Milestones exist, but evidence and payment for grant milestones are not built yet (PENDING).</p>}
+                    {a.status === "awarded" && <p className="mt-2 text-sm text-text-2">Awarded. Milestones exist, but evidence and payment for grant milestones are not built yet (PENDING).</p>}
                   </div>
                 );
               })}</div>
@@ -129,7 +129,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
           );
         })}</div>
       )}
-      <p className="mt-4 text-xs text-muted">Awards are recorded in this app only. No QOR is sent and no on-chain escrow is created.</p>
+      <p className="mt-4 text-xs text-text-2">Awards are recorded in this app only. No QOR is sent and no on-chain escrow is created.</p>
     </>
   );
 }

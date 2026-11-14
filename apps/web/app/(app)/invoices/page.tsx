@@ -58,7 +58,7 @@ export default function Invoices() {
   }
 
   const field = (label: string, k: keyof Form, ph = "") => (
-    <div><label className="mb-1 block text-xs text-muted">{label}</label><input className={inputCls} value={f[k]} onChange={set(k)} placeholder={ph} /></div>
+    <div><label className="mb-1 block text-xs text-text-2">{label}</label><input className={inputCls} value={f[k]} onChange={set(k)} placeholder={ph} /></div>
   );
 
   return (
@@ -67,45 +67,45 @@ export default function Invoices() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Invoice to check">
           <div className="mb-3 flex flex-wrap gap-2">
-            {EXAMPLES.map(([n, v]) => <button key={n} type="button" className="rounded-md border border-line px-2.5 py-1 text-xs hover:bg-[var(--neutral-bg)]" onClick={() => { setF(v); setOut(null); }}>{n}</button>)}
+            {EXAMPLES.map(([n, v]) => <button key={n} type="button" className="rounded-md border border-line px-2.5 py-1 text-xs hover:bg-[var(--well)]" onClick={() => { setF(v); setOut(null); }}>{n}</button>)}
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {field("Vendor", "vendor")}{field("Invoice number", "invoiceNumber")}
             {field("Amount (QOR)", "amount")}
-            <div><label className="mb-1 block text-xs text-muted">Agent per-payment limit (QOR)</label><input className={inputCls} value={cap} onChange={(e) => setCap(e.target.value)} /></div>
+            <div><label className="mb-1 block text-xs text-text-2">Agent per-payment limit (QOR)</label><input className={inputCls} value={cap} onChange={(e) => setCap(e.target.value)} /></div>
             {field("Invoice date (YYYY-MM-DD)", "invoiceDate")}{field("Due date (optional)", "dueDate")}
           </div>
           <div className="mt-3">{field("Payout address (0x… or qor1…)", "payoutAddress")}</div>
-          <div className="mt-3"><label className="mb-1 block text-xs text-muted">Notes on the invoice (treated as untrusted)</label><textarea className={inputCls} rows={2} value={f.notes} onChange={set("notes")} /></div>
+          <div className="mt-3"><label className="mb-1 block text-xs text-text-2">Notes on the invoice (treated as untrusted)</label><textarea className={inputCls} rows={2} value={f.notes} onChange={set("notes")} /></div>
           <div className="mt-3">
-            <label className="mb-1 block text-xs text-muted">Earlier invoices on record: vendor | number | amount | address | date (sample data, edit freely)</label>
+            <label className="mb-1 block text-xs text-text-2">Earlier invoices on record: vendor | number | amount | address | date (sample data, edit freely)</label>
             <textarea className={`${inputCls} font-mono text-xs`} rows={4} value={hist} onChange={(e) => setHist(e.target.value)} />
           </div>
           <div className="mt-3 flex items-center gap-3"><button className={btnCls} disabled={busy} onClick={run}>{busy ? "Checking…" : "Check invoice"}</button></div>
-          {err && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{err}</p>}
+          {err && <p role="alert" className="mt-3 text-sm text-[var(--fail-text)]">{err}</p>}
         </Card>
 
         <div className="space-y-4">
-          {!out && !err && <Card title="Result"><p className="text-sm text-muted">Pick an example or fill in an invoice, then press Check invoice. Nothing is paid and nothing is saved.</p></Card>}
+          {!out && !err && <Card title="Result"><p className="text-sm text-text-2">Pick an example or fill in an invoice, then press Check invoice. Nothing is paid and nothing is saved.</p></Card>}
           {out && (
             <>
               <Card title="Decision" right={<Badge tone="neutral">DECIDED BY FIXED RULES</Badge>}>
-                <div className="flex items-center gap-3"><Badge tone={VERDICT[out.verdict].tone}>{VERDICT[out.verdict].text}</Badge><span className="text-xs text-muted">compared with {out.checkedAgainst} earlier invoice(s) from this vendor</span></div>
+                <div className="flex items-center gap-3"><Badge tone={VERDICT[out.verdict].tone}>{VERDICT[out.verdict].text}</Badge><span className="text-xs text-text-2">compared with {out.checkedAgainst} earlier invoice(s) from this vendor</span></div>
                 {out.findings.length === 0 ? <p className="mt-3 text-sm">No rule fired. That does not prove the invoice is genuine; normal approval still applies.</p> : (
                   <ul className="mt-3 divide-y divide-line text-sm">{out.findings.map((x) => (
-                    <li key={x.code} className="py-2"><span className="font-mono text-xs">{x.code}</span> <span className="text-xs text-muted">({x.severity})</span><div>{x.message}</div></li>
+                    <li key={x.code} className="py-2"><span className="font-mono text-xs">{x.code}</span> <span className="text-xs text-text-2">({x.severity})</span><div>{x.message}</div></li>
                   ))}</ul>
                 )}
               </Card>
               {out.explanation && (
                 <Card title="Explanation" right={<Badge tone="sim">AI EXPLANATION, NOT A DECISION</Badge>}>
                   <p className="text-sm">{out.explanation.explanation}</p>
-                  {out.explanation.reviewerQuestions.length > 0 && (<><p className="mt-3 text-xs font-medium text-muted">Before anyone decides</p>
+                  {out.explanation.reviewerQuestions.length > 0 && (<><p className="mt-3 text-xs font-medium text-text-2">Before anyone decides</p>
                     <ul className="mt-1 list-disc pl-5 text-sm">{out.explanation.reviewerQuestions.map((q) => <li key={q}>{q}</li>)}</ul></>)}
-                  <p className="mt-3 text-xs text-muted">Model: {out.explanation.model}</p>
+                  <p className="mt-3 text-xs text-text-2">Model: {out.explanation.model}</p>
                 </Card>
               )}
-              {out.aiError && <Card title="Explanation"><p className="text-sm text-muted">The AI explanation is unavailable ({out.aiError}). The decision above is unaffected because fixed rules made it.</p></Card>}
+              {out.aiError && <Card title="Explanation"><p className="text-sm text-text-2">The AI explanation is unavailable ({out.aiError}). The decision above is unaffected because fixed rules made it.</p></Card>}
             </>
           )}
         </div>

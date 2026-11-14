@@ -21,8 +21,8 @@ export default async function Strategies({ searchParams }: { searchParams: Promi
   return (
     <>
       <PageHeader title="DCA and Rebalancing" description="Work out what a dollar-cost-averaging plan or a rebalance would do on numbers you type in. There is no market venue connected, so these are always simulations: nothing is bought, sold or scheduled." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-surface px-3 py-2 text-sm">{sp.msg}</p>}
-      {sp.error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error}</p>}
+      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-panel px-3 py-2 text-sm">{sp.msg}</p>}
+      {sp.error && <p role="alert" className="mb-4 text-sm text-[var(--fail-text)]">{sp.error}</p>}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="DCA simulator"><DcaCalc canSave={canSave} /></Card>
         <Card title="Rebalancing calculator"><RebalanceCalc canSave={canSave} /></Card>

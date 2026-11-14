@@ -31,7 +31,7 @@ export function EvidenceReview({ milestoneId, orgId, userId }: { milestoneId: st
         <div className="flex flex-wrap items-center gap-3">
           <button className={btnCls} disabled={busy || hasKey === false} onClick={open}>{busy ? "Opening…" : "Open evidence in this browser"}</button>
           <Badge tone="neutral">DECRYPTED ONLY IN YOUR BROWSER</Badge>
-          {hasKey === false && <span className="text-[var(--bad)]">This browser has no reading key.</span>}
+          {hasKey === false && <span className="text-[var(--fail-text)]">This browser has no reading key.</span>}
         </div>
       ) : (
         <>
@@ -40,11 +40,11 @@ export function EvidenceReview({ milestoneId, orgId, userId }: { milestoneId: st
             <input type="hidden" name="id" value={milestoneId} />
             <input name="note" maxLength={500} className={`${inputCls} max-w-sm`} placeholder="Note for the record (optional)" />
             <button name="decision" value="approve" className={btnCls}>Accept milestone</button>
-            <button name="decision" value="reject" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--neutral-bg)]">Reject</button>
+            <button name="decision" value="reject" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--well)]">Reject</button>
           </form>
         </>
       )}
-      {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
+      {err && <p role="alert" className="text-[var(--fail-text)]">{err}</p>}
     </div>
   );
 }

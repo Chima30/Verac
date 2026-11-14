@@ -55,13 +55,13 @@ export default function Policies() {
           placeholder="Example: let the payment agent pay up to 10 QOR per payment and 25 QOR a day, auto-approve anything under 2 QOR to known vendors, and require 2 approvers for the rest." />
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button type="button" className={btnCls} onClick={makeDraft} disabled={drafting || ask.trim().length < 5}>{drafting ? "Drafting…" : "Draft with Gemini"}</button>
-          <span className="text-xs text-muted">Gemini only drafts. Amounts are converted and checked by deterministic code, and nothing is activated. Do not include secrets or personal data.</span>
+          <span className="text-xs text-text-2">Gemini only drafts. Amounts are converted and checked by deterministic code, and nothing is activated. Do not include secrets or personal data.</span>
         </div>
-        {draftErr && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{draftErr}</p>}
+        {draftErr && <p role="alert" className="mt-3 text-sm text-[var(--fail-text)]">{draftErr}</p>}
         {draft && (
           <div className="mt-4 space-y-3 text-sm">
-            <p><span className="text-muted">Model {draft.model} understood:</span> {draft.aiSummary}</p>
-            <p className="text-muted">The draft is loaded in the editor below and was checked by the policy engine: <strong>{draft.ok ? "no blocking problems" : "blocking problems found"}</strong>. Compare the plain-language description on the right with what you asked for, not just the AI&apos;s summary.</p>
+            <p><span className="text-text-2">Model {draft.model} understood:</span> {draft.aiSummary}</p>
+            <p className="text-text-2">The draft is loaded in the editor below and was checked by the policy engine: <strong>{draft.ok ? "no blocking problems" : "blocking problems found"}</strong>. Compare the plain-language description on the right with what you asked for, not just the AI&apos;s summary.</p>
           </div>
         )}
       </Card>
@@ -70,14 +70,14 @@ export default function Policies() {
           <label htmlFor="policy" className="sr-only">Policy JSON</label>
           <textarea id="policy" className={`${inputCls} h-80 font-mono text-xs`} value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} />
           <div className="mt-3"><button type="button" className={btnCls} onClick={validate} disabled={busy}>{busy ? "Validating…" : "Validate policy"}</button></div>
-          {err && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{err}</p>}
+          {err && <p role="alert" className="mt-3 text-sm text-[var(--fail-text)]">{err}</p>}
         </Card>
         <Card title="Result" right={out ? <Badge tone={out.ok ? "live" : "failed"}>{out.ok ? "VALID" : "INVALID"}</Badge> : undefined}>
-          {!out && <p className="text-sm text-muted">Run validation to see findings.</p>}
+          {!out && <p className="text-sm text-text-2">Run validation to see findings.</p>}
           {out && (
             <div className="space-y-4 text-sm">
               {out.summary.length > 0 && <div><p className="mb-1 font-medium">What this policy does</p><ul className="list-disc space-y-1 pl-5">{out.summary.map((s) => <li key={s}>{s}</li>)}</ul></div>}
-              {out.findings.length > 0 ? <div><p className="mb-1 font-medium">Findings</p><ul className="list-disc space-y-1 pl-5">{out.findings.map((f, i) => <li key={i}><span className="font-mono text-xs">{f.severity ?? ""} {f.code ?? ""}</span> {f.message ?? JSON.stringify(f)}</li>)}</ul></div> : <p className="text-muted">No findings.</p>}
+              {out.findings.length > 0 ? <div><p className="mb-1 font-medium">Findings</p><ul className="list-disc space-y-1 pl-5">{out.findings.map((f, i) => <li key={i}><span className="font-mono text-xs">{f.severity ?? ""} {f.code ?? ""}</span> {f.message ?? JSON.stringify(f)}</li>)}</ul></div> : <p className="text-text-2">No findings.</p>}
             </div>
           )}
         </Card>

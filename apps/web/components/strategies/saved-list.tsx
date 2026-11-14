@@ -9,12 +9,12 @@ export function SavedList({ rows, canCancel, back }: { rows: Row[]; canCancel: b
   return (
     <ul className="divide-y divide-line rounded-lg border border-line text-sm">{rows.map((r) => (
       <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
-        <span><strong>{r.config.name ?? "Untitled"}</strong> <span className="text-muted">{r.kind} · {new Date(r.created_at).toUTCString()}</span></span>
+        <span><strong>{r.config.name ?? "Untitled"}</strong> <span className="text-text-2">{r.kind} · {new Date(r.created_at).toUTCString()}</span></span>
         <span className="flex items-center gap-2">
           <Badge tone="sim" />
           <Badge tone="neutral">{r.status === "cancelled" ? "CANCELLED" : "PAUSED, NEVER RUNS"}</Badge>
           {canCancel && r.status !== "cancelled" && (
-            <form action={cancelStrategy}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="back" value={back} /><button className="rounded-md border border-line px-2.5 py-1 text-xs hover:bg-[var(--neutral-bg)]">Cancel</button></form>
+            <form action={cancelStrategy}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="back" value={back} /><button className="rounded-md border border-line px-2.5 py-1 text-xs hover:bg-[var(--well)]">Cancel</button></form>
           )}
         </span>
       </li>

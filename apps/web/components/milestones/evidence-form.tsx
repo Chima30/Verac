@@ -28,8 +28,8 @@ export function EvidenceForm({ milestoneId, reviewers }: { milestoneId: string; 
     <div className="space-y-2 text-sm">
       <textarea className={inputCls} rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder="What did you deliver? Include links or reference numbers." />
       <button className={btnCls} disabled={busy} onClick={submit}>{busy ? "Sealing…" : "Seal and submit evidence"}</button>
-      <p className="text-xs text-muted">Sealed to {reviewers.length} reviewer{reviewers.length === 1 ? "" : "s"} (ML-KEM-1024 + X25519), bound to this milestone.</p>
-      {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
+      <p className="text-xs text-text-2">Sealed to {reviewers.length} reviewer{reviewers.length === 1 ? "" : "s"} (ML-KEM-1024 + X25519), bound to this milestone.</p>
+      {err && <p role="alert" className="text-[var(--fail-text)]">{err}</p>}
     </div>
   );
 }

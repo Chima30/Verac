@@ -34,15 +34,15 @@ export default async function Onboarding({ searchParams }: { searchParams: Promi
     <>
       <PageHeader title="Create your organisation" description="An organisation is the tenant that owns treasuries, policies, agents and records. You become its owner. Every row is isolated from other organisations by row-level security." />
       <Card title="Joining an existing organisation?" className="mb-4">
-        <p className="text-sm text-muted">Send this user ID to the organisation owner so they can add you on their Team page. Then reload this site.</p>
+        <p className="text-sm text-text-2">Send this user ID to the organisation owner so they can add you on their Team page. Then reload this site.</p>
         <p className="mt-2 select-all break-all font-mono text-xs">{s.user.id}</p>
       </Card>
       <Card title="Organisation">
         <form action={createOrganisation} className="max-w-md space-y-3">
-          <div><label htmlFor="name" className="mb-1 block text-xs text-muted">Name</label>
+          <div><label htmlFor="name" className="mb-1 block text-xs text-text-2">Name</label>
             <input id="name" name="name" required maxLength={120} className={inputCls} placeholder="Nova DAO" /></div>
           <button className={btnCls} type="submit">Create organisation</button>
-          {error && <p role="alert" className="text-sm text-[var(--bad)]">{error}</p>}
+          {error && <p role="alert" className="text-sm text-[var(--fail-text)]">{error}</p>}
         </form>
       </Card>
     </>

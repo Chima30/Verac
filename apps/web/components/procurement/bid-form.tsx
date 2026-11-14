@@ -35,15 +35,15 @@ export function BidForm({ tenderId, reviewers, budgetQor }: { tenderId: string; 
   }
 
   if (done) return <p className="text-sm">Your bid was sealed in this browser and submitted. The organisation cannot read it until bidding closes. <Badge tone="live">SEALED</Badge></p>;
-  const field = (label: string, k: keyof typeof f, ph = "") => (<div><label className="mb-1 block text-xs text-muted">{label}</label><input className={inputCls} value={f[k]} onChange={set(k)} placeholder={ph} /></div>);
+  const field = (label: string, k: keyof typeof f, ph = "") => (<div><label className="mb-1 block text-xs text-text-2">{label}</label><input className={inputCls} value={f[k]} onChange={set(k)} placeholder={ph} /></div>);
   return (
     <div className="space-y-3 text-sm">
       <div className="grid gap-3 sm:grid-cols-3">{field("Company name", "vendorName")}{field(`Price (QOR, budget ${budgetQor})`, "amountQor")}{field("Delivery (days)", "deliveryDays")}</div>
-      <div><label className="mb-1 block text-xs text-muted">Your approach</label><textarea className={inputCls} rows={5} value={f.approach} onChange={set("approach")} /></div>
+      <div><label className="mb-1 block text-xs text-text-2">Your approach</label><textarea className={inputCls} rows={5} value={f.approach} onChange={set("approach")} /></div>
       {field("References (optional)", "references")}
-      <p className="text-xs text-muted">Sealed in your browser to {reviewers.length} reviewer{reviewers.length === 1 ? "" : "s"} (ML-KEM-1024 + X25519). Reviewer key fingerprints: {fps.length ? fps.map((x, i) => <span key={i} className="font-mono">{x}{i < fps.length - 1 ? " · " : ""}</span>) : "…"}. If you can, confirm one with the organisation through another channel.</p>
+      <p className="text-xs text-text-2">Sealed in your browser to {reviewers.length} reviewer{reviewers.length === 1 ? "" : "s"} (ML-KEM-1024 + X25519). Reviewer key fingerprints: {fps.length ? fps.map((x, i) => <span key={i} className="font-mono">{x}{i < fps.length - 1 ? " · " : ""}</span>) : "…"}. If you can, confirm one with the organisation through another channel.</p>
       <button className={btnCls} disabled={busy} onClick={submit}>{busy ? "Sealing…" : "Seal and submit bid"}</button>
-      {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
+      {err && <p role="alert" className="text-[var(--fail-text)]">{err}</p>}
     </div>
   );
 }

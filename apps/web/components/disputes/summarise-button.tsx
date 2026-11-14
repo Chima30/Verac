@@ -19,8 +19,8 @@ export function SummariseButton({ id, again }: { id: string; again: boolean }) {
   return (
     <div className="text-sm">
       <button className={btnCls} disabled={busy} onClick={run}>{busy ? "Summarising…" : again ? "Run AI summary again" : "Run AI summary"}</button>
-      <span className="ml-2 text-xs text-muted">Sends the statements to Gemini (free tier).</span>
-      {err && <p role="alert" className="mt-1 text-[var(--bad)]">{err}</p>}
+      <span className="ml-2 text-xs text-text-2">Sends the statements to Gemini (free tier).</span>
+      {err && <p role="alert" className="mt-1 text-[var(--fail-text)]">{err}</p>}
     </div>
   );
 }
