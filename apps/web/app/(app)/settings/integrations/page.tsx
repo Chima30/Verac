@@ -25,8 +25,8 @@ export default async function Integrations() {
         <Card title="Supabase" right={<Badge tone={env.NEXT_PUBLIC_SUPABASE_URL ? "pending" : "unavailable"}>{env.NEXT_PUBLIC_SUPABASE_URL ? "URL SET, NOT CONNECTED IN UI" : "UNAVAILABLE"}</Badge>}>
           <KV rows={[["URL", present(env.NEXT_PUBLIC_SUPABASE_URL)], ["Anon key", present(env.NEXT_PUBLIC_SUPABASE_ANON_KEY)], ["Service role key", present(env.SUPABASE_SERVICE_ROLE_KEY)]]} />
         </Card>
-        <Card title="Contracts" right={<Badge tone={env.TREASURY_VAULT_ADDRESS ? "pending" : "unavailable"}>{env.TREASURY_VAULT_ADDRESS ? "ADDRESS SET, UNVERIFIED" : "NOT DEPLOYED"}</Badge>}>
-          <KV rows={[["TreasuryVault", env.TREASURY_VAULT_ADDRESS || "not set"], ["MilestoneEscrow", env.MILESTONE_ESCROW_ADDRESS || "not set"], ["AuditAnchor", env.AUDIT_ANCHOR_ADDRESS || "not set"]]} />
+        <Card title="Contracts" right={<Badge tone={env.CONTRACT_TREASURY_VAULT ? "pending" : "unavailable"}>{env.CONTRACT_TREASURY_VAULT ? "ADDRESS SET, UNVERIFIED" : "NOT DEPLOYED"}</Badge>}>
+          <KV rows={[["TreasuryVault", env.CONTRACT_TREASURY_VAULT || "not set"], ["MilestoneEscrow", env.CONTRACT_MILESTONE_ESCROW || "not set"], ["AuditAnchor", env.CONTRACT_AUDIT_ANCHOR || "not set"]]} />
         </Card>
       </div>
     </>

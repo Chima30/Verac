@@ -27,7 +27,7 @@ cast wallet import qoreops-deployer --interactive
 forge script script/Deploy.s.sol --rpc-url https://evm-testnet.qore.host --account qoreops-deployer   # simulation
 forge script script/Deploy.s.sol --rpc-url https://evm-testnet.qore.host --account qoreops-deployer --broadcast   # real, needs approval
 ```
-Then put the printed addresses in `.env` (`TREASURY_VAULT_ADDRESS`, ...). The Integrations page shows them as
+Then put the printed addresses in `.env` (`CONTRACT_TREASURY_VAULT`, ...). The Integrations page shows them as
 "ADDRESS SET, UNVERIFIED" until a chain read confirms code exists there.
 Deploy needs an **unscoped** EVM window (contract creation is refused under a scoped window); close it afterwards.
 Window opening is a hybrid-signed native message and is not implemented in this repo yet.
