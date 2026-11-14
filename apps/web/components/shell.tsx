@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { NAV } from "@/lib/nav";
 import { ThemeToggle } from "./theme-toggle";
 
-export function Shell({ productName, children }: { productName: string; children: React.ReactNode }) {
+export function Shell({ productName, account, children }: { productName: string; account: { configured: boolean; email: string | null }; children: React.ReactNode }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [path]);
@@ -56,7 +56,17 @@ export function Shell({ productName, children }: { productName: string; children
         <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-bg/90 px-4 py-2.5 backdrop-blur lg:px-8">
           <button type="button" onClick={() => setOpen(true)} aria-label="Open navigation" className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line lg:hidden"><Menu size={18} /></button>
           <p className="hidden text-xs text-muted sm:block">QoreChain Diana testnet · chain 9800 · mainnet disabled</p>
-          <div className="ml-auto"><ThemeToggle /></div>
+          <div className="ml-auto flex items-center gap-2">
+            {account.configured && (account.email ? (
+              <form action="/auth/signout" method="post" className="flex items-center gap-2">
+                <span className="hidden max-w-[12rem] truncate text-xs text-muted sm:inline">{account.email}</span>
+                <button type="submit" className="rounded-md border border-line px-2.5 py-1.5 text-xs hover:bg-surface-2">Sign out</button>
+              </form>
+            ) : (
+              <Link href="/login" className="rounded-md border border-line px-2.5 py-1.5 text-xs hover:bg-surface-2">Sign in</Link>
+            ))}
+            <ThemeToggle />
+          </div>
         </div>
         <main className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>

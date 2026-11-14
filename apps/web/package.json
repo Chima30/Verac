@@ -14,6 +14,8 @@
     "@qoreops/policy-engine": "workspace:*",
     "@qoreops/qorechain": "workspace:*",
     "@qoreops/shared-types": "workspace:*",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
     "lucide-react": "^1.73.0",
     "next": "^16.4.6",
     "next-themes": "^0.4.6",

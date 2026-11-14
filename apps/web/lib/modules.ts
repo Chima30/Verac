@@ -46,12 +46,6 @@ export const MODULES: Record<string, ModuleInfo> = {
     missing: ["Browser-side encryption and decryption", "Storage upload", "Recipient key registration"] },
   threats: { title: "Threat Center", description: "Anomaly detection, permission drift, pause and revoke requests.", agent: "SecurityAgent",
     exists: ["SecurityAgent spec", "TreasuryVault guardian pause and agent revoke"], missing: ["Detection rules", "Alert feed", "Deployed vault"] },
-  "settings/organization": { title: "Organisation", description: "Organisation profile and members' roles.",
-    exists: ["organizations, members tables with RLS (14 isolation tests)"], missing: ["Onboarding flow and auth"] },
-  "settings/team": { title: "Team Members", description: "Invite members and assign roles.",
-    exists: ["Role model and has_role helper"], missing: ["Invites", "Auth"] },
   "settings/notifications": { title: "Notifications", description: "Alert routing preferences.",
     exists: ["notify.send tool in the agent allow-lists"], missing: ["Channel configuration"] },
-  "settings/audit": { title: "Audit History", description: "Tamper-evident record of operations.",
-    exists: ["audit_events append-only table", "AuditAnchor contract for on-chain hash anchoring"], missing: ["Query UI", "Anchoring job", "Deployed AuditAnchor"] },
 };

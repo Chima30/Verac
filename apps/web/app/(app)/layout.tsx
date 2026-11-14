@@ -1,5 +1,7 @@
 import { Shell } from "@/components/shell";
+import { getSession } from "@/lib/session";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <Shell productName={process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Verac"}>{children}</Shell>;
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const s = await getSession(false);
+  return <Shell productName={process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Verac"} account={{ configured: s.configured, email: s.user?.email ?? null }}>{children}</Shell>;
 }

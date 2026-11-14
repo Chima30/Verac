@@ -56,6 +56,7 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Live testnet **reads** (chain id, block, AA config, limits) | Verified 2026-11-14 | `pnpm chain:probe` |
 | Web app shell: 27 routes, light/dark, mobile nav | Implemented and deployed read-only at https://verac-web.vercel.app (all 27 routes return 200) | checked 2026-11-14 |
 | Web pages with live behaviour | Live Proof (re-verifies all 37 testnet transactions from the chain), Dashboard (chain + AI status), agent registry, permission matrix, policy validator, address lookup (balance, PQC, KEM, window, rules) on Diana testnet, integrations | read-only; no signing |
+| Supabase sign-in, organisation, team, audit pages | Code written, type-checked and built; **not yet exercised against a real Supabase project** (needs docs/SUPABASE_SETUP.md) | no live test |
 | Web pages for the 12 modules' workflows | **Placeholders that state what exists and what is missing**; no working controls | needs Supabase, auth, deployed contracts |
 | Wallet connect, PQC key registration, hybrid-signed tx, EVM window open | **Not started** | needs a funded throwaway testnet account |
 | QoreSeal encrypt/decrypt in the vault | **Not started** (package verified on npm) | n/a |
