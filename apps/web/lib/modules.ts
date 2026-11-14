@@ -33,8 +33,4 @@ export const MODULES: Record<string, ModuleInfo> = {
   vault: { title: "Document Vault", description: "Multi-recipient post-quantum encrypted documents (QoreSeal).", agent: "DocumentAgent",
     exists: ["DocumentAgent spec (never holds plaintext or keys)", "documents and document_recipients tables", "Live QoreSeal KEM-key lookup in the Quantum Simulator page"],
     missing: ["Browser-side encryption and decryption", "Storage upload", "Recipient key registration"] },
-  threats: { title: "Threat Center", description: "Anomaly detection, permission drift, pause and revoke requests.", agent: "SecurityAgent",
-    exists: ["SecurityAgent spec", "TreasuryVault guardian pause and agent revoke"], missing: ["Detection rules", "Alert feed", "Deployed vault"] },
-  "settings/notifications": { title: "Notifications", description: "Alert routing preferences.",
-    exists: ["notify.send tool in the agent allow-lists"], missing: ["Channel configuration"] },
 };
