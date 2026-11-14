@@ -45,7 +45,9 @@ beforeAll(async () => {
     create role app_user nologin;
     grant usage on schema auth to app_user;
   `);
-  await db.exec(readFileSync(resolve(__dirname, "../../supabase/migrations/0001_core.sql"), "utf8"));
+  for (const f of ["0001_core.sql", "0002_creator_membership.sql"]) {
+    await db.exec(readFileSync(resolve(__dirname, "../../supabase/migrations", f), "utf8"));
+  }
   await db.exec(`grant usage on schema public to app_user; grant all on all tables in schema public to app_user; grant all on all sequences in schema public to app_user; grant execute on all functions in schema public to app_user;`);
 
   // fixtures inserted as superuser (bypasses RLS)
@@ -192,5 +194,28 @@ describe("financial and audit controls", () => {
 
   it("agent messages are service-role only", async () => {
     await as(U.ownerA, async () => expect((await rows("select 1 from agent_messages")).length).toBe(0));
+  });
+
+  it("a brand-new user can create an organisation and become its first owner; nobody else can claim ownership", async () => {
+    const NEW = "00000000-0000-0000-0000-0000000000aa";
+    const NEW_ORG = "10000000-0000-0000-0000-0000000000aa";
+    // exactly what the app does: insert the organisation, then the owner membership, with no admin fixtures
+    await as(NEW, async () => {
+      await db.exec(`insert into organizations(id,name,created_by) values ('${NEW_ORG}','Fresh Org','${NEW}')`);
+      await db.exec(`insert into memberships(organization_id,user_id,role) values ('${NEW_ORG}','${NEW}','owner')`);
+      expect((await rows("select 1 from organizations")).length).toBe(1);
+    });
+    // a stranger cannot make themselves owner of someone else's organisation
+    await as(U.stranger, async () => {
+      await expect(db.exec(`insert into memberships(organization_id,user_id,role) values ('${NEW_ORG}','${U.stranger}','owner')`)).rejects.toThrow(/row-level security/);
+    });
+    // the creator cannot add a second owner row for themselves after the first exists
+    await as(NEW, async () => {
+      await expect(db.exec(`insert into memberships(organization_id,user_id,role) values ('${NEW_ORG}','${NEW}','owner')`)).rejects.toThrow();
+    });
+    // a user cannot claim ownership of an organisation they did not create
+    await as(U.stranger, async () => {
+      await expect(db.exec(`insert into memberships(organization_id,user_id,role) values ('${ORG_B}','${U.stranger}','owner')`)).rejects.toThrow(/row-level security/);
+    });
   });
 });
