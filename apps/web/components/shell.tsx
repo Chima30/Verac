@@ -43,8 +43,8 @@ export function Shell({ productName, account, children }: { productName: string;
 
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
-          <button type="button" className="absolute inset-0 bg-black/40" aria-label="Close navigation" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-xl">
+          <button type="button" className="motion-scrim absolute inset-0 bg-black/40" aria-label="Close navigation" onClick={() => setOpen(false)} />
+          <div className="motion-drawer absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-xl">
             <div className="flex h-14 items-center justify-between px-5"><span className="flex items-center gap-2.5 font-medium"><span className="grid size-8 place-items-center rounded-xl bg-accent text-accent-ink"><ShieldCheck size={16} strokeWidth={1.75} aria-hidden /></span>{productName}</span>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close navigation" className="h-8 w-8 rounded-md hover:bg-surface-2"><X size={18} className="mx-auto" /></button></div>
             {nav}
@@ -68,7 +68,7 @@ export function Shell({ productName, account, children }: { productName: string;
             <ThemeToggle />
           </div>
         </div>
-        <main className="mx-auto w-full max-w-6xl px-4 py-8 lg:px-8 lg:py-10">{children}</main>
+        <main key={path} className="motion-page mx-auto w-full max-w-6xl px-4 py-8 lg:px-8 lg:py-10">{children}</main>
       </div>
     </div>
   );

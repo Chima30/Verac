@@ -31,3 +31,7 @@ Type is Inter (400, 500, 600) with tight tracking on headings; IBM Plex Mono onl
 | Use the tokens and shared components | Add a hex value or one-off radius in a page |
 | Say what an action did and whether it moved money | Say "done" for something only recorded |
 | Keep one accent; status colours mean status | Add gradients, glow or emoji |
+
+## Motion
+
+Motion explains state; it does not decorate. All of it is in `apps/web/app/globals.css`: 200ms fades up for a new page, for results and messages that appear after an action (anything with `role="status"` or `role="alert"`), for the mobile menu, and a 120ms row highlight in tables. One easing, transform and opacity only, and nothing runs for people who ask for reduced motion. Content is never hidden by a script, and there are no scroll effects or page-load sequences in the app screens.
