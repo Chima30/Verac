@@ -11,8 +11,6 @@ export interface ModuleInfo {
 }
 
 export const MODULES: Record<string, ModuleInfo> = {
-  activity: { title: "Activity", description: "Chronological feed of agent and user actions.",
-    exists: ["Append-only audit_events table with trigger"], missing: ["Live feed (needs database and auth)"] },
   invoices: { title: "Bills and Invoices", description: "Invoice intake, fraud checks, and paying approved bills.", agent: "InvoiceFraudAgent",
     exists: ["InvoiceFraudAgent spec (no pay or approve tools)", "Unique constraint on org, vendor and invoice number in the schema"],
     missing: ["Invoice upload and extraction", "Payment execution wiring"] },

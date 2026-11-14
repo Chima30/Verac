@@ -18,7 +18,7 @@ export default async function Audit() {
       <PageHeader title="Audit History" description="Append-only: the database rejects updates and deletes. Only owners, administrators, security reviewers and auditors can read it." />
       {error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{error.message}</p>}
       {!data || data.length === 0 ? (
-        <EmptyState title="No audit events yet">Users cannot write audit events. Server-side agents and the payment pipeline will, and they are not connected to this database yet, so this list is empty. For the on-chain record see Live Proof.</EmptyState>
+        <EmptyState title="No audit events yet">Users cannot write audit events directly. The database functions behind each module write them, so this list fills as people use Approvals, Procurement, Payroll and the other modules. See the readable <a className="underline" href="/activity">Activity feed</a>. For the on-chain record see Live Proof.</EmptyState>
       ) : (
         <Card title={`Latest ${data.length}`}>
           <ul className="divide-y divide-line text-sm">{data.map((e) => (
