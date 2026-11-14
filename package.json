@@ -14,6 +14,8 @@
     "test:contracts": "cd contracts && forge test -vv",
     "build:contracts": "cd contracts && forge build",
     "chain:probe": "tsx packages/qorechain/scripts/probe.ts",
+    "account:new": "tsx packages/qorechain/scripts/new-account.ts",
+    "account:inspect": "tsx packages/qorechain/scripts/account.ts",
     "ai:probe": "tsx packages/ai-provider/scripts/probe.ts"
   },
   "devDependencies": {
