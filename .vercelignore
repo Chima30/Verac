@@ -1,0 +1,12 @@
+.secrets
+.env
+.env.*
+!.env.example
+contracts/cache
+contracts/broadcast
+contracts/out
+contracts/node_modules
+contracts/lib
+node_modules
+.next
+tests

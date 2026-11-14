@@ -4,6 +4,18 @@ import { reader } from "@/lib/server";
 
 export const dynamic = "force-dynamic";
 
+// Best-effort per-instance rate limit (serverless instances do not share memory). It stops casual abuse of the
+// public RPC proxy; it is not a security boundary.
+const hits = new Map<string, number[]>();
+function limited(ip: string): boolean {
+  const now = Date.now();
+  const recent = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 5000) hits.clear();
+  return recent.length > 20;
+}
+
 type Part<T> = { ok: true; data: T } | { ok: false; error: string };
 async function part<T>(p: Promise<T>): Promise<Part<T>> {
   try { return { ok: true, data: await p }; } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
@@ -12,6 +24,8 @@ const json = (v: unknown) => JSON.parse(JSON.stringify(v, (_k, x) => (typeof x =
 
 /** Read-only lookup of an EVM address on Diana testnet. Every field is a live query; failures are reported per field. */
 export async function GET(req: Request) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (limited(ip)) return NextResponse.json({ error: "Too many requests. Try again in a minute." }, { status: 429 });
   const address = new URL(req.url).searchParams.get("address")?.trim() ?? "";
   if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return NextResponse.json({ error: "Enter a 0x EVM address (42 characters)." }, { status: 400 });
   try {

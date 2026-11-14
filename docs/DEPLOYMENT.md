@@ -39,3 +39,15 @@ The `paris` EVM target is untested on Diana; a failed deploy may mean a differen
 * Worker (long-running agents, schedules): a small Node service on Fly.io/Railway/a VM, or Cloudflare Workers Cron for light jobs.
   Do not rely on a serverless request staying alive. Not built yet.
 * Supabase: apply migrations, create a Storage bucket `ciphertext` (private), keep the service-role key server-side only.
+
+## Deploying the web app to Vercel (read-only build)
+
+The app has no secrets to deploy: pages read public chain data and the AI provider key is optional.
+Do **not** set `GEMINI_API_KEY` on a public deployment until per-user auth exists, or anyone can spend your free quota.
+
+1. `npx vercel login` (browser sign-in, done by you).
+2. From the repo root: `npx vercel link`, then in the Vercel project settings set **Root Directory = `apps/web`**
+   (keep "Include source files outside of the Root Directory" on; the workspace packages live outside it).
+3. Optional env vars: `NEXT_PUBLIC_PRODUCT_NAME`, and the three `CONTRACT_*` addresses from `deployments/diana-testnet.json`.
+4. `npx vercel --prod`.
+`.vercelignore` keeps `.secrets/`, `.env*` and contract build output out of the upload.
