@@ -60,7 +60,7 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Wallet connect, PQC key registration, hybrid-signed tx, EVM window open | **Not started** | needs a funded throwaway testnet account |
 | QoreSeal encrypt/decrypt in the vault | **Not started** (package verified on npm) | n/a |
 | Contract deployment | **Deployed to Diana testnet 2026-11-14** (5 contracts, see deployments/diana-testnet.json) | bytecode + owner read back on-chain |
-| Real payment through the vault, real rejection | **Done on testnet (manual commands)**: 1 allowed payment, 2 on-chain denials | docs/LIVE_RUN_2026-11-14.md |
+| Real payment, human approval, escrow funding, 60 QOR milestone release, real rejections | **Done on testnet (shell scripts, not the web app)**: 3 successful payments or releases plus 4 on-chain denials | docs/LIVE_RUN_2026-11-14.md |
 | AI agent behaviours (fraud review, procurement scoring, policy NL→JSON) | Provider ready; agent prompts/schemas **not written** | n/a |
 | DCA / arbitrage / dispute / governance / payroll modules | **Not started** | n/a |
 
