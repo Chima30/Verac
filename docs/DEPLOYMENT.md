@@ -24,8 +24,8 @@ forge build
 # one-time: import the throwaway key into an encrypted keystore (prompts locally; never paste it in chat)
 cast wallet import qoreops-deployer --interactive
 # optional: OWNER=0x... gives ownership of all Ownable contracts to another account (use a multisig when real)
-forge script script/Deploy.s.sol --rpc-url https://evm-rpc-diana.qorechain.io --account qoreops-deployer   # simulation
-forge script script/Deploy.s.sol --rpc-url https://evm-rpc-diana.qorechain.io --account qoreops-deployer --broadcast   # real, needs approval
+forge script script/Deploy.s.sol --rpc-url https://evm-testnet.qore.host --account qoreops-deployer   # simulation
+forge script script/Deploy.s.sol --rpc-url https://evm-testnet.qore.host --account qoreops-deployer --broadcast   # real, needs approval
 ```
 Then put the printed addresses in `.env` (`TREASURY_VAULT_ADDRESS`, ...). The Integrations page shows them as
 "ADDRESS SET, UNVERIFIED" until a chain read confirms code exists there.
