@@ -46,7 +46,7 @@ beforeAll(async () => {
     create role authenticated nologin; grant authenticated to app_user;
     grant usage on schema auth to app_user;
   `);
-  for (const f of ["0001_core.sql", "0002_creator_membership.sql", "0003_approvals.sql", "0004_procurement.sql"]) {
+  for (const f of ["0001_core.sql", "0002_creator_membership.sql", "0003_approvals.sql", "0004_procurement.sql", "0005_payroll.sql"]) {
     await db.exec(readFileSync(resolve(__dirname, "../../supabase/migrations", f), "utf8"));
   }
   await db.exec(`grant usage on schema public to app_user; grant all on all tables in schema public to app_user; grant all on all sequences in schema public to app_user; grant execute on all functions in schema public to app_user;`);

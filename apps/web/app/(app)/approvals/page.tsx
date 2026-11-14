@@ -47,7 +47,7 @@ async function decide(formData: FormData) {
   // Re-verify the binding on the server: refuse to approve anything whose stored hash does not match its stored fields.
   const { data: tx } = await sb!.from("transactions").select("payment_hash, evaluation").eq("id", id).maybeSingle();
   if (!tx) back("error", "Request not found.");
-  if (decision === "approve" && !hashMatches(tx!.payment_hash, tx!.evaluation)) back("error", "Hash check failed: the stored payment does not match its hash. Not approved.");
+  if (decision === "approve" && !hashMatches(tx!.payment_hash, tx!.evaluation, s.org!.id)) back("error", "Hash check failed: the stored payment does not match its hash. Not approved.");
   const { data, error } = await sb!.rpc("decide_payment", { p_tx: id, p_decision: decision, p_note: null });
   if (error) back("error", error.message);
   back("msg", data === "CANCELLED" ? "That request had expired and was cancelled." : `Recorded. Request is now ${data}.`);
@@ -82,13 +82,15 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
             const mine = t.requested_by === me;
             const decisions = approvals.filter((a) => a.subject_id === t.id);
             const iDecided = decisions.some((a) => a.approver === me);
-            const ok = hashMatches(t.payment_hash, t.evaluation);
+            const ok = hashMatches(t.payment_hash, t.evaluation, s.org!.id);
+            const payroll = (t.evaluation as { payroll?: { period: string; items: Array<{ name: string; address: string; amountQor: number }> } } | null)?.payroll;
             const purpose = (t.evaluation as { purpose?: string } | null)?.purpose;
             const open = t.state === "AWAITING_APPROVAL";
             return (
               <Card key={t.id} title={`${formatQor(t.amount)} QOR`} right={<span className="flex gap-2"><Badge tone={STATE_TONE[t.state] ?? "neutral"}>{t.state.replace("_", " ")}</Badge><Badge tone="sim" /></span>}>
                 <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[8rem_1fr]">
-                  <dt className="text-muted">To</dt><dd className="break-all font-mono text-xs">{t.recipient}</dd>
+                  <dt className="text-muted">To</dt><dd className="break-all font-mono text-xs">{payroll ? `Payroll ${payroll.period}: ${payroll.items.length} recipients` : t.recipient}</dd>
+                  {payroll && (<><dt className="text-muted">Lines</dt><dd><ul className="space-y-0.5 text-xs">{payroll.items.map((l, i) => <li key={i} className="flex flex-wrap justify-between gap-2"><span>{l.name} <span className="break-all font-mono text-muted">{l.address}</span></span><span>{l.amountQor} QOR</span></li>)}</ul></dd></>)}
                   <dt className="text-muted">Purpose</dt><dd>{purpose ?? "-"}</dd>
                   <dt className="text-muted">Approvals</dt><dd>{decisions.filter((d) => d.decision === "approve").length} of {t.required_approvals} needed{decisions.some((d) => d.decision === "reject") ? ", rejected" : ""}</dd>
                   <dt className="text-muted">Expires</dt><dd>{new Date(t.expires_at).toISOString().replace("T", " ").slice(0, 16)} UTC</dd>

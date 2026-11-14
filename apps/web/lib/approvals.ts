@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { keccak256, toBytes } from "viem";
-import { computePaymentHash, qorToWei } from "@qoreops/policy-engine";
+import { computePaymentHash, payrollBatchHash, qorToWei, type PayrollItem } from "@qoreops/policy-engine";
 import { NATIVE_TOKEN, type PaymentProposal } from "@qoreops/shared-types";
 import deployment from "../../../deployments/diana-testnet.json";
 
@@ -31,10 +31,11 @@ export function buildProposal(orgId: string, input: { to: string; amountQor: num
 }
 
 /** Recomputes the hash from the stored fields. Approvers should only trust a request whose stored hash matches. */
-export function hashMatches(storedHash: string, evaluation: unknown): boolean {
+export function hashMatches(storedHash: string, evaluation: unknown, orgId?: string): boolean {
   try {
-    const p = (evaluation as { proposal?: PaymentProposal } | null)?.proposal;
-    return !!p && computePaymentHash(p).toLowerCase() === storedHash.toLowerCase();
+    const ev = evaluation as { proposal?: PaymentProposal; payroll?: { period: string; items: PayrollItem[] } } | null;
+    if (ev?.payroll) return !!orgId && payrollBatchHash(orgId, ev.payroll.period, ev.payroll.items).toLowerCase() === storedHash.toLowerCase();
+    return !!ev?.proposal && computePaymentHash(ev.proposal).toLowerCase() === storedHash.toLowerCase();
   } catch { return false; }
 }
 
