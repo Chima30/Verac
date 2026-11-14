@@ -41,7 +41,7 @@ export default async function OrganisationPage({ searchParams }: { searchParams:
         <Card title="Profile"><KV rows={[["Name", o.name], ["Your role", o.role], ["Signed in as", s.user.email ?? s.user.id], ["Organisation id", o.id]]} /></Card>
         <Card title="Treasury contracts" right={<Badge tone={isLinked ? "live" : "pending"}>{isLinked ? "LINKED" : "NOT LINKED"}</Badge>}>
           {isLinked ? (
-            <KV rows={[["Treasury vault", o.treasuryAddress ?? ""], ...Object.entries(o.contracts).map(([k, v]): [string, string] => [k, String(v)])]} />
+            <KV rows={[...(Object.values(o.contracts).includes(o.treasuryAddress ?? "") ? [] : [["Treasury vault", o.treasuryAddress ?? ""] as [string, string]]), ...Object.entries(o.contracts).map(([k, v]): [string, string] => [k, String(v)])]} />
           ) : (
             <form action={linkContracts} className="space-y-3">
               <p className="text-sm text-muted">Record the contracts deployed to Diana testnet on 2026-11-14 (see Live Proof) as this organisation&apos;s treasury. This only saves addresses to your database; it moves no funds.</p>
