@@ -8,7 +8,7 @@ import { dirname, resolve } from "node:path";
 import { generatePqcKeypair, evmToQor } from "@qorechain/sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
-const file = resolve(process.cwd(), ".secrets/testnet-account.json");
+const file = resolve(process.cwd(), process.argv[2] ?? ".secrets/testnet-account.json");
 if (existsSync(file)) {
   console.error(`Refusing to overwrite ${file}. Delete it yourself first if you really want a new account.`);
   process.exit(1);
@@ -24,7 +24,7 @@ writeFileSync(file, JSON.stringify({
   secp256k1PrivateKey: privateKey, mlDsa87PublicKey: hex(pqc.publicKey), mlDsa87SecretKey: hex(pqc.secretKey),
 }, null, 2), { mode: 0o600 });
 
-console.log("Created throwaway testnet account (secrets saved to .secrets/testnet-account.json, not shown).");
+console.log("Created throwaway testnet account (secrets saved to the account file, not shown).");
 console.log("QOR address :", evmToQor(account.address));
 console.log("EVM address :", account.address);
 console.log("Next: fund the QOR address from the faucet, then send me ONLY the addresses above.");

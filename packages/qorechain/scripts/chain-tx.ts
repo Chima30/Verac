@@ -15,7 +15,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { StargateClient } from "@cosmjs/stargate";
 import {
-  EthNativeSigner, buildRegisterPqcKeyMsg, closeEvmWindowMsg, openEvmWindowMsg, signProofOfPossession,
+  EthNativeSigner, msg, buildRegisterPqcKeyMsg, closeEvmWindowMsg, openEvmWindowMsg, signProofOfPossession,
   unifiedAccountFromSeed, type UnifiedAccount,
 } from "@qorechain/sdk";
 import { QORE_NETWORK } from "@qoreops/shared-types";
@@ -26,7 +26,7 @@ const broadcast = rest.includes("--broadcast");
 const flag = (name: string, d: number) => { const i = rest.indexOf(name); return i >= 0 ? Number(rest[i + 1]) : d; };
 const unhex = (h: string) => Uint8Array.from(Buffer.from(h.replace(/^0x/, ""), "hex"));
 
-const f = JSON.parse(readFileSync(resolve(process.cwd(), ".secrets/testnet-account.json"), "utf8")) as {
+const f = JSON.parse(readFileSync(resolve(process.cwd(), process.env.ACCOUNT_FILE ?? ".secrets/testnet-account.json"), "utf8")) as {
   qorAddress: string; secp256k1PrivateKey: string; mlDsa87PublicKey: string; mlDsa87SecretKey: string;
 };
 const pqc = { publicKey: unhex(f.mlDsa87PublicKey), secretKey: unhex(f.mlDsa87SecretKey) };
@@ -55,11 +55,16 @@ if (cmd === "register-pqc") {
   const blocks = flag("--blocks", 300), maxTxs = flag("--max-txs", 10), maxQor = flag("--max-qor", 10);
   messages = [openEvmWindowMsg({ sender: account.cosmos, blocks, maxTxs, maxValue: String(Math.round(maxQor * 1_000_000)) })];
   gas = 500_000; mode = "hybrid"; label = `MsgOpenEVMWindow UNSCOPED: ${blocks} blocks, ${maxTxs} txs, max ${maxQor} QOR (value + fees)`;
+} else if (cmd === "send") {
+  const to = rest[0], qor = Number(rest[1]);
+  if (!to?.startsWith("qor1") || !(qor > 0 && qor <= 50)) throw new Error("usage: send <qor1... address> <amount QOR, max 50>");
+  messages = [msg.bank.send({ fromAddress: account.cosmos, toAddress: to, amount: [{ denom: "uqor", amount: String(Math.round(qor * 1_000_000)) }] })];
+  gas = 300_000; mode = "hybrid"; label = `MsgSend ${qor} QOR to ${to}`;
 } else if (cmd === "close-window") {
   messages = [closeEvmWindowMsg(account.cosmos)];
   gas = 300_000; mode = "hybrid"; label = "MsgCloseEVMWindow";
 } else {
-  console.error("usage: chain-tx.ts register-pqc | open-window [--blocks N --max-txs N --max-qor N] | close-window   [--broadcast]");
+  console.error("usage: chain-tx.ts register-pqc | send <qor1..> <QOR> | open-window [--blocks N --max-txs N --max-qor N] | close-window   [--broadcast]");
   process.exit(2);
 }
 
