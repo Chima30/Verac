@@ -182,3 +182,9 @@ export class ChainExecution {
     }
   }
 }
+
+/** Adds the receipt wait to ChainExecution without changing its constructor: poll until mined, then verify. */
+export async function waitForVerifiedReceipt(x: ChainExecution, txHash: Hex, timeoutMs = 90_000): Promise<ReceiptVerdict> {
+  try { await x.evm.waitForTransactionReceipt({ hash: txHash, timeout: timeoutMs, pollingInterval: 2_000 }); } catch { /* fall through: verifyReceipt reports not_found */ }
+  return x.verifyReceipt(txHash);
+}

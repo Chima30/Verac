@@ -75,7 +75,7 @@ console.log(`signer ${account.cosmos}  mode ${mode}  fee ${params.fee.amount[0]!
 
 if (!broadcast) {
   const signed = signer.sign({ ...params, signBytesVersion: await signer.resolveSignBytesVersion(CHAIN_ID) });
-  console.log(`Signed locally OK (${signed.txBytes?.length ?? "?"} bytes). Nothing was sent. Re-run with --broadcast to send.`);
+  console.log(`Signed locally OK (${(signed as { txBytes?: Uint8Array }).txBytes?.length ?? "?"} bytes). Nothing was sent. Re-run with --broadcast to send.`);
 } else {
   const client = await StargateClient.connect(QORE_NETWORK.rpc);
   const res = await signer.signAndBroadcast(client, params);
