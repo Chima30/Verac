@@ -51,8 +51,8 @@ Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md]
 | Deterministic policy engine + payment hash (matches Solidity byte for byte) | Implemented | 14 Vitest tests + cross-language vector |
 | Payment pipeline, state machine, idempotency | Implemented (in-memory store) | 22 Vitest tests |
 | 15 agent specs, tool allow-lists, signed replay-protected messaging | Implemented | same suite |
-| Gemini provider (free-tier limits, retries, quota pause, schema validation) | Implemented, mocked tests only | 24 Vitest tests; **no live Gemini call yet** (needs your key) |
-| Postgres schema + RLS (31 tables) | Implemented | 14 tenant-isolation tests on PGlite (not a Supabase project) |
+| Gemini provider (free-tier limits, retries, quota pause, schema validation) | Implemented; one real call per model made 2026-11-14 (default `gemini-3.5-flash-lite` answers in about 1.5 to 3 s; 5 of 8 other models timed out or errored) | 24 mocked Vitest tests + `pnpm ai:probe`; no agent prompts wired yet |
+| Postgres schema + RLS (31 tables, migrations 0001 and 0002) | Implemented; a policy bug found on real Supabase was fixed | 15 tenant-isolation tests on PGlite; sign-up, organisation creation and contract linking confirmed on a real Supabase project |
 | Live testnet **reads** (chain id, block, AA config, limits) | Verified 2026-11-14 | `pnpm chain:probe` |
 | Web app shell: 27 routes, light/dark, mobile nav | Implemented and deployed read-only at https://verac-web.vercel.app (all 27 routes return 200) | checked 2026-11-14 |
 | Web pages with live behaviour | Live Proof (re-verifies all 37 testnet transactions from the chain), Dashboard (chain + AI status), agent registry, permission matrix, policy validator, address lookup (balance, PQC, KEM, window, rules) on Diana testnet, integrations | read-only; no signing |

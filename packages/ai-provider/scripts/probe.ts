@@ -22,7 +22,9 @@ try {
   });
   console.log("result:", JSON.stringify(r, null, 2));
   console.log("usage:", JSON.stringify(usage.summary(), null, 2));
+  console.log("each provider call:", usage.all().map((r) => `${r.status} ${r.model} ${r.latencyMs}ms`));
 } catch (e) {
+  console.log("each provider call:", usage.all().map((r) => `${r.status} ${r.model} ${r.latencyMs}ms`));
   console.error("live call failed:", e instanceof Error ? `${e.name}: ${e.message}` : e);
   process.exitCode = 1;
 }

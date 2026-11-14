@@ -17,7 +17,7 @@
     "account:new": "tsx packages/qorechain/scripts/new-account.ts",
     "account:inspect": "tsx packages/qorechain/scripts/account.ts",
     "chain:tx": "tsx packages/qorechain/scripts/chain-tx.ts",
-    "ai:probe": "tsx packages/ai-provider/scripts/probe.ts"
+    "ai:probe": "tsx --env-file=apps/web/.env.local packages/ai-provider/scripts/probe.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.16",

@@ -75,7 +75,7 @@ describe("generateStructured", () => {
     const { p, usage } = make(new FakeClient([ok({ verdict: "ok", reason: "fine" })]));
     const r = await p.generateStructured(req());
     expect(r.data).toEqual({ verdict: "ok", reason: "fine" });
-    expect(r.model).toBe("gemini-3.8-flash");
+    expect(r.model).toBe("gemini-3.5-flash-lite");
     const row = usage.all()[0]!;
     expect(row.status).toBe("ok");
     expect(row.totalTokens).toBe(30);
@@ -158,7 +158,7 @@ describe("retry, rate limits and quota", () => {
 
   it("on 429 switches once to the free fallback model", async () => {
     const c = new FakeClient([apiErr(429), ok({ verdict: "ok", reason: "r" })]);
-    const { p } = make(c, { GEMINI_FALLBACK_MODEL: "gemini-3.5-flash-lite" });
+    const { p } = make(c, { GEMINI_MODEL: "gemini-3.8-flash", GEMINI_FALLBACK_MODEL: "gemini-3.5-flash-lite" });
     const r = await p.generateStructured(req());
     expect(r.model).toBe("gemini-3.5-flash-lite");
     expect(c.calls.map((x) => x.model)).toEqual(["gemini-3.8-flash", "gemini-3.5-flash-lite"]);
@@ -166,7 +166,7 @@ describe("retry, rate limits and quota", () => {
 
   it("on persistent 429 pauses the provider, keeps work recoverable, and fails fast afterwards", async () => {
     const c = new FakeClient([apiErr(429, "quota"), apiErr(429, "quota")]);
-    const { p, now } = make(c, { GEMINI_FALLBACK_MODEL: "gemini-3.5-flash-lite" });
+    const { p, now } = make(c, { GEMINI_MODEL: "gemini-3.8-flash", GEMINI_FALLBACK_MODEL: "gemini-3.5-flash-lite" });
     const err = (await p.generateStructured(req()).catch((e: unknown) => e)) as AiError;
     expect(err).toBeInstanceOf(AiError);
     expect(err.code).toBe("QUOTA_EXHAUSTED");
