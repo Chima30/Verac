@@ -1,7 +1,10 @@
+import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
   transpilePackages: ["@qoreops/shared-types", "@qoreops/policy-engine", "@qoreops/ai-provider", "@qoreops/agent-coordinator", "@qoreops/qorechain"],
+  // Monorepo: trace server dependencies from the repo root so hoisted packages (@qorechain/sdk) ship to the serverless bundle.
+  outputFileTracingRoot: fileURLToPath(new URL("../..", import.meta.url)),
   serverExternalPackages: ["@qorechain/sdk", "@qorechain/qoreseal"],
   poweredByHeader: false,
   async headers() {
