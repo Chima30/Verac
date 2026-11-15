@@ -6,10 +6,15 @@
 -- decide_payment keeps its name, arguments and behaviour for ordinary (simulation, payroll) requests, so the Approvals page and
 -- existing callers are unchanged. The real logic moves, unchanged, to decide_payment_core, which browsers cannot call.
 
-alter function decide_payment(uuid, text, text) rename to decide_payment_core;
+-- Re-runnable: rename only when the core does not exist yet (renaming the wrapper onto the core would make it call itself).
+do $$ begin
+  if to_regprocedure('public.decide_payment_core(uuid,text,text)') is null then
+    alter function decide_payment(uuid, text, text) rename to decide_payment_core;
+  end if;
+end $$;
 revoke all on function decide_payment_core(uuid, text, text) from public, anon, authenticated;
 
-create function decide_payment(p_tx uuid, p_decision text, p_note text default null) returns text
+create or replace function decide_payment(p_tx uuid, p_decision text, p_note text default null) returns text
 language plpgsql security definer set search_path = public as $$
 begin
   if exists (select 1 from transactions where id = p_tx and calldata_hash is not null) then
