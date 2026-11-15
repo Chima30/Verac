@@ -49,13 +49,13 @@ beforeAll(async () => {
     create schema auth;
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
     create role authenticated nologin; create role app_user nologin; grant authenticated to app_user;
-    create role service_role nologin bypassrls;
+    create role service_role nologin bypassrls; create role anon nologin;
     grant usage on schema auth to app_user, service_role;
     -- Supabase's default: every new function in public is executable by the browser-facing roles unless revoked.
     alter default privileges in schema public grant execute on functions to authenticated, service_role;
   `);
   const dir = resolve(__dirname, "../../supabase/migrations");
-  for (const f of ["0001_core.sql", "0002_creator_membership.sql", "0003_approvals.sql", "0004_procurement.sql", "0005_payroll.sql", "0006_milestones.sql", "0014_live_execution.sql"]) await db.exec(readFileSync(resolve(dir, f), "utf8"));
+  for (const f of ["0001_core.sql", "0002_creator_membership.sql", "0003_approvals.sql", "0004_procurement.sql", "0005_payroll.sql", "0006_milestones.sql", "0014_live_execution.sql", "0015_live_decision_guard.sql"]) await db.exec(readFileSync(resolve(dir, f), "utf8"));
   await db.exec(`grant usage on schema public to authenticated, service_role; grant all on all tables in schema public to authenticated, service_role; grant all on all sequences in schema public to authenticated, service_role;`);
   await db.exec(`
     insert into organizations(id,name,created_by) values ('${ORG}','Nova DAO','${U.owner}');
@@ -124,6 +124,22 @@ describe("deciding", () => {
     const tx = await request(U.fin);
     expect(await decide(U.admin, tx, "reject")).toBe("REJECTED");
     await expect(decide(U.admin2, tx)).rejects.toThrow(/already REJECTED/);
+  });
+  it("cannot be approved through the generic decide_payment, which has no password step or administrator rule", async () => {
+    const tx = await request(U.fin);
+    const generic = (user: string, d = "approve") => as(user, async () => (await db.query(`select decide_payment('${tx}','${d}','sneaky') as s`)).rows[0]);
+    await expect(generic(U.admin)).rejects.toThrow(/live payment/);
+    await expect(generic(U.owner)).rejects.toThrow(/live payment/);
+    await expect(generic(U.admin, "reject")).rejects.toThrow(/live payment/);
+    expect(await state(tx)).toBe("AWAITING_APPROVAL");
+    expect(await rows(`select 1 from approvals where subject_id = '${tx}'`)).toHaveLength(0);
+    expect(await decide(U.admin, tx)).toBe("APPROVED"); // the proper path still works
+  });
+  it("still lets the generic path decide ordinary simulation requests", async () => {
+    n++;
+    const sim = await as(U.fin, async () => ((await db.query(`select request_payment_approval('${ORG}','sim-ok-${n}','PaymentAgent','${hex(64, 9500 + n)}','0x${"0".repeat(40)}','0x${"2".repeat(40)}',500000000000,1,now() + interval '1 hour',1,'{}'::jsonb) as id`)).rows[0] as { id: string }).id);
+    const s = await as(U.admin, async () => ((await db.query(`select decide_payment('${sim}','approve') as s`)).rows[0] as { s: string }).s);
+    expect(s).toBe("APPROVED");
   });
   it("does not accept a decision on a simulation record", async () => {
     n++;

@@ -37,7 +37,7 @@ export default async function Proof() {
 
   return (
     <>
-      <PageHeader title="Live Proof" description="Every transaction from the 2026-11-14 testnet runs, re-read from the chain when this page loads (cached for up to 5 minutes). If a result differs from what the run expected, it is flagged rather than hidden."
+      <PageHeader title="Live Proof" description="Every transaction from the 2026-11-14 testnet runs and the 2026-11-15 live-execution setup, re-read from the chain when this page loads (cached for up to 5 minutes). If a result differs from what the run expected, it is flagged rather than hidden."
         badge={<Badge tone="live" />} />
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="Transactions matching the record" value={`${matches} / ${checked.length}`} badge={<Badge tone={matches === checked.length ? "live" : "failed"}>{matches === checked.length ? "ALL MATCH" : "MISMATCH"}</Badge>} />
@@ -71,7 +71,7 @@ export default async function Proof() {
         ))}
       </div>
 
-      <p className="mt-6 max-w-3xl text-xs text-muted">What this does not show: the steps were run from scripts, not from this app. No AI made any decision. The owner, approver and reviewer were the same throwaway key, so separation of duties is not demonstrated. The contracts are not source-verified on an explorer and have had no external audit. Revert reasons come from replaying the failed transactions.</p>
+      <p className="mt-6 max-w-3xl text-xs text-muted">What this does not show: every step was run from scripts, not from this app, and no payment has yet been sent through the website. No AI made any decision. In the 2026-11-14 runs the owner, approver and reviewer were the same throwaway key, so separation of duties is not demonstrated; the 2026-11-15 setup only adds a separate approver account, which has not yet been used. The contracts are not source-verified on an explorer and have had no external audit. Revert reasons come from replaying the failed transactions.</p>
     </>
   );
 }

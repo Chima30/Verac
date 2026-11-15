@@ -1,6 +1,6 @@
 "use client";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Card, KV, btnCls, inputCls } from "./ui";
 
 type Part = { ok: true; data?: unknown; wei?: string; qor?: string } | { ok: false; error: string };
@@ -24,17 +24,24 @@ function Section({ title, part, empty }: { title: string; part: Part; empty?: st
   );
 }
 
-export function AddressLookup({ focus }: { focus: Focus }) {
-  const [address, setAddress] = useState("");
+export function AddressLookup({ focus, presetAddress }: { focus: Focus; presetAddress?: string }) {
+  const [address, setAddress] = useState(presetAddress ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [res, setRes] = useState<Result | null>(null);
 
-  async function run(e: React.FormEvent) {
-    e.preventDefault();
+  // A connected wallet's address is queried straight away (the same read-only lookup, so everything shown comes from the chain).
+  useEffect(() => {
+    if (presetAddress) { setAddress(presetAddress); void query(presetAddress); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presetAddress]);
+
+  function run(e: React.FormEvent) { e.preventDefault(); return query(address); }
+
+  async function query(addr: string) {
     setBusy(true); setError(null); setRes(null);
     try {
-      const r = await fetch(`/api/chain/lookup?address=${encodeURIComponent(address.trim())}`);
+      const r = await fetch(`/api/chain/lookup?address=${encodeURIComponent(addr.trim())}`);
       const j = (await r.json()) as Result & { error?: string };
       if (!r.ok) setError(j.error ?? `Request failed (${r.status})`); else setRes(j);
     } catch (err) { setError(err instanceof Error ? err.message : String(err)); }

@@ -5,20 +5,11 @@ import { z } from "zod";
 import { DEPLOYED, SIGNER_LIMITS, executeLiveOperation, policyManagerAbi, prepareCall, toPaymentTuple, treasuryVaultAbi, type ExecutorDb, type Hex, type LiveRow } from "@qoreops/qorechain";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { buildExecutorParts, chain, liveStatusFlags } from "./config";
+import { ProposeSchema, parseQor } from "./schema";
 
 const NATIVE = "0x0000000000000000000000000000000000000000" as const;
 
-export const ProposeSchema = z.object({
-  recipient: z.string().regex(/^0x[0-9a-fA-F]{40}$/),
-  amountQor: z.string().regex(/^\d{1,2}(\.\d{1,6})?$/, "Use a plain number such as 2.5"),
-  purpose: z.string().trim().min(3).max(120),
-  idempotencyKey: z.string().min(8).max(64),
-});
-
-export function parseQor(s: string): bigint {
-  const [w, f = ""] = s.split(".");
-  return BigInt(w!) * 10n ** 18n + BigInt(f.padEnd(18, "0").slice(0, 18));
-}
+export { ProposeSchema, parseQor };
 
 /** Service-role client. The key stays on the server; it can only reach the server-only functions through this module. */
 export function serviceClient() {

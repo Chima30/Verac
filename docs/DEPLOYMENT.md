@@ -51,3 +51,28 @@ Do **not** set `GEMINI_API_KEY` on a public deployment until per-user auth exist
 3. Optional env vars: `NEXT_PUBLIC_PRODUCT_NAME`, and the three `CONTRACT_*` addresses from `deployments/diana-testnet.json`.
 4. `npx vercel --prod`.
 `.vercelignore` keeps `.secrets/`, `.env*` and contract build output out of the upload.
+
+## Turning on live testnet execution (off by default)
+
+Live execution lets the website send real **testnet** payments through the TreasuryVault. Read
+[SECURITY.md](SECURITY.md#server-managed-signing-testnet-only) first: it is a development signing path, not production custody.
+
+1. Apply `supabase/migrations/0014_live_execution.sql` in the Supabase SQL editor ("Success. No rows returned" is the normal result).
+   It is not part of `supabase/APPLY_0004_to_0013.sql`.
+2. In Vercel, add these as **Sensitive** variables (tick **Preview** as well as Production if you test on a branch deployment):
+
+   | Name | Secret | Meaning |
+   |---|---|---|
+   | `SUPABASE_SERVICE_ROLE_KEY` | yes | Server-only database key |
+   | `AGENT_EVM_PRIVATE_KEY`, `AGENT_MLDSA_PUBLIC_KEY`, `AGENT_MLDSA_SECRET_KEY` | yes | Agent account (pays) |
+   | `APPROVER_EVM_PRIVATE_KEY`, `APPROVER_MLDSA_PUBLIC_KEY`, `APPROVER_MLDSA_SECRET_KEY` | yes | A different account (relays approvals) |
+   | `LIVE_AGENT_ADDRESS` | no | Safety check on the agent key |
+   | `LIVE_REQUIRED_ADMIN_APPROVALS` | no | 1 or 2 administrators per payment |
+   | `LIVE_EXECUTION_ENABLED` | no | Set to exactly `true` to allow sending. Leave unset otherwise |
+   | `LIVE_EMERGENCY_STOP` | no | `true` stops everything |
+
+   Also needed (already set for the read-only site): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+3. On chain, the owner must have given the agent limits and registered the approver (see
+   [LIVE_SETUP_2026-11-15.md](LIVE_SETUP_2026-11-15.md); `packages/qorechain/scripts/owner-ops.ts` does both and is a dry run unless you add `--broadcast`).
+4. Redeploy. The Treasury page's **Live payments** card lists any variable that is still missing. Branch deployments are behind Vercel's own login.
+5. Nothing is sent until someone requests a payment, a different administrator approves it with their password, and someone presses Execute.

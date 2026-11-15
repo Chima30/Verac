@@ -37,6 +37,19 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pw, setPw] = useState<Record<string, string>>({});
   const [form, setForm] = useState({ recipient: "", amountQor: "", purpose: "" });
+  const [ask, setAsk] = useState("");
+  const [drafted, setDrafted] = useState<string | null>(null);
+
+  async function draft() {
+    setBusy("ask"); setMsg(null); setDrafted(null);
+    try {
+      const r = await fetch("/api/live/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: ask }) });
+      const j = (await r.json().catch(() => ({}))) as { error?: string; code?: string; draft?: { recipient: string; amountQor: string; purpose: string }; note?: string };
+      if (!r.ok || !j.draft) setMsg({ ok: false, text: r.status === 503 ? "The AI drafting service is not configured here. Fill in the form directly." : j.error ?? "Could not draft that." });
+      else { setForm(j.draft); setDrafted(j.note ?? "Draft filled in."); }
+    } catch { setMsg({ ok: false, text: "Network error. Nothing was changed." }); }
+    setBusy(null);
+  }
   const txUrl = (h: string) => `${explorer.replace(/\/$/, "")}/tx/${h}`;
 
   async function call(path: string, body: unknown, label: string, okText: (j: Record<string, unknown>) => string): Promise<boolean> {
@@ -61,6 +74,17 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
           Live execution is {status.switchOn ? "switched on but not fully configured" : "switched off"} on this deployment, so approved payments cannot be sent yet. Requests and approvals still work and are recorded.
           {status.missing.length > 0 && <> Missing server settings: <span className="font-mono">{status.missing.join(", ")}</span>.</>}
         </p>
+      )}
+
+      {canRequest && (
+        <div className="space-y-2">
+          <label htmlFor="lp-ask" className="block text-xs text-muted">Describe the payment in plain English (optional, AI fills in the form below)</label>
+          <div className="flex flex-wrap gap-2">
+            <input id="lp-ask" className={`${inputCls} min-w-0 flex-1`} maxLength={600} placeholder="Pay 0x… 1.5 QOR for October design work" value={ask} onChange={(e) => setAsk(e.target.value)} />
+            <button type="button" className={btnCls} disabled={busy !== null || ask.trim().length < 10} onClick={draft}>{busy === "ask" ? "Drafting…" : "Draft with AI"}</button>
+          </div>
+          {drafted && <p role="status" className="text-xs text-muted">AI draft, not requested. {drafted} Check every field before requesting.</p>}
+        </div>
       )}
 
       {canRequest && (

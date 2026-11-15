@@ -54,3 +54,15 @@ export const RUN: RunTx[] = [
   { group: "Escrow and milestone release", label: "Reviewer approves the milestone", lane: "evm", hash: h("0x612aec1b93f27e8a6a6d7989a66bcf3ed0b907c9aa8d6a40e9f6bada64e27450"), expect: "success" },
   { group: "Escrow and milestone release", label: "RELEASE: 60 QOR paid to the contractor", lane: "evm", hash: h("0xe4f370c707589f0e07deeeadc5fabb882faabd0a58a5695679ddfcc8a2c18d8a"), expect: "success" },
 ];
+
+// 2026-11-15: owner setup for live execution (see docs/LIVE_SETUP_2026-11-15.md). Each was dry-run first and read back from the chain.
+RUN.push(
+  { group: "Live execution setup, 2026-11-15", label: "Owner opens a vault-only EVM window", lane: "native", hash: h("01FFA4EB67E7104C47442C4463D850ED95F813EBB779BC3674F93D776582E533"), expect: "success" },
+  { group: "Live execution setup, 2026-11-15", label: "Agent limits set: 10 QOR per payment, 20 per day, no auto-approve", lane: "evm", hash: h("0x99a053ab48231f5cc2b3178572cb09d5235e4c98d754bea4606bd5f30838359d"), expect: "success" },
+  { group: "Live execution setup, 2026-11-15", label: "Owner closes the window", lane: "native", hash: h("DF0770056DF9D618AE2F9517C4F3CF899901024029847D7015D0D4A32E2B9456"), expect: "success" },
+  { group: "Live execution setup, 2026-11-15", label: "Fund the dedicated approver account with 3 QOR", lane: "native", hash: h("070B298989C01145604163E3FCB3612EAFE32A6F0293AEB561DED701354CEDDE"), expect: "success" },
+  { group: "Live execution setup, 2026-11-15", label: "Register the approver's ML-DSA-87 key", lane: "native", hash: h("E11E283A7F256347C3B31F4EA99F80B149C9DEF5133C870828D0228A1C6A6FCF"), expect: "success" },
+  { group: "Live execution setup, 2026-11-15", label: "Owner opens a vault-only EVM window", lane: "native", hash: h("C3180406886C9ED7325F228679FE21B82E98ACFAC43057617A209C442A10E94B"), expect: "success" },
+  { group: "Live execution setup, 2026-11-15", label: "Approver account added to the vault (approver count 2)", lane: "evm", hash: h("0x51daf2af7cc8e62916750b50645ffce27bfed9a523df09d2f68970b93d3b2a44"), expect: "success" },
+  { group: "Live execution setup, 2026-11-15", label: "Owner closes the window", lane: "native", hash: h("0FB3FCB7B34E6F7805AD347A9FCCAFC3B6978D62FACE054F43E40E8FCE5D5BAD"), expect: "success" },
+);

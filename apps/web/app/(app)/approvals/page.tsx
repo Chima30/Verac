@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { Badge, Card, EmptyState, PageHeader, btnCls, inputCls } from "@/components/ui";
 import { buildProposal, formatQor, hashMatches, STATE_TONE } from "@/lib/approvals";
+import { LivePayments } from "@/components/live/live-payments";
+import { liveOperations } from "@/lib/live/list";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -63,8 +65,9 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
   if (!s.org) redirect("/onboarding");
   const sp = await searchParams;
   const sb = await supabaseServer();
-  const { data: txs, error } = await sb!.from("transactions").select("id,state,recipient,amount,payment_hash,required_approvals,expires_at,requested_by,evaluation,source,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false }).limit(50);
+  const { data: txs, error } = await sb!.from("transactions").select("id,state,recipient,amount,payment_hash,required_approvals,expires_at,requested_by,evaluation,source,created_at").eq("organization_id", s.org.id).is("calldata_hash", null).order("created_at", { ascending: false }).limit(50); // live operations (which carry a calldata hash) are decided in the Live payments card, never here
   const list = (txs ?? []) as unknown as Tx[];
+  const live = await liveOperations();
   const { data: ap } = list.length ? await sb!.from("approvals").select("subject_id,approver,decision").in("subject_id", list.map((t) => t.id)) : { data: [] };
   const approvals = (ap ?? []) as Appr[];
   const canAct = FINANCE.includes(s.org.role);
@@ -76,6 +79,19 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
       {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-surface px-3 py-2 text-sm">{sp.msg}</p>}
       {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error ?? error?.message}</p>}
 
+      <div className="mb-6">
+        <Card title="Live testnet payments" right={<Badge tone="live">LIVE TESTNET</Badge>}>
+          <LivePayments
+            ops={live.ops}
+            canRequest={canAct}
+            canDecide={["owner", "administrator"].includes(s.org.role)}
+            explorer="https://explore.qore.network"
+            status={live.status}
+          />
+        </Card>
+      </div>
+
+      <h2 className="mb-3 text-sm font-medium text-muted">Simulated requests (nothing is sent to the chain)</h2>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
           {list.length === 0 ? <EmptyState title="No requests yet">Create a test request on the right. You need a second finance member to approve it, because you cannot approve your own.</EmptyState> : list.map((t) => {
