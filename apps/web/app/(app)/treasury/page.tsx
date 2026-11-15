@@ -79,9 +79,9 @@ export default async function Treasury() {
             ) : <EmptyState title="Sign in to make a payment" action={<Link href="/login?next=/treasury" className={btnCls}>Sign in</Link>}>Payment requests belong to your organisation. Nothing on this card is simulated.</EmptyState>}
           </Card>
 
-          <ChartCard title="Treasury balance" description="Native QOR held by the vault." right={<Badge tone="live" />}
-            footer="Rebuilt from the vault's own deposit, payment and escrow events, dated by block timestamps and anchored to the balance read now. If the events ever fail to explain the balance, the chart is hidden rather than guessed.">
-            {Object.keys(series).length ? <InteractiveAreaChart title="Vault balance" unit="QOR" data={series} height={260} /> : <ChartEmpty title="Not enough history yet" height={260}>The vault's events do not give two real points to draw.</ChartEmpty>}
+          <ChartCard label="Treasury balance"
+            footer={<><span className="mr-1.5 font-semibold text-[#34d399]">● Live testnet.</span>Rebuilt from the vault's own deposit, payment and escrow events, dated by block timestamps and anchored to the balance read now. If the events ever fail to explain the balance, the chart is hidden rather than guessed.</>}>
+            {Object.keys(series).length ? <InteractiveAreaChart title="Treasury balance" unit="QOR" data={series} height={260} /> : <ChartEmpty title="Not enough history yet" height={260}>The vault's events do not give two real points to draw.</ChartEmpty>}
           </ChartCard>
 
           <ChartCard title="Money in and out" description={`QOR deposited into the vault and paid out of it, per ${flows.length && flows[0]!.key.length === 7 ? "month" : "day"}.`}

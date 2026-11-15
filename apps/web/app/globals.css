@@ -239,9 +239,7 @@ details[open] > summary .chevron { transform: rotate(90deg); }
 @keyframes spin-slow { to { rotate: 360deg; } }
 @keyframes float-y { from { translate: 0 -0.75rem; } to { translate: 0 0.75rem; } }
 
-/* Chart cards: a deep surface with a soft light at the top edge. */
-.chart-card { background:
-  radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%),
-  linear-gradient(180deg, #0f0f11 0%, #09090a 100%);
-  border: 1px solid #1f1f23; box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 20px 40px -24px rgb(0 0 0 / 0.55); }
+/* Chart cards: a flat graphite surface with a fine border, the same in both app themes. */
+.chart-card { background: #19191b; border: 1px solid #2a2a2e; box-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 18px 40px -26px rgb(0 0 0 / 0.6); }
+.chart-card { --border: #2a2a2e; --subtle: #8e8e96; --muted: #b4b4bb; }
 @media (max-width: 639px) { .ambient .ring { display: none; } }

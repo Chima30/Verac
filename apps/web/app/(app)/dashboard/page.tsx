@@ -68,9 +68,9 @@ async function Money() {
       </dl>
 
     </Card>
-    <ChartCard title="Treasury balance" description="Native QOR held by the vault over time." right={<Badge tone="live" />}
-      footer="Rebuilt from the vault's Deposited, PaymentExecuted and EscrowFunded events, dated by their block timestamps and anchored to the balance read now.">
-      {Object.keys(series).length ? <InteractiveAreaChart title="Vault balance" unit="QOR" data={series} defaultRange={series["30 days"] ? "30 days" : undefined} height={230} />
+    <ChartCard label="Treasury balance"
+      footer={<><span className="mr-1.5 font-semibold text-[#34d399]">● Live testnet.</span>Rebuilt from the vault's Deposited, PaymentExecuted and EscrowFunded events, dated by their block timestamps and anchored to the balance read now.</>}>
+      {Object.keys(series).length ? <InteractiveAreaChart title="Treasury balance" unit="QOR" data={series} defaultRange={series["30 days"] ? "30 days" : undefined} height={230} />
         : <ChartEmpty title="Not enough history yet">The vault's events do not give two real points to draw. A chart is never filled with estimates.</ChartEmpty>}
     </ChartCard>
     </>

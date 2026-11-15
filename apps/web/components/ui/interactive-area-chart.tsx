@@ -24,7 +24,7 @@ export interface InteractiveAreaChartProps {
 
 const N = 72; // every dataset is resampled to N points so ranges can morph 1:1
 const PAD = { t: 18, r: 14, b: 30, l: 48 };
-const TIP_W = 150;
+const TIP_W = 184;
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 const EASE_IN_OUT = [0.77, 0, 0.175, 1] as const;
 
@@ -41,7 +41,7 @@ function spline(v: number[], pos: number) {
   return p1 + 0.5 * t * (p2 - p0 + t * (2 * p0 - 5 * p1 + 4 * p2 - p3 + t * (3 * (p1 - p2) + p3 - p0)));
 }
 
-function niceScale(min: number, max: number, count = 4) {
+function niceScale(min: number, max: number, count = 3) {
   const raw = ((max - min) || Math.max(1, Math.abs(max))) / (count - 1);
   const mag = 10 ** Math.floor(Math.log10(raw));
   const n = raw / mag;
@@ -140,11 +140,12 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
   const clipW = useTransform([reveal, wMV], ([r, w]: number[]) => (r! >= 0.999 ? w! : PAD.l + Math.max(0, w! - PAD.l - PAD.r) * r!));
   const leadX = useTransform([reveal, wMV], ([r, w]: number[]) => PAD.l + Math.max(0, w! - PAD.l - PAD.r) * r!);
   const leadY = useTransform([reveal, t, wMV, ver], ([r]: number[]) => sampleY(r!));
-  // The lead dot draws the line in, then rests on the latest real value.
-  const leadO = useTransform(reveal, [0, 0.02, 1], [0, 1, 1]);
-  const haloO = useTransform(reveal, [0.9, 1], [0, 1]);
+  // The lead dot draws the line in, then fades so the finished chart is just the line.
+  const leadO = useTransform(reveal, [0, 0.02, 0.94, 1], [0, 1, 1, 0]);
   const dotY = useTransform([cxS, t, wMV, ver], ([c]: number[]) => sampleY((c! - PAD.l) / Math.max(1, wMV.get() - PAD.l - PAD.r)));
   const tipX = useTransform([cxS, wMV], ([c, w]: number[]) => clamp(c! - TIP_W / 2, 0, Math.max(0, w! - TIP_W)));
+  // The tooltip sits just above the point it describes, never pinned to the corner.
+  const tipY = useTransform(dotY, (y: number) => Math.max(0, y - 64));
 
   // Track width and start the intro draw once it is known.
   useEffect(() => {
@@ -204,6 +205,9 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
   const shown = m.pts[hover ?? len - 1]!;
   const tipPt = m.pts[Math.min(lastHover.current, len - 1)]!;
   const change = shown.value - m.pts[0]!.value;
+  const base = m.pts[0]!.value;
+  // A percentage from a zero start is meaningless, so the change is shown in units then.
+  const changeText = base > 0 ? `${change >= 0 ? "+" : ""}${(Math.round((change / base) * 1000) / 10).toFixed(1)}%` : `${change >= 0 ? "+" : ""}${num.format(change)} ${unit}`;
   const isNarrow = width > 0 && width < 380;
   const labelCount = isNarrow ? 3 : width < 520 ? 4 : 5;
   const xLabels = [...new Set(Array.from({ length: labelCount }, (_, j) => Math.round((j / (labelCount - 1)) * (len - 1))))];
@@ -214,22 +218,22 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
     <div className={`w-full ${className}`}>
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-subtle">{title}</p>
-          <p className="mt-1 text-[32px] font-bold leading-none tracking-[-0.035em] tabular-nums sm:text-[38px]">{num.format(shown.value)}<span className="ml-2 text-[15px] font-semibold tracking-normal text-subtle">{unit}</span></p>
-          <p className="mt-2.5 flex flex-wrap items-center gap-2 text-[12.5px] tabular-nums text-subtle">
-            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-semibold ${change < 0 ? "bg-[var(--bad-bg)] text-[var(--bad)]" : change > 0 ? "bg-[var(--live-bg)] text-[var(--live)]" : "bg-white/5 text-muted"}`}>{change > 0 ? "▲ +" : change < 0 ? "▼ " : ""}{num.format(change)} {unit}</span>
-            <span>{hover !== null ? `at ${fmtTip.format(shown.date)} UTC` : `since ${fmtAxis.format(m.pts[0]!.date)}`}</span>
+          <p className="text-[13px] text-subtle">{title}</p>
+          <p className="mt-1 text-[30px] font-bold leading-tight tracking-[-0.03em] tabular-nums text-white sm:text-[34px]">{num.format(shown.value)}<span className="ml-1.5 text-[16px] font-semibold tracking-normal text-subtle">{unit}</span></p>
+          <p className="mt-0.5 text-[13px] tabular-nums text-subtle">
+            <span className={`font-medium ${change < 0 ? "text-[#f87171]" : change > 0 ? "text-[#34d399]" : "text-muted"}`}>{changeText}</span>{" "}
+            {hover !== null ? `at ${fmtTip.format(shown.date)} UTC` : keys.length > 1 ? `last ${range.replace(" days", "D").replace("All time", "all time")}` : `since ${fmtAxis.format(m.pts[0]!.date)}`}
           </p>
         </div>
         {keys.length > 1 && (
-          <div role="tablist" aria-label="Range" className="flex shrink-0 self-start rounded-full border border-white/10 bg-white/[0.04] p-1 sm:self-auto">
+          <div role="tablist" aria-label="Range" className="flex shrink-0 gap-0.5 self-start sm:self-auto">
             {keys.map((k) => (
               <button
                 key={k} role="tab" type="button" aria-selected={k === range} onClick={() => changeRange(k)}
-                className={`relative z-10 rounded-full px-3 py-1 text-[12px] font-semibold outline-none transition-[color,transform] duration-150 ease-out active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${k === range ? "text-ink" : "text-subtle hover:text-muted"}`}
+                className={`relative z-10 rounded-full px-3 py-1 text-[12px] font-semibold outline-none transition-[color,transform] duration-150 ease-out active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-white/40 ${k === range ? "text-white" : "text-subtle hover:text-muted"}`}
               >
-                {k === range && <motion.span layoutId={`${uid}-pill`} className="absolute inset-0 -z-10 rounded-full bg-white/[0.11] shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]" transition={{ type: "spring", duration: 0.3, bounce: 0.15 }} />}
-                {k}
+                {k === range && <motion.span layoutId={`${uid}-pill`} className="absolute inset-0 -z-10 rounded-full bg-white/[0.09]" transition={{ type: "spring", duration: 0.3, bounce: 0.15 }} />}
+                {k.replace(" days", "D").replace("All time", "All")}
               </button>
             ))}
           </div>
@@ -242,7 +246,7 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
             <svg
               width={width} height={height} role="img" tabIndex={0}
               aria-label={`${title}, ${range}: from ${money(m.pts[0]!.value)} to ${money(m.pts[len - 1]!.value)}. Use the left and right arrow keys to inspect values.`}
-              className="block select-none text-[var(--accent)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="block select-none text-[#f4f4f5] outline-none focus-visible:ring-2 focus-visible:ring-white/30"
               onKeyDown={(e) => {
                 if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); moveTo(clamp((hover ?? len - 1) + (e.key === "ArrowRight" ? 1 : -1), 0, len - 1)); }
                 else if (e.key === "Escape") setHover(null);
@@ -251,11 +255,10 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
             >
               <defs>
                 <linearGradient id={`${uid}-fill`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="currentColor" stopOpacity={0.34} />
-                  <stop offset="55%" stopColor="currentColor" stopOpacity={0.08} />
+                  <stop offset="0%" stopColor="currentColor" stopOpacity={0.2} />
+                  <stop offset="60%" stopColor="currentColor" stopOpacity={0.06} />
                   <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
                 </linearGradient>
-                <filter id={`${uid}-glow`} x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="5" /></filter>
                 <clipPath id={`${uid}-clip`}><motion.rect x={0} y={0} height={height} width={clipW} /></clipPath>
               </defs>
 
@@ -265,7 +268,7 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
                     const y = yPx((v - m.lo) / (m.hi - m.lo));
                     return (
                       <g key={v}>
-                        <line x1={PAD.l} x2={width - PAD.r} y1={y} y2={y} stroke="rgb(255 255 255 / 0.07)" strokeDasharray="2 5" />
+                        <line x1={PAD.l} x2={width - PAD.r} y1={y} y2={y} stroke="rgb(255 255 255 / 0.07)" />
                         <text x={PAD.l - 12} y={y} textAnchor="end" dominantBaseline="middle" className="fill-[var(--subtle)] text-[11px] tabular-nums">{numCompact.format(v)}</text>
                       </g>
                     );
@@ -280,24 +283,21 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
 
               <g clipPath={`url(#${uid}-clip)`}>
                 <motion.path d={areaD} fill={`url(#${uid}-fill)`} />
-                <motion.path d={lineD} fill="none" stroke="currentColor" strokeOpacity={0.55} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" filter={`url(#${uid}-glow)`} />
-                <motion.path d={lineD} fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="round" strokeLinejoin="round" />
+                <motion.path d={lineD} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
               </g>
-              <motion.circle cx={leadX} cy={leadY} r={9} fill="currentColor" style={{ opacity: haloO }} fillOpacity={0.18} />
-              <motion.circle cx={leadX} cy={leadY} r={4} fill="currentColor" stroke="#0b0b0c" strokeWidth={2} style={{ opacity: leadO }} />
+              <motion.circle cx={leadX} cy={leadY} r={3.5} fill="currentColor" style={{ opacity: leadO }} />
 
               <motion.g initial={false} animate={{ opacity: hover !== null ? 1 : 0 }} transition={{ duration: 0.15, ease: EASE_OUT }} pointerEvents="none">
-                <motion.line x1={cxS} x2={cxS} y1={PAD.t - 6} y2={bottom} stroke="rgb(255 255 255 / 0.22)" strokeDasharray="3 4" />
-                <motion.circle cx={cxS} cy={dotY} r={10} fill="currentColor" fillOpacity={0.16} />
-                <motion.circle cx={cxS} cy={dotY} r={4.5} stroke="currentColor" strokeWidth={2.25} fill="#0b0b0c" />
+                <motion.line x1={cxS} x2={cxS} y1={PAD.t - 6} y2={bottom} stroke="rgb(255 255 255 / 0.18)" />
+                <motion.circle cx={cxS} cy={dotY} r={4.5} stroke="currentColor" strokeWidth={2} fill="#19191b" />
               </motion.g>
 
               <rect x={0} y={0} width={width} height={height} fill="transparent" style={{ touchAction: "pan-y", cursor: "crosshair" }} onPointerMove={onScrub} onPointerDown={onScrub} onPointerLeave={() => setHover(null)} />
             </svg>
 
             <motion.div
-              className="pointer-events-none absolute left-0 top-0 rounded-xl border border-white/10 bg-[#141416]/95 px-3 py-2 shadow-[0_12px_32px_-12px_rgb(0_0_0/0.8)] backdrop-blur"
-              style={{ x: tipX, width: TIP_W }} initial={false} animate={{ opacity: hover !== null ? 1 : 0 }} transition={{ duration: 0.15, ease: EASE_OUT }}
+              className="pointer-events-none absolute left-0 top-0 rounded-xl border border-white/10 bg-[#232326] px-3 py-2 shadow-[0_12px_32px_-12px_rgb(0_0_0/0.8)]"
+              style={{ x: tipX, y: tipY, width: TIP_W, visibility: hover !== null ? "visible" : "hidden" }} initial={false} animate={{ opacity: hover !== null ? 1 : 0 }} transition={{ duration: 0.15, ease: EASE_OUT }}
             >
               <p className="text-[11px] leading-tight text-subtle">{fmtTip.format(tipPt.date)} UTC</p>
               <p className="mt-0.5 text-[15px] font-bold tabular-nums">{money(tipPt.value)}</p>

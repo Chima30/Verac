@@ -5,20 +5,25 @@ import { BarChart3 } from "lucide-react";
  * The one container for every chart in Verac: a deep surface with a soft light along the top edge, generous padding
  * and the dark tokens applied inside (`theme-dark`), so charts read the same in the light and the dark app theme.
  */
-export function ChartCard({ title, description, right, children, footer, className = "", id }: {
-  title: ReactNode; description?: ReactNode; right?: ReactNode; children: ReactNode; footer?: ReactNode; className?: string; id?: string;
+export function ChartCard({ title, description, right, children, footer, className = "", id, label }: {
+  /** Leave out when the chart draws its own label and value (the area chart does). */
+  title?: ReactNode; description?: ReactNode; right?: ReactNode; children: ReactNode; footer?: ReactNode; className?: string; id?: string;
+  /** Accessible name when there is no visible title. */
+  label?: string;
 }) {
   return (
-    <section id={id} className={`theme-dark chart-card min-w-0 scroll-mt-24 rounded-2xl p-5 sm:p-6 ${className}`}>
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="text-[15.5px] font-bold tracking-[-0.015em]">{title}</h2>
-          {description && <p className="mt-0.5 text-[13px] leading-relaxed text-subtle">{description}</p>}
+    <section id={id} aria-label={title ? undefined : label} className={`theme-dark chart-card min-w-0 scroll-mt-24 rounded-[20px] p-5 sm:p-6 ${className}`}>
+      {(title || right) && (
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            {title && <h2 className="text-[15px] font-semibold tracking-[-0.01em]">{title}</h2>}
+            {description && <p className="mt-0.5 text-[13px] leading-relaxed text-subtle">{description}</p>}
+          </div>
+          {right && <div className="flex shrink-0 flex-wrap items-center gap-2">{right}</div>}
         </div>
-        {right && <div className="flex shrink-0 flex-wrap items-center gap-2">{right}</div>}
-      </div>
+      )}
       {children}
-      {footer && <p className="mt-4 border-t border-white/[0.07] pt-3.5 text-[12px] leading-relaxed text-subtle">{footer}</p>}
+      {footer && <p className="mt-5 border-t border-white/[0.06] pt-3.5 text-[12px] leading-relaxed text-subtle">{footer}</p>}
     </section>
   );
 }

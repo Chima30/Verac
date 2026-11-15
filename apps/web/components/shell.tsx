@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { NAV, locate } from "@/lib/nav";
 import { CommandPalette } from "./command-palette";
+import { Constellation } from "./constellation";
 import { ThemeToggle } from "./theme-toggle";
 
 export interface ShellProps {
@@ -227,6 +228,8 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
       )}
 
       <div className="min-w-0 lg:pl-[15.5rem] lg:transition-[padding] lg:duration-200 lg:collapsed:pl-16">
+        {/* Ambient connected dots behind every page; cards are opaque, so it fills only the open space. */}
+        <Constellation className="fixed inset-y-0 left-0 z-0 h-dvh w-full lg:left-[15.5rem] lg:w-[calc(100%-15.5rem)] lg:collapsed:left-16 lg:collapsed:w-[calc(100%-4rem)]" />
         {/* Top bar */}
         <header className="sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur-md supports-[backdrop-filter]:bg-bg/75">
           <div className="mx-auto flex h-14 max-w-[88rem] items-center gap-2 px-4 sm:gap-3 lg:px-8">
@@ -285,7 +288,7 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
             </div>
           </div>
         </header>
-        <main id="main" key={path} className="motion-page mx-auto w-full max-w-[88rem] px-4 pb-16 pt-7 sm:pt-9 lg:px-8">{children}</main>
+        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[88rem] px-4 pb-16 pt-7 sm:pt-9 lg:px-8">{children}</main>
       </div>
       <CommandPalette open={palette} onClose={closePalette} role={org?.role ?? null} />
     </div>

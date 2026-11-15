@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useId, useState } from "react";
 import { Ambient } from "@/components/ambient";
+import { Constellation } from "@/components/constellation";
 import { Notice } from "@/components/ui";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
@@ -124,6 +125,7 @@ export default function LoginPage() {
   return (
     <main className="theme-light relative isolate min-h-dvh overflow-hidden bg-[#fafafa]">
       <div aria-hidden className="bg-grid absolute inset-0 -z-10" />
+      <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-80" density={0.7} />
       <Ambient className="-z-10" />
 
       <header className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
