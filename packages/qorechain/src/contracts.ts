@@ -37,6 +37,8 @@ export const treasuryVaultAbi = parseAbi([
   "function paused() view returns (bool)",
   "function setAgentLimits(address agent, address token, uint128 perTxCap, uint128 dailyCap, uint128 autoApproveCap, uint64 validUntil)",
   "function revokeAgent(address agent, address token)",
+  "function setApprover(address approver, bool enabled)",
+  "function approverCount() view returns (uint32)",
   "function setApprovedRecipient(address recipient, bool approved)",
   "event AgentLimitsSet(address indexed agent, address indexed token, uint128 perTxCap, uint128 dailyCap, uint128 autoApproveCap, uint64 validUntil)",
   "event AgentRevoked(address indexed agent, address indexed token)",
