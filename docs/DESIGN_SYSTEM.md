@@ -11,24 +11,24 @@ Graphite neutrals, one restrained teal accent, and colour that only ever carries
 
 ## Tokens
 
+High contrast in both themes: a pure white or black canvas, near-black or near-white text, bright secondary text, and saturated colour kept for icon tiles and status.
+
 | Token (Tailwind name) | Light | Dark | Use |
 |---|---|---|---|
-| `--bg` (`bg-bg`) | #f6f6f3 | #0e0f11 | Page |
-| `--surface` (`bg-surface`) | #ffffff | #15171a | Cards, inputs, menus |
-| `--surface-2` / `--surface-3` | #f0f0ec / #e8e8e3 | #1b1e22 / #23272c | Hover, wells, skeletons |
-| `--border` (`border-line`) / `--border-strong` | #e2e2dc / #cfcfc7 | #272a2f / #363a41 | Hairlines, hover borders |
-| `--text` (`text-ink`) | #17191c | #ebebe8 | Body text |
-| `--muted` / `--subtle` | #5f636a / #8a8e95 | #9b9fa6 / #6f737a | Secondary text, metadata |
-| `--accent` (`bg-accent`) | #0d6b66 | #4dbdb2 | Primary action, active nav, focus |
-| `--live` | green | green | Confirmed on testnet |
-| `--sim` | slate blue | slate blue | Simulation: recorded in the app only |
-| `--warn` | amber | amber | Needs a person, medium risk |
-| `--bad` | red | red | Failed, refused, high risk |
-| `--info` | teal tint | teal tint | Neutral information about a state |
+| `--bg` (`bg-bg`) | #ffffff | #000000 | Page |
+| `--surface` (`bg-surface`) | #ffffff | #0b0b0c | Cards, inputs, menus |
+| `--surface-2` / `--surface-3` | #f4f4f5 / #e9e9ec | #151517 / #1f1f22 | Hover, wells, skeletons |
+| `--border` (`border-line`) / `--border-strong` | #e4e4e7 / #c9c9cf | #212124 / #34343a | Hairlines |
+| `--text` (`text-ink`) | #09090b | #fafafa | Headings and body |
+| `--muted` / `--subtle` | #3f3f46 / #71717a | #d4d4d8 / #a1a1aa | Descriptions, metadata |
+| `--primary` (`bg-primary`) | #09090b | #f4f4f5 | Primary button: black on light, white on dark |
+| `--accent` | #0f9488 | #2dd4bf | Active navigation, focus, links |
+| `--tile-*` | blue, green, teal, violet, orange, pink, amber, red, slate | same | `IconTile` fills with white glyphs |
+| `--live` `--sim` `--warn` `--bad` `--info` | | | Status only |
 
 The semantic colours never decorate. Green is for things the chain confirmed, not for any positive number. Simulation is blue so it can never be mistaken for live (green) or a warning (amber).
 
-**Type.** Geist (400, 500, 600) for the interface and Geist Mono for hashes, addresses and identifiers. Body text is 14.5px, metadata 12–12.5px; nothing in the app body is smaller. Figures use tabular numbers.
+**Type.** Geist (400 to 800) for the interface: page titles 32px bold, card titles 15.5px bold, body 15px and Geist Mono for hashes, addresses and identifiers. Body text is 14.5px, metadata 12–12.5px; nothing in the app body is smaller. Figures use tabular numbers.
 
 **Radii.** Controls 6–8px, cards 12px, overlays 16px.
 
@@ -40,7 +40,8 @@ The semantic colours never decorate. Green is for things the chain confirmed, no
 
 | Component | Use |
 |---|---|
-| `PageHeader` | Title, plain-language description, and optional `eyebrow`, `badge`, `meta` and `actions`. |
+| `PageHeader` | Title, plain-language description, and optional `eyebrow`, `badge`, `meta` and `actions`. A title that matches a navigation label gets its icon tile automatically. |
+| `IconTile` | A saturated square with a white icon. Each page has a tile colour in `lib/nav.ts`; `Card` takes `icon` and `tile`. |
 | `Card` | Titled surface with optional `description`, `right`, `footer`, and `flush` for edge-to-edge tables. |
 | `Stat`, `Metric` | `Stat` is a bordered figure; `Metric` is a figure inside a larger panel. |
 | `Badge`, `StatusDot` | Status. Badge wording is a product rule: LIVE TESTNET, SIMULATION, PENDING, REQUIRES APPROVAL, FAILED, UNAVAILABLE. Never label something LIVE TESTNET unless the page just read it from the chain or it really ran there. |

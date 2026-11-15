@@ -4,13 +4,13 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 // Geist for the interface; Geist Mono only for hashes, addresses and technical identifiers.
-const sans = Geist({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-geist", display: "swap" });
+const sans = Geist({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-geist", display: "swap" });
 const mono = Geist_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-geist-mono", display: "swap" });
 
 const name = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Verac";
 export const metadata: Metadata = { title: { default: name, template: `%s · ${name}` }, description: "Controlled, auditable AI agents for organisations on QoreChain (testnet)." };
 export const viewport: Viewport = {
-  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#f6f6f3" }, { media: "(prefers-color-scheme: dark)", color: "#0e0f11" }],
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#ffffff" }, { media: "(prefers-color-scheme: dark)", color: "#000000" }],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,7 @@
 import { Activity, Atom, BadgeCheck, Banknote, Boxes, Building2, ClipboardCheck, FileLock2, Flag, FlaskConical, Gauge, Gavel, HandCoins, KeyRound, Landmark, ListChecks, Plug, Receipt, ScanSearch, ScrollText, ShieldAlert, TrendingUp, Users, Vote, Wallet, Waypoints, Bot, type LucideIcon } from "lucide-react";
 
-export interface NavItem { href: string; label: string; icon: LucideIcon; keywords?: string }
+export type Tile = "blue" | "green" | "teal" | "violet" | "orange" | "pink" | "amber" | "red" | "slate";
+export interface NavItem { href: string; label: string; icon: LucideIcon; keywords?: string; tile?: Tile }
 export interface NavSection { title: string; items: NavItem[] }
 
 export const NAV: NavSection[] = [
@@ -42,7 +43,23 @@ export const NAV: NavSection[] = [
     { href: "/settings/audit", label: "Audit History", icon: ScanSearch, keywords: "audit log" },
   ] },
 ];
+/** Bright tile colour for each page, so pages are recognisable at a glance. Sidebar icons stay monochrome. */
+const TILES: Record<string, Tile> = {
+  "/dashboard": "blue", "/command-center": "violet", "/tasks": "slate", "/approvals": "amber", "/activity": "teal", "/proof": "green",
+  "/treasury": "green", "/invoices": "orange", "/payroll": "blue", "/revenue": "teal", "/strategies": "violet", "/arbitrage": "pink",
+  "/procurement": "orange", "/grants": "pink", "/milestones": "teal", "/governance": "violet", "/disputes": "red",
+  "/vault": "blue", "/policies": "amber", "/threats": "red", "/simulator": "violet",
+  "/settings/organization": "slate", "/settings/team": "blue", "/settings/agents": "violet", "/settings/wallets": "green", "/settings/integrations": "teal", "/settings/audit": "slate",
+};
+for (const s of NAV) for (const i of s.items) i.tile = TILES[i.href] ?? "slate";
 export const ALL_ITEMS = NAV.flatMap((s) => s.items);
+
+const norm = (s: string) => s.toLowerCase().replace(/&/g, "and").replace(/[^a-z]/g, "");
+/** The navigation item whose label is this page title ("DCA and Rebalancing" matches "DCA & Rebalancing"). */
+export function locateByLabel(title: string): NavItem | null {
+  const t = norm(title);
+  return ALL_ITEMS.find((i) => norm(i.label) === t) ?? (t.length >= 6 ? ALL_ITEMS.find((i) => norm(i.label).endsWith(t)) : undefined) ?? null;
+}
 
 /** Finds the section and item for a path, including nested routes such as /procurement/[id]. */
 export function locate(path: string): { section: NavSection; item: NavItem } | null {

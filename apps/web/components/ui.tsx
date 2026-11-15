@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
-import { Check, Circle, CircleAlert, CircleDot, Info, OctagonX, TriangleAlert } from "lucide-react";
+import { Check, Circle, CircleAlert, CircleDot, Info, OctagonX, TriangleAlert, type LucideIcon } from "lucide-react";
+import { locateByLabel, type Tile } from "@/lib/nav";
+
+/** A saturated square with a white glyph. The bright, scannable marker for a page or a section. */
+export function IconTile({ icon: Icon, tile = "slate", size = "md" }: { icon: LucideIcon; tile?: Tile; size?: "sm" | "md" | "lg" }) {
+  const box = size === "lg" ? "size-11 rounded-xl" : size === "sm" ? "size-7 rounded-md" : "size-9 rounded-lg";
+  const glyph = size === "lg" ? 20 : size === "sm" ? 14 : 17;
+  return <span aria-hidden className={`grid shrink-0 place-items-center text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18)] ${box}`} style={{ background: `var(--tile-${tile})` }}><Icon size={glyph} strokeWidth={2.25} /></span>;
+}
 
 /* ------------------------------------------------------------------------------------------------
  * Verac design system primitives. Server-safe (no client hooks). Client pieces live in ./ui-client.
@@ -35,15 +43,18 @@ export function StatusDot({ tone, children }: { tone: Tone; children: ReactNode 
   return <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px]"><span aria-hidden className="size-2 rounded-full" style={{ background: c[tone] }} />{children}</span>;
 }
 
-export function PageHeader({ title, description, badge, actions, eyebrow, meta }: {
-  title: string; description?: ReactNode; badge?: ReactNode; actions?: ReactNode; eyebrow?: ReactNode; meta?: ReactNode;
+export function PageHeader({ title, description, badge, actions, eyebrow, meta, icon, tile }: {
+  title: string; description?: ReactNode; badge?: ReactNode; actions?: ReactNode; eyebrow?: ReactNode; meta?: ReactNode; icon?: LucideIcon; tile?: Tile;
 }) {
+  // A page whose title matches its navigation label gets that item's icon and colour, so every page is marked the same way.
+  const nav = icon ? null : locateByLabel(title);
+  const Icon = icon ?? nav?.icon;
   return (
     <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">
-        {eyebrow && <div className="mb-2 text-[12.5px] text-muted">{eyebrow}</div>}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2"><h1 className="text-[26px] font-semibold leading-tight tracking-tight sm:text-[28px]">{title}</h1>{badge}</div>
-        {description && <p className="mt-2 max-w-3xl text-[14.5px] leading-relaxed text-muted">{description}</p>}
+        {eyebrow && <div className="mb-2 text-[12.5px] font-medium text-subtle">{eyebrow}</div>}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">{Icon && <IconTile icon={Icon} tile={tile ?? nav?.tile} size="lg" />}<h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] sm:text-[32px]">{title}</h1>{badge}</div>
+        {description && <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-muted">{description}</p>}
         {meta && <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">{meta}</div>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
@@ -52,16 +63,19 @@ export function PageHeader({ title, description, badge, actions, eyebrow, meta }
 }
 
 /** A titled surface. `flush` drops the body padding for tables and lists that run edge to edge. */
-export function Card({ title, description, children, right, footer, className = "", flush = false, id }: {
-  title?: ReactNode; description?: ReactNode; children: ReactNode; right?: ReactNode; footer?: ReactNode; className?: string; flush?: boolean; id?: string;
+export function Card({ title, description, children, right, footer, className = "", flush = false, id, icon, tile }: {
+  title?: ReactNode; description?: ReactNode; children: ReactNode; right?: ReactNode; footer?: ReactNode; className?: string; flush?: boolean; id?: string; icon?: LucideIcon; tile?: Tile;
 }) {
   return (
     <section id={id} className={`min-w-0 scroll-mt-24 rounded-lg border border-line bg-surface shadow-card ${className}`}>
       {(title || right) && (
         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 px-5 pb-1 pt-4">
-          <div className="min-w-0">
-            {title && <h2 className="text-[14px] font-semibold leading-snug">{title}</h2>}
-            {description && <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">{description}</p>}
+          <div className="flex min-w-0 items-start gap-3">
+            {icon && <IconTile icon={icon} tile={tile} />}
+            <div className="min-w-0">
+              {title && <h2 className="text-[15.5px] font-bold leading-snug tracking-[-0.015em]">{title}</h2>}
+              {description && <p className="mt-0.5 text-[13px] leading-relaxed text-muted">{description}</p>}
+            </div>
           </div>
           {right && <div className="flex shrink-0 flex-wrap items-center gap-2">{right}</div>}
         </div>
@@ -77,7 +91,7 @@ export function Stat({ label, value, sub, badge, large = false, tone }: { label:
   return (
     <div className="min-w-0 rounded-lg border border-line bg-surface p-4 shadow-card sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[12.5px] text-muted">{label}</span>{badge}</div>
-      <div className={`mt-2 break-words font-semibold tabular-nums tracking-tight ${large ? "text-[34px] leading-none sm:text-[40px]" : "text-[22px] leading-tight"} ${color}`}>{value}</div>
+      <div className={`mt-2 break-words font-bold tabular-nums tracking-tight ${large ? "text-[34px] leading-none sm:text-[40px]" : "text-[22px] leading-tight"} ${color}`}>{value}</div>
       {sub && <div className="mt-2 text-[12.5px] leading-relaxed text-muted">{sub}</div>}
     </div>
   );
@@ -89,7 +103,7 @@ export function Metric({ label, value, sub, tone }: { label: ReactNode; value: R
   return (
     <div className="min-w-0">
       <dt className="text-[12.5px] text-muted">{label}</dt>
-      <dd className={`mt-1 text-[20px] font-semibold leading-tight tracking-tight tabular-nums ${color}`}>{value}</dd>
+      <dd className={`mt-1 text-[21px] font-bold leading-tight tracking-tight tabular-nums ${color}`}>{value}</dd>
       {sub && <dd className="mt-1 text-[12px] leading-relaxed text-muted">{sub}</dd>}
     </div>
   );
@@ -153,7 +167,7 @@ export function SectionHeading({ title, description, right, id }: { title: React
   return (
     <div id={id} className="mb-3 mt-10 flex scroll-mt-24 flex-wrap items-end justify-between gap-2 first:mt-0">
       <div>
-        <h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>
+        <h2 className="text-[17px] font-bold tracking-[-0.02em]">{title}</h2>
         {description && <p className="mt-0.5 max-w-3xl text-[13px] text-muted">{description}</p>}
       </div>
       {right}
@@ -242,7 +256,7 @@ export function Source({ children }: { children: ReactNode }) {
 export const labelCls = "mb-1.5 block text-[12.5px] font-medium text-muted";
 export const inputCls = "w-full rounded-md border border-line bg-surface px-3 py-2 text-[14px] shadow-[inset_0_1px_0_rgb(0_0_0/0.02)] transition-colors placeholder:text-subtle hover:border-line-strong focus:border-[var(--ring)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ring)_25%,transparent)] disabled:opacity-60";
 const btnBase = "inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3.5 text-[13.5px] font-medium transition-[background-color,border-color,color,opacity,transform] active:translate-y-px disabled:pointer-events-none disabled:opacity-50";
-export const btnCls = `${btnBase} bg-accent text-accent-ink shadow-sm hover:bg-accent-hover`;
+export const btnCls = `${btnBase} bg-primary text-primary-ink font-semibold shadow-sm hover:bg-primary-hover`;
 export const btnSecondaryCls = `${btnBase} border border-line bg-surface text-ink shadow-sm hover:border-line-strong hover:bg-surface-2`;
 export const btnGhostCls = `${btnBase} text-muted hover:bg-surface-2 hover:text-ink`;
 export const btnDangerCls = `${btnBase} border border-[color-mix(in_srgb,var(--bad)_35%,transparent)] bg-surface text-[var(--bad)] hover:bg-[var(--bad-bg)]`;

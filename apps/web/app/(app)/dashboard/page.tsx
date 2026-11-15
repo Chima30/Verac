@@ -1,9 +1,9 @@
 import { AGENTS } from "@qoreops/agent-coordinator";
-import { ArrowRight, Bot, Boxes, ClipboardCheck, Flag, Plus, ShieldCheck } from "lucide-react";
+import { Activity, ArrowRight, Bot, Boxes, ClipboardCheck, Flag, Gauge, Landmark, Plus, ShieldAlert, ShieldCheck, Waypoints } from "lucide-react";
 import Link from "next/link";
 import { Suspense, cache } from "react";
 import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
-import { Badge, Card, CardSkeleton, EmptyState, Metric, Notice, ShortHash, Source, StatusDot, Steps, btnCls, btnSecondaryCls, fmtUtc, relTime, type StepState } from "@/components/ui";
+import { Badge, Card, CardSkeleton, EmptyState, IconTile, Metric, Notice, ShortHash, Source, StatusDot, Steps, btnCls, btnSecondaryCls, fmtUtc, relTime, type StepState } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { orgData as loadOrgData, windowed, type OrgData } from "@/lib/dashboard";
 import { liveStatusFlags } from "@/lib/live/config";
@@ -46,7 +46,7 @@ async function Money() {
   const escrowFunded = v.events.filter((e) => e.kind === "EscrowFunded").length;
 
   return (
-    <Card title="Funds" description="TreasuryVault on Diana testnet, read from the chain when this page loaded."
+    <Card icon={Landmark} tile="green" title="Funds" description="TreasuryVault on Diana testnet, read from the chain when this page loaded."
       right={<><Badge tone="live" />{v.paused && <Badge tone="failed">VAULT PAUSED</Badge>}</>}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -77,11 +77,11 @@ async function Money() {
 /* ---------------------------------------------------------------- 4: what needs me */
 function Queue({ d }: { d: OrgData }) {
   const s = d.session;
-  if (!s.configured) return <Card title="Needs a decision"><EmptyState title="Organisation records are not connected">Approvals live in Supabase, which is not configured on this server.</EmptyState></Card>;
-  if (!s.user) return <Card title="Needs a decision"><EmptyState title="Sign in to see your queue" action={<Link href="/login?next=/dashboard" className={btnCls}>Sign in</Link>}>Payment requests are private to your organisation.</EmptyState></Card>;
+  if (!s.configured) return <Card icon={ClipboardCheck} tile="amber" title="Needs a decision"><EmptyState title="Organisation records are not connected">Approvals live in Supabase, which is not configured on this server.</EmptyState></Card>;
+  if (!s.user) return <Card icon={ClipboardCheck} tile="amber" title="Needs a decision"><EmptyState title="Sign in to see your queue" action={<Link href="/login?next=/dashboard" className={btnCls}>Sign in</Link>}>Payment requests are private to your organisation.</EmptyState></Card>;
   const items = d.queue;
   return (
-    <Card title="Needs a decision" description="Payment requests waiting for a person, oldest first."
+    <Card icon={ClipboardCheck} tile="amber" title="Needs a decision" description="Payment requests waiting for a person, oldest first."
       right={items.length ? <Badge tone="approval">{items.length} WAITING</Badge> : undefined}
       footer={<Link href="/approvals" className="inline-flex items-center gap-1 font-medium text-accent-text hover:underline">Open the approvals queue<ArrowRight size={13} aria-hidden /></Link>}>
       {d.queueError && <Notice tone="bad" className="mb-3">{d.queueError}</Notice>}
@@ -132,7 +132,7 @@ function Agents({ d }: { d: OrgData }) {
   const ai = all.filter((a) => a.usesAi).length;
   const signedIn = !!d.session.org;
   return (
-    <Card title="Agent activity" description={signedIn ? "The latest work items from agents and the payment pipeline." : `${all.length} agents are registered; sign in to see their work.`}
+    <Card icon={Activity} tile="violet" title="Agent activity" description={signedIn ? "The latest work items from agents and the payment pipeline." : `${all.length} agents are registered; sign in to see their work.`}
       footer={<span className="flex flex-wrap items-center justify-between gap-2"><span>{all.length} agents · {ai} use Gemini · only PaymentAgent can move funds, through the pipeline</span><Link href="/command-center" className="inline-flex items-center gap-1 font-medium text-accent-text hover:underline">AI workforce<ArrowRight size={13} aria-hidden /></Link></span>}>
       {d.tasksError && <Notice tone="bad" className="mb-3">{d.tasksError}</Notice>}
       {!signedIn ? <p className="py-4 text-[13.5px] text-muted">Agent tasks are private to your organisation.</p>
@@ -187,7 +187,7 @@ async function Security() {
     { label: "Spending rules expiring in 7 days", value: soon.length, tone: soon.length ? "warn" : undefined },
   ];
   return (
-    <Card title="Security" description={calm ? "No high-severity finding on the accounts checked." : "Something here needs attention."}
+    <Card icon={ShieldAlert} tile="red" title="Security" description={calm ? "No high-severity finding on the accounts checked." : "Something here needs attention."}
       right={!p.ok ? <Badge tone="unavailable" /> : high ? <Badge tone="failed">{high} HIGH</Badge> : <Badge tone="live" />}
       footer={<Link href="/threats" className="inline-flex items-center gap-1 font-medium text-accent-text hover:underline">Threat Center<ArrowRight size={13} aria-hidden /></Link>}>
       <dl className="-mx-5 divide-y divide-line text-[13.5px]">
@@ -213,7 +213,7 @@ function Operations({ d }: { d: OrgData }) {
   const stages: Array<[string, string]> = [["draft", "Draft"], ["open", "Open for bids"], ["review", "Reviewing bids"], ["awarded", "Awarded"], ["closed", "Closed"]];
   const totalT = Object.values(t).reduce((a, b) => a + b, 0);
   return (
-    <Card title="Operations" description="Projects and decisions in progress in this organisation.">
+    <Card icon={Waypoints} tile="orange" title="Operations" description="Projects and decisions in progress in this organisation.">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div>
           <div className="flex items-baseline justify-between"><h3 className="text-[13px] font-medium">Procurement pipeline</h3><Link href="/procurement" className="text-[12.5px] text-accent-text hover:underline">{totalT} tender{totalT === 1 ? "" : "s"}</Link></div>
@@ -333,7 +333,7 @@ async function OrgSections() {
 
 function WhatThisIs() {
   return (
-    <Card title="Reading this page">
+    <Card icon={ShieldCheck} tile="teal" title="Reading this page">
       <ul className="space-y-3 text-[13px] leading-relaxed text-muted">
         <li className="flex gap-2.5"><Badge tone="live" /><span>Read from Diana testnet or confirmed there.</span></li>
         <li className="flex gap-2.5"><Badge tone="sim" /><span>Recorded in Verac only. No QOR moves.</span></li>
@@ -359,7 +359,7 @@ async function Header() {
     <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">
         <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted"><span>QoreChain Diana testnet</span><span aria-hidden className="text-line-strong">·</span><span>Read at {fmtUtc(Date.now())}</span></p>
-        <h1 className="text-[26px] font-semibold leading-tight tracking-tight sm:text-[28px]">{greeting}</h1>
+        <div className="flex items-center gap-3"><IconTile icon={Gauge} tile="blue" size="lg" /><h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] sm:text-[32px]">{greeting}</h1></div>
         <p className="mt-1.5 max-w-2xl text-[14.5px] text-muted">
           {!d.session.configured ? "Funds, agents and security on Diana testnet. Organisation records are not connected on this server, so approvals and tasks are hidden."
             : !d.session.user ? "Funds, agents and security on Diana testnet. Sign in to see your organisation's approvals and agent work."
