@@ -66,3 +66,9 @@ RUN.push(
   { group: "Live execution setup, 2026-11-15", label: "Approver account added to the vault (approver count 2)", lane: "evm", hash: h("0x51daf2af7cc8e62916750b50645ffce27bfed9a523df09d2f68970b93d3b2a44"), expect: "success" },
   { group: "Live execution setup, 2026-11-15", label: "Owner closes the window", lane: "native", hash: h("0FB3FCB7B34E6F7805AD347A9FCCAFC3B6978D62FACE054F43E40E8FCE5D5BAD"), expect: "success" },
 );
+
+// 2026-11-15: the first payment made from the website (see docs/LIVE_PAYMENT_2026-11-15.md). Requested by one user, approved by a second administrator.
+RUN.push(
+  { group: "First website payment, 2026-11-15", label: "Approval relayed by the server's approver key, bound to the payment hash", lane: "evm", hash: h("0x1bd9aa176131f7486eca60e0291837f290f58f3f4995cd1fd6c1c9b8453000ac"), expect: "success" },
+  { group: "First website payment, 2026-11-15", label: "PAYMENT: 1 QOR to the approved recipient, executed by the bounded agent key", lane: "evm", hash: h("0x75ac37df6b0f686616559ee4028ca51f101bc75d037d0066426b44fe984c0636"), expect: "success" },
+);

@@ -58,7 +58,7 @@ Status as of 2026-11-15. Nothing here claims a feature works unless it is listed
 | 4 Pipeline and routes (propose, decide, execute, status) | Built and type-checked; **not exercised end to end from the website** |
 | 5 Wallet (QoreX) | Not started |
 | 6 Pages | Treasury done. Approvals, Live Proof, Command Center, Procurement, Grants, Milestones in progress or not started |
-| 7 Live runs | Setup done. **No website-triggered payment has been sent.** The kill switch is off |
+| 7 Live runs | Setup done. **First website payment confirmed on chain: 1 QOR, 2026-11-15** (see `docs/LIVE_PAYMENT_2026-11-15.md`) |
 
 ## Known gaps
 
