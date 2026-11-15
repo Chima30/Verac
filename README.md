@@ -1,119 +1,192 @@
 # Verac
 
-AI agents that do real operational work for a DAO or business (paying invoices, running tenders, releasing
-milestone payments) without any agent ever holding unrestricted access to the treasury. Built for the
-**Build Before Q-Day** hackathon, category **Post-Quantum AI Agents**, on **QoreChain Diana testnet**
-(native `qorechain-diana`, EVM chain id `9800`). The product is called Verac; the name lives in one env var
-(`NEXT_PUBLIC_PRODUCT_NAME`).
-
-> **Status (2026-11-15), testnet only.** The security core, the web app and the live payment flow are built and tested. Contracts are deployed on QoreChain Diana testnet, and a 1 QOR payment was requested, approved by a second administrator and executed from the website (see [docs/LIVE_PAYMENT_2026-11-15.md](docs/LIVE_PAYMENT_2026-11-15.md)). Some modules are still partial: see [Status](#status) before judging anything here.
-> Payments are signed by a bounded, server-held agent key (a development signing path, not production custody). No external audit has happened, and mainnet is not supported.
-
 ## The problem
 
-Treasury work (bills, payroll, grants, vendor milestones) is slow and manual, and "let an AI do it" is
-dangerous: a prompt-injected invoice or a stolen key should not be able to drain a treasury.
+Paying a contractor should be straightforward. But for a DAO, the payment is often the last step in a much longer process: someone checks the invoice, confirms the work was approved, makes sure the payment address is right, checks the treasury balance, gets another person to sign off, and finally sends the money.
 
-## The idea
+Now add grants, supplier bids, payroll and governance decisions. The details end up spread across messages, spreadsheets, documents and wallets. It takes time to piece everything together, mistakes are easy to miss, and it's not always clear who approved what.
 
-Agents investigate, recommend and prepare. **Money moves only through one pipeline**:
+Giving an AI agent unrestricted access to a treasury isn't a good answer either. A misleading invoice, a bad AI response or a compromised key shouldn't be enough to move an organisation's funds.
 
+## What Verac does
+
+**Verac brings those operations into one place.** It helps DAOs and businesses review work, check financial requests, prepare decisions and make authorised payments on QoreChain.
+
+The goal is to let people ask for an outcome, not manually coordinate every step. For example:
+
+> Review our outstanding contractor invoices, check whether the milestones were approved, flag anything suspicious, and prepare eligible payments for approval.
+
+That's the workflow we're building toward. Verac already has the invoice checks, milestone records, AI-assisted payment drafting, approval system and testnet payment infrastructure. **The full cross-module request above is not yet a proven end-to-end AI workflow.** Today, the strongest completed demonstration is a payment requested on the website, approved by a different administrator and executed on QoreChain.
+
+The important distinction is simple: **AI helps with the work, but it doesn't get to decide on its own when money moves.**
+
+**[Open Verac](https://verac-web.vercel.app/dashboard)** · **Build Before Q-Day** · **Post-Quantum AI Agents** · **QoreChain Diana testnet (EVM chain ID `9800`)**
+
+## See what works today
+
+On **November 15, 2026**, Verac completed a real **1 QOR payment from the website**:
+
+1. A finance user submitted a payment request.
+2. A different administrator authenticated and approved the exact payment.
+3. The server relayed the approval and executed the payment using a restricted testnet agent account.
+4. Verac checked the on-chain receipt and the matching `TreasuryVault` event before marking the payment **confirmed**.
+5. The approval and payment transaction hashes were recorded on the **Proof** page.
+
+This was a testnet transaction, not a simulated success screen. The agent was limited to **10 QOR per payment**, **20 QOR per day**, and approved recipients, with no automatic payments permitted in that configuration.
+
+An earlier testnet run on **November 14, 2026** also demonstrated escrow funding, a **60 QOR milestone release to a contractor**, and rejected operations. Those earlier transactions were executed through scripts, **not from the website**.
+
+**Evidence:** [Website payment](docs/LIVE_PAYMENT_2026-11-15.md) · [Earlier testnet run](docs/LIVE_RUN_2026-11-14.md) · [Agent and approver setup](docs/LIVE_SETUP_2026-11-15.md) · [Deployment addresses](deployments/diana-testnet.json)
+
+### What happens before a payment goes through?
+
+```text
+Payment request
+    ↓
+Policy and risk checks
+    ↓
+Approval from an authorised administrator, when required
+    ↓
+Transaction preparation and simulation
+    ↓
+Restricted testnet signing and execution
+    ↓
+On-chain receipt and event verification
+    ↓
+Payment record and audit history
 ```
-agent proposal → policy check → risk screen → human approval (if required, bound to the exact payment)
-              → simulation → signed execution → receipt + event verification → audit record
-```
 
-An LLM's output is never authority. The final decision is made by deterministic code and by the contracts:
+Gemini can turn a plain-English request into a payment draft, but it cannot bypass the form checks, spending limits or approval requirements. The payment's details are bound to a hash, so an approval for one recipient and amount cannot be reused for a different payment.
 
-* `TreasuryVault` gives each agent a per-token per-transaction cap, a daily cap, an expiry and an
-  auto-approve ceiling. New recipients, or anything above the ceiling, need N human approvals. Each approval
-  commits to `keccak256(chainId, vault, agent, token, to, amount, purpose, policyVersion, expiry, nonce)`,
-  so changing the recipient or amount invalidates it. There is deliberately **no owner withdraw-anything function**.
-* `MilestoneEscrow` is one escrow for both procurement and grants: reviewer approval, double-release
-  prevention, dispute freeze, resolver-decided splits, and explicit refund conditions.
-* `PolicyManager` versions policies; activating a new version (or revoking) kills every older approval.
+## What's inside Verac?
 
-## Why post-quantum matters here, and what it does and does not do
+Verac brings treasury management, finance operations and DAO work into the same application. The table below separates working testnet features from application workflows and simulations.
 
-QoreChain requires hybrid (secp256k1 + ML-DSA-87) signatures on native transactions. An **EVM transaction is
-not ML-DSA signed**: it is admitted only while the account's **EVM authorisation window**, opened by a
-hybrid-signed native message, covers it. So a thief with only the classical key cannot open a window and is
-bounded by whatever window is open. We build on that real mechanism (windows, delegated authenticators with
-spending rules, KEM-key registry, QoreSeal) and do not claim universal quantum resistance.
-Details and limits: [docs/SECURITY.md](docs/SECURITY.md), [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md).
+| Area | What it does | Current state |
+| --- | --- | --- |
+| **Treasury** | Reads the deployed vault's balance, limits, policy version, pause status and transaction activity. Supports website-initiated payments. | **Live testnet:** one website payment confirmed. |
+| **Approvals and Tasks** | Records payment requests, prevents self-approval, checks approval thresholds and tracks decisions. | **Working for the demonstrated live payment**; broader flows still need end-to-end checks. |
+| **AI Command and policy tools** | Gemini drafts constrained payment requests, proposes policy drafts, explains flagged invoices and offers advisory bid scoring. | **Partly integrated.** Not all 15 agent specifications are autonomous workflows. |
+| **Bills and invoice checks** | Flags duplicates, changed payment addresses, suspicious amounts and instructions hidden in invoice text. | **Rule-based checker implemented**; full invoice-history-to-payment flow not connected. |
+| **Procurement** | Creates tenders, accepts encrypted bids, compares eligible proposals and records awards with milestones. | **Application workflow implemented**; website escrow funding still pending. |
+| **Grants** | Manages funding rounds, applications, reviews, awards and milestone plans. | **Application workflow implemented**; grant disbursement and evidence flow incomplete. |
+| **Milestones** | Lets vendors submit encrypted evidence for review and records approval decisions. | **Application workflow implemented**; website-triggered escrow release pending. |
+| **Document Vault** | Encrypts small files and notes in the browser for selected recipients using QoreSeal. | **Cryptography tested**; full hosted-browser flow still needs verification. |
+| **Payroll** | Checks payee lists, calculates batch totals and prepares approval requests. | **Application workflow only**; approved batches do not send QOR. |
+| **Revenue** | Tracks amounts owed and checks submitted payment hashes against QoreChain. | **On-chain receipt verification**; no automatic deposit matching. |
+| **Governance** | Creates proposals, tracks members' votes and explains proposals with optional Gemini summaries. | **Application-level voting**, not native on-chain governance; no execution. |
+| **Disputes** | Records milestone disputes, supporting statements and reviewer outcomes. | **Application-level resolution**; on-chain escrow dispute actions not yet connected. |
+| **DCA, rebalancing and arbitrage** | Calculates allocation changes, DCA comparisons and estimated returns after fees and slippage. | **Simulation only.** No trades, market feeds or schedules execute. |
+| **Threat Center** | Reads live account and vault security configuration, including windows, limits and permissions. | **Live reads and rule checks**; incident response steps are currently manual. |
+| **Proof and Activity** | Shows testnet evidence and application audit events, with distinctions between verified and unverified outcomes. | **Live chain evidence available**; database audit events are not themselves tamper-proof. |
 
-## Status
+For a more detailed breakdown of what is implemented, tested or still pending, see [Requirements Matrix](docs/REQUIREMENTS_MATRIX.md) and [Implementation Plan](docs/IMPLEMENTATION_PLAN.md).
 
-| Area | State | Evidence |
-|---|---|---|
-| Solidity: registry, policy manager, vault, escrow, anchor | Implemented, deployed to testnet | 55 Foundry tests incl. fuzz and reentrancy |
-| Deterministic policy engine + payment hash (matches Solidity byte for byte) | Implemented | 14 Vitest tests + cross-language vector |
-| Payment pipeline, state machine, idempotency | Implemented (in-memory store) | 22 Vitest tests |
-| 15 agent specs, tool allow-lists, signed replay-protected messaging | Implemented | same suite |
-| Gemini provider (free-tier limits, retries, quota pause, schema validation) | Implemented; one real call per model made 2026-11-14 (default `gemini-3.5-flash-lite` answers in about 1.5 to 3 s; 5 of 8 other models timed out or errored) | 24 mocked Vitest tests + `pnpm ai:probe`; three agents wired (Policy Builder, Invoice explanations, Bid scoring) |
-| Postgres schema + RLS (31 tables, migrations 0001 to 0013) | Implemented; a policy bug found on real Supabase was fixed | 15 tenant-isolation tests on PGlite; sign-up, organisation creation and contract linking confirmed on a real Supabase project |
-| Live testnet **reads** (chain id, block, AA config, limits) | Verified 2026-11-14 | `pnpm chain:probe` |
-| Web app shell: 27 routes, light/dark, mobile nav | Implemented and deployed read-only at https://verac-web.vercel.app (all 27 routes return 200) | checked 2026-11-14 |
-| Web pages with live behaviour | Live Proof (re-verifies all 37 testnet transactions from the chain), Dashboard (chain + AI status), agent registry, permission matrix, policy validator, address lookup (balance, PQC, KEM, window, rules) on Diana testnet, integrations | read-only; no signing |
-| Supabase sign-in, organisation, team, audit pages | Code written, type-checked and built; **not yet exercised against a real Supabase project** (needs docs/SUPABASE_SETUP.md) | no live test |
-| Web pages for the 12 modules' workflows | **All built as working pages** (see the module rows below). Each states what is simulation, what is live testnet and what is pending. No placeholder pages remain | see rows below |
-| Wallet connect, PQC key registration, hybrid-signed tx, EVM window open | **Not started** | needs a funded throwaway testnet account |
-| QoreSeal encrypt/decrypt in the vault | **Implemented** (see Document Vault, Procurement, Milestones rows) | crypto round trips unit-tested |
-| Contract deployment | **Deployed to Diana testnet 2026-11-14** (5 contracts, see deployments/diana-testnet.json) | bytecode + owner read back on-chain |
-| Real payment, human approval, escrow funding, 60 QOR milestone release, real rejections | **Done on testnet (shell scripts, not the web app)**: 3 successful payments or releases plus 4 on-chain denials | docs/LIVE_RUN_2026-11-14.md |
-| Live testnet payments from the web app (Treasury → Live payments) | **Built, off by default, exercised end to end once (1 QOR, 2026-11-15, see docs/LIVE_PAYMENT_2026-11-15.md).** A finance user requests a payment (max 10 QOR); a different administrator approves it with their password; an explicit Execute click makes a server-held **agent** key pay from the vault inside a short vault-only EVM window, after a separate **approver** key relays the on-chain approval. The result is CONFIRMED only when the receipt read back from the chain contains the vault's event for that exact payment hash; a revert is shown as FAILED with the contract's error. Limits are enforced by the contract (10 QOR per payment, 20 per day, nothing auto-approved). Needs migration 0014 and server env vars ([docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)). **Development signing path, not production custody**: see [docs/SECURITY.md](docs/SECURITY.md#server-managed-signing-testnet-only). On-chain setup of 2026-11-15 is recorded in [docs/LIVE_SETUP_2026-11-15.md](docs/LIVE_SETUP_2026-11-15.md) | 40 offline chain-service/signer/window/executor tests, 21 database-rule tests, 4 read-only live chain tests; setup transactions read back from the chain. No website-triggered payment has been sent yet |
-| AI Policy Builder (plain English → draft spending policy) | Implemented and tried live on Gemini 2026-11-14 (normal request, prompt injection, contradictory numbers, secret in text). Output is a draft only; deterministic code converts it and the policy validator checks it; nothing is activated by AI. Only enabled where `GEMINI_API_KEY` is set (local; not on the public site) | Vitest for the converter + validator; live runs manual |
-| Approvals and Tasks (/approvals, /tasks) | Implemented in code. Payment requests and decisions only change through two audited database functions (direct writes are denied): finance roles only, the requester can never approve their own request, quorum of N approvals, one vote per person, any rejection ends it, expired requests are cancelled, each step writes an audit event and updates the linked task. Each request carries a payment hash that is re-checked against its stored fields before approval. **SIMULATION**: approving executes nothing on chain. Needs migration 0003 applied and a second finance member (Team page, add by user ID) | 10 PGlite tests for the workflow plus the updated RLS test; not yet exercised on the real Supabase project |
-| Invoice fraud check (/invoices) | Implemented. Fixed rules decide block / hold / pass (duplicate, changed payout address, lookalike vendor, outlier, just-under-limit, bad dates, pressure wording, instructions aimed at an AI). Gemini only explains a stopped invoice; it cannot change the verdict. Tried live 2026-11-14. **SIMULATION**: you paste the invoice and sample history; no database history, upload or payment is connected yet | 12 Vitest tests for the rules; live runs manual |
-| Procurement (/procurement) | Implemented in code. Tender, **sealed bids**, close, open, rank, award with a milestone plan. Bids are real QoreSeal envelopes (ML-KEM-1024 + X25519 hybrid, AES-GCM) made in the vendor's browser and sealed to reviewers' public keys; the database holds ciphertext only; reviewers decrypt in their own browser with a key that never leaves it (32-byte seed, backup file). Bound to the tender and chain. Ciphertext is released to reviewers only after bidding closes (enforced by the database, not by cryptography: a reviewer who already holds a key could still decrypt a copy they obtained earlier). Fixed rules decide eligibility (over budget, unreadable, instructions aimed at an AI), price and delivery scores; Gemini adds an optional, advisory fit score for eligible bids only, under anonymous labels, and only after the reviewer ticks a consent box (free-tier content may be used by Google). A human awards. **No QOR moves**: funding and releasing the MilestoneEscrow on chain is not wired to the web app (the contract is deployed and demonstrated on testnet via scripts/demo-escrow.sh) | 8 PGlite tests for the lifecycle and visibility, 7 for bid rules, 6 for QoreSeal usage (real library); AI scoring tried live 2026-11-14; not yet exercised on the real Supabase project |
-| Treasury (/treasury) | Implemented. Reads the deployed TreasuryVault live from Diana testnet on every load: balance, paused flag, approver threshold, owner, active policy version, each agent's limits and remaining daily allowance (read from the contract), and recent vault events decoded from the chain (log queries are chunked because the node caps them at 10,000 blocks). Nothing is stored; if the node is unreachable it says so. Only successful transactions leave events, so denied payments appear on Live Proof instead | 3 unit tests for formatting/decoding; checked against the live contract 2026-11-14 |
-| Milestones (/milestones) | Implemented in code. After an award the winning vendor submits **sealed** evidence (same QoreSeal construction as bids, bound to the milestone) in order; reviewers open it in their own browser and accept or reject; an accepted milestone lets finance open a payment request that must pay the vendor's recorded payout address and the exact milestone amount (checked in the database), approved by a different finance member in the Approvals flow. The vendor sets a payout address; every change is kept in history and the audit log. **SIMULATION**: nothing is released from the on-chain MilestoneEscrow and no QOR is sent | 9 PGlite tests for the lifecycle, ordering, visibility and payment rules; not yet exercised on the real Supabase project |
-| Governance (/governance) | Implemented in code. Owners/administrators create proposals with a quorum and pass threshold; members vote once each while voting is open; the database counts the result after the deadline. Application vote, **not** an on-chain governance vote, and a passed proposal executes nothing. Optional Gemini summary (neutral, no recommendation, cannot vote) when a key is configured. Tested on a local Postgres (PGlite), not yet applied to the hosted database. |
-| Disputes (/disputes) | Implemented in code. The awarded vendor or a procurement reviewer opens a dispute on a milestone, which freezes it; both sides add plain-text (not encrypted) statements; an owner or administrator who did **not** open it resolves it by accepting the work or sending it back for new evidence. Changes the milestone in this app only: no QOR moves and the on-chain MilestoneEscrow dispute states are not called. Optional Gemini summary (neutral, cannot decide). Tested on a local Postgres (PGlite), not yet applied to the hosted database. |
-| Grants (/grants) | Implemented in code. Owners/administrators open a round with a budget; people with the grant_applicant role apply (plain text, not encrypted); fixed rules flag requests over what is left, copy-pasted pitches and instruction-like text; one administrator recommends and a **different** one awards with milestones that add up exactly to the request, and total awards can never pass the budget. Optional advisory Gemini review (cannot award or reject; pitches with instructions are kept out). Awarded grant milestones exist, but evidence and payment for them are **not built yet (PENDING)**. Application-only: no QOR moves and no escrow is created. Tested on a local Postgres (PGlite), not yet applied to the hosted database. |
-| Revenue (/revenue) | Implemented in code. Finance records money owed to the organisation (native QOR) and later records the payment transaction hash; one transaction can settle only one record. Overdue is computed from the due date. On each page load the server looks the claimed transaction up on the Diana testnet and shows **VERIFIED ON TESTNET** only for a successful transfer to the linked treasury of at least the amount owed, otherwise NOT VERIFIED / NOT FOUND. No AI, no invoicing, no customer messaging, no automatic matching of unclaimed deposits. Tested on a local Postgres (PGlite), not yet applied to the hosted database. |
-| Document Vault (/vault) | Implemented in code. Members seal a note or a small file (150 KB limit) in their **browser** to chosen members using QoreSeal (ML-KEM-1024 + X25519, AES-GCM, bound to the document id); the server stores ciphertext only and shows a document only to its listed readers, who open it in their own browser after a checksum check. Titles and reader lists are not encrypted and owners/administrators can see a document exists. Adding a reader means uploading a new sealed copy. On-chain anchoring of checksums is **not implemented (PENDING)**. The reading key is the same one used for bids and evidence; losing it and its backup loses the documents. QoreSeal is pre-1.0 with its specification awaiting external review. Crypto round trips are unit-tested; database rules are tested on a local Postgres (PGlite), not yet applied to the hosted database, and the browser flow has not been clicked through. |
-| Activity (/activity) | Implemented in code. A readable, filterable (by module, and "only mine"), paginated feed of the append-only `audit_events` log. Owners, administrators, security reviewers and auditors see everyone's events; other members see only their own (migration 0012). Unknown actions are shown as recorded, and actors are short member ids (no names looked up). The log blocks edits and deletes in the database but is not signed or anchored on-chain, so it is **not** tamper-proof against direct database access. Tested on a local Postgres (PGlite) and unit tests for the wording; not yet applied to the hosted database. |
-| DCA and Rebalancing (/strategies), Arbitrage Lab (/arbitrage) | Implemented in code as **SIMULATION calculators** on numbers the user types in: DCA vs buying at the first price, a rebalance proposal with tolerance band and minimum trade, and net profit after fees, slippage and network cost. No market data is fetched, no venue exists, and nothing is ever bought, sold or scheduled. Finance roles can save the inputs; the database forces every saved strategy to SIMULATION and paused. Rules unit-tested; DB rules tested on a local Postgres (PGlite), not yet applied to the hosted database. |
-| Design system and visual polish | Implemented: documented tokens, IBM Plex type, 4px spacing, nested radii, one status-tick signature, named 150ms transitions, stale dashboard copy corrected. See [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md). Checked by eye on desktop dark and phone light only; no automated accessibility audit has been run | screenshots, typecheck, build |
-| Threat Center (/threats) | Implemented. Fixed rules over live chain reads for the vault owner and each agent account: post-quantum key registered / possession proven, EVM window open or closed (with what remains), QoreSeal key, account-level spending rules, single-key owner, approver count, paused vault, agent limits against vault balance, expired permissions. A failed read is reported as unknown, never as a pass or a failure. The compromised-key runbook is **manual steps only**: closing a window, pausing, revoking and rotating need a signing key the web app does not hold. No attack has been staged, so none is claimed | 7 unit tests for the rules; checked against the live testnet 2026-11-14 |
-| Payroll (/payroll) | Implemented in code. Paste payees (name, 0x address, amount); fixed rules block empty batches, bad or repeated addresses and bad amounts, and flag repeated names, changed addresses, new payees and big jumps against the last approved period, plus optional per-payment and batch limits. A batch hash binds every address and amount (not names). Submitting opens an approval request: the approver sees every line, the hash is re-verified server-side, the submitter cannot approve, and the decision updates the batch. **No AI is used.** **SIMULATION**: approved means approved in the app; no QOR is sent and there is no execution wiring | 8 rule/hash tests and 7 PGlite workflow tests; not yet exercised on the real Supabase project |
-| Other AI behaviours | Provider ready; no other prompts/schemas written | n/a |
+## Where the AI fits
 
-Full mapping: [docs/REQUIREMENTS_MATRIX.md](docs/REQUIREMENTS_MATRIX.md). Plan: [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
+Verac uses **Google Gemini** where interpreting information is useful: drafting a payment from natural language, suggesting a spending policy, explaining an invoice flag, or adding an optional assessment to an eligible supplier bid.
 
-## Run it
+It does **not** ask Gemini to do the maths on a treasury transfer, decide whether a recipient is authorised or enforce a policy. Those decisions use validated application code and smart contracts. Human reviewers still select suppliers, approve payments and resolve disputes.
 
-Requirements: Node 22, pnpm 10, [Foundry](https://getfoundry.sh) (tested with 1.9.0).
+The project includes **15 agent definitions**, tool permissions and authenticated, replay-protected agent messaging. That's the foundation for more coordinated work, but it would be misleading to claim all 15 agents already run fully autonomous, connected business processes.
+
+The next major AI milestone is a single request that checks real invoices against real approved milestones, coordinates the relevant agents, and produces payment proposals that can enter the existing approval and execution flow.
+
+## Why build this on QoreChain?
+
+Verac handles money, so an agent shouldn't be able to spend just because it has a key or because a language model says a payment looks fine.
+
+QoreChain gives us another control at the blockchain level. On its native chain, transactions use **hybrid secp256k1 and ML-DSA-87 signatures**. EVM transactions are **not themselves ML-DSA-signed**. Instead, they are accepted only inside an EVM authorisation window opened by an appropriately hybrid-signed native transaction. Windows can restrict duration, transaction count, value and targets.
+
+Verac uses that mechanism alongside the spending rules in its deployed contracts. An attacker with only a classical private key cannot open a new authorisation window, although an already-open window and a compromised server still introduce risks. This is a specific security model, **not a claim that the whole application is quantum-proof**.
+
+For confidential bids, milestone evidence and vault documents, Verac uses **QoreSeal**: browser-side encryption built around ML-KEM-1024, X25519 and AES-GCM. The server stores ciphertext rather than the document's readable contents. Reviewers decrypt using their own keys. Document titles and reader lists are not encrypted, and QoreSeal is still a pre-1.0 implementation awaiting external review.
+
+More detail: [Security](docs/SECURITY.md) · [Threat Model](docs/THREAT_MODEL.md)
+
+## Contracts and payment controls
+
+Five Solidity contracts are deployed on Diana testnet:
+
+| Contract | Job |
+| --- | --- |
+| `OrganizationRegistry` | Organisation and role references. |
+| `PolicyManager` | Policy versions and revocations. |
+| `TreasuryVault` | Agent limits, approved recipients, approval thresholds and payment enforcement. |
+| `MilestoneEscrow` | Shared escrow rules for procurement and grants, including milestones, disputes and refunds. |
+| `AuditAnchor` | On-chain commitments for evidence where integrated. |
+
+`TreasuryVault` checks per-token payment limits, daily limits, expiry and approval requirements. The approved payment hash commits to the chain, vault, agent, token, recipient, amount, purpose, policy version, expiry and nonce. If a material detail changes, the old approval no longer matches.
+
+`MilestoneEscrow` supports reviewer approvals, prevents double release, can hold disputed funds and has explicit resolution and refund conditions. Its on-chain functionality was demonstrated with scripts; **the corresponding website funding and release actions are still unfinished**.
+
+The application has a kill switch and emergency-stop controls. These are useful safeguards but do not make server-held keys equivalent to production custody.
+
+## Testing and evidence
+
+The latest project report lists **323 passing tests**, including **135 database security tests**. They cover application logic, payment controls, agent behaviour and row-level security. The repository also contains a Foundry contract test suite covering issues such as spending limits, reentrancy and escrow behaviour, but **Foundry was not installed in the environment used for the latest report**, so the contract tests still need to be rerun there.
+
+The database has migrations through `0015`. **Successful application of migration `0015` to the hosted Supabase project has not yet been independently confirmed.**
+
+A live testnet transaction is marked **confirmed** only after Verac checks its receipt and matching contract event. Simulated calculations and sample tender data are not presented as payments or trading executions.
+
+Useful evidence and project documents:
+
+- [Website payment proof — November 15](docs/LIVE_PAYMENT_2026-11-15.md)
+- [Earlier escrow and payment run — November 14](docs/LIVE_RUN_2026-11-14.md)
+- [Live testnet setup](docs/LIVE_SETUP_2026-11-15.md)
+- [Deployment manifest](deployments/diana-testnet.json)
+- [Security model](docs/SECURITY.md) and [threat model](docs/THREAT_MODEL.md)
+- [Requirements and implementation status](docs/REQUIREMENTS_MATRIX.md)
+
+## Run locally
+
+Requirements: **Node.js 22**, **pnpm 10**, and [Foundry](https://getfoundry.sh) for the Solidity tests.
 
 ```bash
 pnpm install
-pnpm test              # TypeScript tests (agents, policy, AI provider, RLS) - no network, no API keys
-pnpm chain:probe       # read-only live check of Diana testnet
-cd contracts && pnpm install --ignore-workspace && forge test    # contracts
+pnpm test
+pnpm chain:probe
 ```
 
-`contracts/` has its own install because Foundry cannot resolve imports outside its project root.
-`forge-std` is vendored under `contracts/lib/forge-std` (v1.17.0, MIT/Apache-2.0).
+Run the contract tests separately:
 
-Optional live AI check (one real call, synthetic data): `GEMINI_API_KEY=... pnpm ai:probe`.
+```bash
+cd contracts
+pnpm install --ignore-workspace
+forge test
+```
 
-## Testnet vs simulation
+`contracts/` has its own dependency installation because Foundry does not resolve imports outside that project root. `forge-std` is included under `contracts/lib/forge-std`.
 
-Everything labelled `LIVE_TESTNET` must come from the real chain with a verifiable hash. Anything else is
-labelled `SIMULATION` or `SAMPLE_DATA`. The sample tender amounts (280/260/295 QOR) are scenario data only.
+For a live Gemini connectivity check using synthetic inputs, configure `GEMINI_API_KEY` locally and run:
 
-## Known limitations
+```bash
+pnpm ai:probe
+```
 
-* Gemini's free tier may use submitted content to improve Google products: use synthetic data in the public demo.
-* The agent message bus uses HMAC inside one trust domain; it is not post-quantum and is not claimed to be.
-* QoreSeal is a pre-1.0 draft construction pending external review.
-* QoreX's documented EVM provider does not support `eth_sendTransaction`; EVM calls use a server-side signer on a throwaway testnet account. The server holds both the agent and the approver keys, so the vault's on-chain caps, not the server, are the control.
-* Live execution is off until `LIVE_EXECUTION_ENABLED=true`; milestone release and escrow funding from the web app are not wired.
-* Compiled for EVM `paris` (conservative); the node accepted `PUSH0`/`TLOAD` in `eth_call`, but a live deploy is still unverified.
+See [Deployment](docs/DEPLOYMENT.md) and [Supabase Setup](docs/SUPABASE_SETUP.md) for environment variables, authentication and database configuration. **Never commit private keys, service-role credentials or `.env` secrets.** Live transaction execution is controlled separately through `LIVE_EXECUTION_ENABLED` and is disabled unless explicitly set to `true`.
+
+## What still needs work
+
+Verac is a **testnet MVP**, not a production treasury service. The priorities are:
+
+1. Connect procurement escrow funding and milestone release to website actions and the right signing/approval paths.
+2. Verify hosted Supabase migration `0015` and run full browser workflows against the deployed database.
+3. Add Playwright end-to-end coverage and rerun the Foundry contract suite in the current environment.
+4. Test the QoreX wallet panel against the real extension. Its documented EVM provider does not support `eth_sendTransaction`, so contract calls currently use server-held testnet keys.
+5. Connect invoice review, milestone evidence and payment preparation into a single demonstrable multi-agent workflow.
+
+The server currently holds separate **agent and approver signing keys** for testnet execution. The administrator's website approval is recorded separately, but both signing credentials live in the server's trust environment. A compromised server therefore remains a serious risk; on-chain vault limits are an important independent boundary, not a replacement for production key management. There has been **no external security audit**, and mainnet use is not supported.
+
+Other limitations: Gemini free-tier inputs may be used to improve Google's products, so public demos should use synthetic data; the internal agent message bus uses HMAC rather than post-quantum signatures; and the activity log cannot be called tamper-proof against database administrators. [Security](docs/SECURITY.md) explains these trade-offs.
+
+## Built for Build Before Q-Day
+
+Verac is an entry in the **Post-Quantum AI Agents** category on QoreChain Diana testnet (`qorechain-diana`, EVM chain ID `9800`). We wanted to explore a practical question: **can AI help an organisation do real financial work without giving the AI unrestricted control of the funds?**
+
+The verified website payment is one answer. Connecting invoices, milestones, procurement and grants into that same controlled flow is the work that comes next.
 
 ## Credits and licence
 
-MIT ([LICENSE](LICENSE)). Built with OpenZeppelin Contracts 5.0.2, forge-std, viem, zod, `@qorechain/sdk` 0.14.0,
-`@qorechain/qoreseal` 0.1.0, `@google/genai`, PGlite. AI-assisted development is described in
-[docs/AI_USAGE.md](docs/AI_USAGE.md).
+[MIT licensed](LICENSE). Built with OpenZeppelin Contracts, Foundry/forge-std, viem, Zod, `@qorechain/sdk`, `@qorechain/qoreseal`, `@google/genai` and PGlite. The development process and AI-assisted work are documented in [AI Usage](docs/AI_USAGE.md).
