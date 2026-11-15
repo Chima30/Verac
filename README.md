@@ -6,9 +6,8 @@ milestone payments) without any agent ever holding unrestricted access to the tr
 (native `qorechain-diana`, EVM chain id `9800`). The product is called Verac; the name lives in one env var
 (`NEXT_PUBLIC_PRODUCT_NAME`).
 
-> **Status: early foundation (2026-11-14).** The security core is implemented and tested; the web app is a
-> read-only shell with a few live pages; module workflows, live on-chain flows and most agent logic are not built yet. See [Status](#status) before judging anything here.
-> Nothing has been deployed, no testnet transaction has been sent, and no external audit has happened.
+> **Status (2026-11-15), testnet only.** The security core, the web app and the live payment flow are built and tested. Contracts are deployed on QoreChain Diana testnet, and a 1 QOR payment was requested, approved by a second administrator and executed from the website (see [docs/LIVE_PAYMENT_2026-11-15.md](docs/LIVE_PAYMENT_2026-11-15.md)). Some modules are still partial: see [Status](#status) before judging anything here.
+> Payments are signed by a bounded, server-held agent key (a development signing path, not production custody). No external audit has happened, and mainnet is not supported.
 
 ## The problem
 
