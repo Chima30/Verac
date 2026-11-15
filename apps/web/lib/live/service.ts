@@ -26,7 +26,16 @@ export function dbAdapter(): ExecutorDb {
     return data;
   };
   return {
-    claim: async (id) => (await call("live_claim_execution", { p_tx: id })) as LiveRow,
+    claim: async (id) => {
+      const row = (await call("live_claim_execution", { p_tx: id })) as LiveRow;
+      // PostgREST returns numeric columns as JSON numbers, which JavaScript rounds (a 96-bit nonce does not fit a double). Read the
+      // exact digits back as text so the call is re-derived from the very values that were approved.
+      const { data, error } = await sb.from("transactions").select("amount::text, nonce::text").eq("id", id).single();
+      if (error || !data) throw new Error(error?.message ?? "could not read the exact amount and nonce");
+      const exact = data as unknown as { amount: string; nonce: string };
+      if (!/^\d+$/.test(exact.amount) || !/^\d+$/.test(exact.nonce)) throw new Error("the stored amount or nonce is not a whole number");
+      return { ...row, amount: exact.amount, nonce: exact.nonce } as LiveRow;
+    },
     recordRelay: async (id, h) => { await call("live_record_relay", { p_tx: id, p_hash: h }); },
     recordSubmitted: async (id, h) => { await call("live_record_submitted", { p_tx: id, p_hash: h }); },
     recordOutcome: async (id, ok, block, reason) => { await call("live_record_outcome", { p_tx: id, p_ok: ok, p_block: block === null ? null : Number(block), p_reason: reason }); },
