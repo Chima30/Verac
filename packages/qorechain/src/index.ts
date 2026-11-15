@@ -100,3 +100,4 @@ export * from "./execution";
 export * from "./signer";
 export * from "./window";
 export * from "./live-executor";
+export type { Hex } from "viem";
