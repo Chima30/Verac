@@ -1,12 +1,15 @@
 import { AddressLookup } from "@/components/address-lookup";
 import { Badge, Card, EmptyState, KV, PageHeader, Stat } from "@/components/ui";
 import { formatWei, tokenLabel, vaultSnapshot } from "@/lib/vault";
+import { LivePayments } from "@/components/live/live-payments";
+import { liveOperations } from "@/lib/live/list";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Treasury" };
 
 export default async function Treasury() {
   const v = await vaultSnapshot();
+  const live = await liveOperations();
   return (
     <>
       <PageHeader title="Treasury" description="The TreasuryVault deployed on Diana testnet, read live from the chain on every page load. Nothing here is stored or simulated: if the node cannot be reached, this page says so instead of showing old numbers." badge={v.ok ? <Badge tone="live" /> : <Badge tone="unavailable" />} />
@@ -17,6 +20,18 @@ export default async function Treasury() {
             <Stat label="Status" value={v.paused ? "PAUSED" : "Active"} sub={v.paused ? "All payments are frozen" : "Payments allowed within each agent's limits"} />
             <Stat label="Human approvals" value={`${v.approvalThreshold} of ${v.approverCount} approver${v.approverCount === 1 ? "" : "s"}`} sub="needed above an agent's auto-approve amount" />
           </div>
+
+          <Card title="Live payments" right={<Badge tone="live">LIVE TESTNET</Badge>}>
+            {live.signedIn ? (
+              <LivePayments
+                ops={live.ops}
+                canRequest={["owner", "administrator", "finance_manager"].includes(live.role ?? "")}
+                canDecide={["owner", "administrator"].includes(live.role ?? "")}
+                explorer="https://explore.qore.network"
+                status={live.status}
+              />
+            ) : <p className="text-sm text-muted">Sign in to request, approve or execute a live testnet payment. Nothing here is simulated: every confirmed row links to a real transaction.</p>}
+          </Card>
 
           <Card title="Contract">
             <KV rows={[
