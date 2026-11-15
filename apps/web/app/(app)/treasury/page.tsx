@@ -1,6 +1,7 @@
 import { AddressLookup } from "@/components/address-lookup";
 import { Badge, Card, EmptyState, KV, PageHeader, Stat } from "@/components/ui";
-import { formatWei, tokenLabel, vaultSnapshot } from "@/lib/vault";
+import { evenSteps, formatWei, tokenLabel, vaultSnapshot } from "@/lib/vault";
+import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
 import { LivePayments } from "@/components/live/live-payments";
 import { liveOperations } from "@/lib/live/list";
 
@@ -20,6 +21,11 @@ export default async function Treasury() {
             <Stat label="Status" value={v.paused ? "PAUSED" : "Active"} sub={v.paused ? "All payments are frozen" : "Payments allowed within each agent's limits"} />
             <Stat label="Human approvals" value={`${v.approvalThreshold} of ${v.approverCount} approver${v.approverCount === 1 ? "" : "s"}`} sub="needed above an agent's auto-approve amount" />
           </div>
+
+          <Card title="Vault balance over time" right={<Badge tone="live" />}>
+            <InteractiveAreaChart title="Vault balance" unit="QOR" data={{ "All time": evenSteps(v.history) }} height={260} />
+            <p className="mt-3 text-xs text-muted">Rebuilt from the vault&apos;s own deposit, payment and escrow events and anchored to the balance read from the chain now. If those events ever fail to explain the balance, the chart is hidden instead of guessed.</p>
+          </Card>
 
           <Card title="Live payments" right={<Badge tone="live">LIVE TESTNET</Badge>}>
             {live.signedIn ? (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeEvents, formatWei, tokenLabel } from "./vault";
+import { balanceHistory, describeEvents, evenSteps, formatWei, tokenLabel } from "./vault";
 
 const E18 = 10n ** 18n;
 const A = (n: number) => "0x" + n.toString(16).padStart(40, "0");
@@ -15,6 +15,24 @@ describe("vault formatting", () => {
   it("labels native and token addresses", () => {
     expect(tokenLabel(ZERO)).toBe("QOR");
     expect(tokenLabel(A(7))).toContain("…");
+  });
+  it("rebuilds balance history anchored to the live balance", () => {
+    const log = (eventName: string, amount: bigint, blockNumber: bigint, token = ZERO) => ({ eventName, args: { amount, token }, blockNumber });
+    const pts = balanceHistory([log("PaymentExecuted", 4n * E18, 30n), log("Deposited", 10n * E18, 10n)], 6n * E18, 1000, 9000, (b) => Number(b) * 100);
+    expect(pts.map((p) => p.value)).toEqual([0, 10, 6, 6]);
+    expect(pts[0]!.date).toBe(1000);
+    expect(pts.at(-1)!.date).toBe(9000);
+  });
+  it("ignores other tokens and refuses to chart when events do not explain the balance", () => {
+    const log = (eventName: string, amount: bigint, blockNumber: bigint, token = ZERO) => ({ eventName, args: { amount, token }, blockNumber });
+    expect(balanceHistory([log("Deposited", 5n * E18, 1n, A(9))], 0n, 0, 1, () => 0).map((p) => p.value)).toEqual([0, 0]);
+    // A deposit of 5 with nothing left would mean the vault held -5 before it: the events do not explain the balance.
+    expect(balanceHistory([log("Deposited", 5n * E18, 1n)], 0n, 0, 1, () => 0)).toEqual([]);
+  });
+  it("samples a balance at even times, flat between events, ending on the real balance", () => {
+    const s = evenSteps([{ date: 0, value: 0 }, { date: 40, value: 10 }, { date: 100, value: 6 }], 11);
+    expect(s.map((p) => p.date)).toEqual([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]);
+    expect(s.map((p) => p.value)).toEqual([0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 6]);
   });
   it("describes events a person can read", () => {
     const rows = describeEvents([

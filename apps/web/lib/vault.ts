@@ -29,6 +29,8 @@ export interface VaultSnapshot {
   ok: boolean; error?: string; readAtBlock?: string;
   address: string; balance?: bigint; owner?: string; paused?: boolean; approvalThreshold?: number; approverCount?: number; policyManager?: string; policyVersion?: string;
   rules: AgentRule[]; events: VaultEvent[]; eventsError?: string;
+  /** Native QOR balance over time, rebuilt from events and anchored to the live balance. Empty when it cannot be shown truthfully. */
+  history: BalancePoint[];
 }
 
 const short = (a: string) => `${a.slice(0, 8)}…${a.slice(-4)}`;
@@ -61,12 +63,69 @@ export function describeEvents(logs: Array<{ eventName: string; args: Record<str
   });
 }
 
+export interface BalancePoint { date: number; value: number }
+
+/**
+ * Rebuilds the vault's native QOR balance over time from its own events, anchored to the balance read from the chain now:
+ * Deposited adds, PaymentExecuted and EscrowFunded subtract. Walking backwards from the real balance means the last point is
+ * always the true balance. If the walk ever goes negative the events do not explain the balance, so it returns nothing
+ * rather than a chart that might be wrong.
+ */
+export function balanceHistory(
+  logs: Array<{ eventName: string; args: Record<string, unknown>; blockNumber: bigint }>,
+  current: bigint, startMs: number, nowMs: number, blockMs: (b: bigint) => number,
+): BalancePoint[] {
+  const deltas = logs
+    .filter((l) => (l.eventName === "Deposited" || l.eventName === "PaymentExecuted" || l.eventName === "EscrowFunded") && isNative(String(l.args.token ?? "")))
+    .map((l) => ({ block: l.blockNumber, d: (l.eventName === "Deposited" ? 1n : -1n) * BigInt(String(l.args.amount ?? 0)) }))
+    .sort((a, b) => (a.block < b.block ? -1 : a.block > b.block ? 1 : 0));
+  const after: bigint[] = new Array(deltas.length);
+  let v = current;
+  for (let i = deltas.length - 1; i >= 0; i--) { after[i] = v; v -= deltas[i]!.d; }
+  if (v < 0n) return [];
+  const qor = (x: bigint) => Number(x) / 1e18;
+  const pts: BalancePoint[] = [{ date: startMs, value: qor(v) }];
+  deltas.forEach((d, i) => pts.push({ date: blockMs(d.block), value: qor(after[i]!) }));
+  pts.push({ date: nowMs, value: qor(current) });
+  return pts.sort((a, b) => a.date - b.date);
+}
+
+/**
+ * A balance holds its value until the next event, so between events the line must be flat. This samples the points at even
+ * time intervals using "last known value", which makes the chart's horizontal axis real time instead of event number.
+ */
+export function evenSteps(points: BalancePoint[], samples = 60): BalancePoint[] {
+  if (points.length < 2) return points;
+  const t0 = points[0]!.date, t1 = points[points.length - 1]!.date;
+  if (t1 <= t0) return points;
+  const out: BalancePoint[] = [];
+  let j = 0;
+  for (let k = 0; k < samples; k++) {
+    const t = t0 + ((t1 - t0) * k) / (samples - 1);
+    while (j + 1 < points.length && points[j + 1]!.date <= t) j++;
+    out.push({ date: Math.round(t), value: points[j]!.value });
+  }
+  out[samples - 1] = { date: t1, value: points[points.length - 1]!.value }; // the last sample is always the real current balance
+  return out;
+}
+
 type RawLog = { eventName: string; args: Record<string, unknown>; blockNumber: bigint; transactionHash: string };
 /** The testnet node refuses log queries spanning more than 10,000 blocks, so scan in chunks and remember what was already scanned. */
 const CHUNK = 9_000n;
+const blockTimes = new Map<bigint, number>();
 const cache: { scannedTo: bigint | null; logs: RawLog[] } = { scannedTo: null, logs: [] };
 
-async function scanLogs(evm: PublicClient, deployBlock: bigint, latest: bigint): Promise<RawLog[]> {
+// Two page requests at once used to both scan from the same block and both append, so every event appeared twice.
+// Scans now run one after another, and each one starts from whatever the previous one finished.
+let scanQueue: Promise<unknown> = Promise.resolve();
+function scanLogs(evm: PublicClient, deployBlock: bigint, latest: bigint): Promise<RawLog[]> {
+  const run = scanQueue.then(() => scanLogsOnce(evm, deployBlock, latest));
+  scanQueue = run.catch(() => undefined);
+  return run;
+}
+
+async function scanLogsOnce(evm: PublicClient, deployBlock: bigint, latest: bigint): Promise<RawLog[]> {
+  if (cache.scannedTo !== null && latest <= cache.scannedTo) return cache.logs;
   const from = cache.scannedTo === null ? deployBlock : cache.scannedTo + 1n;
   const ranges: Array<[bigint, bigint]> = [];
   for (let a = from; a <= latest; a += CHUNK) ranges.push([a, a + CHUNK - 1n > latest ? latest : a + CHUNK - 1n]);
@@ -82,7 +141,7 @@ async function scanLogs(evm: PublicClient, deployBlock: bigint, latest: bigint):
 }
 
 export async function vaultSnapshot(): Promise<VaultSnapshot> {
-  const base: VaultSnapshot = { ok: false, address: VAULT, rules: [], events: [] };
+  const base: VaultSnapshot = { ok: false, address: VAULT, rules: [], events: [], history: [] };
   try {
     const evm = reader().evm as PublicClient;
     const [block, balance, owner, paused, approvalThreshold, approverCount, pm] = await Promise.all([
@@ -100,6 +159,14 @@ export async function vaultSnapshot(): Promise<VaultSnapshot> {
       const receipt = await evm.getTransactionReceipt({ hash: deployment.contracts.TreasuryVault.tx as `0x${string}` });
       const decoded = await scanLogs(evm, receipt.blockNumber, block);
       snap.events = describeEvents(decoded).sort((a, b) => Number(b.block - a.block)).slice(0, 40);
+      try {
+        const need = new Set<bigint>([receipt.blockNumber]);
+        for (const l of decoded) if (["Deposited", "PaymentExecuted", "EscrowFunded"].includes(l.eventName)) need.add(l.blockNumber);
+        if (need.size <= 150) {
+          await Promise.all([...need].filter((b) => !blockTimes.has(b)).map(async (b) => { blockTimes.set(b, Number((await evm.getBlock({ blockNumber: b })).timestamp) * 1000); }));
+          snap.history = balanceHistory(decoded, balance, blockTimes.get(receipt.blockNumber)!, Date.now(), (b) => blockTimes.get(b)!);
+        }
+      } catch { /* no chart is better than a wrong one */ }
       const pairs = new Map<string, { agent: `0x${string}`; token: `0x${string}` }>();
       for (const l of decoded) if (l.eventName === "AgentLimitsSet") { const a = l.args as { agent: `0x${string}`; token: `0x${string}` }; pairs.set(`${a.agent}:${a.token}`, a); }
       snap.rules = await Promise.all([...pairs.values()].map(async ({ agent, token }) => {
