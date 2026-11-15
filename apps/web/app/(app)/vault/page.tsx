@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { Check, FileLock2, Lock, Minus, TriangleAlert } from "lucide-react";
+import { Badge, Card, EmptyState, FlashMessages, PageHeader, Source, btnCls, btnDangerCls, fmtUtc, relTime } from "@/components/ui";
+import { CopyButton } from "@/components/ui-client";
 import { ReviewerKey } from "@/components/procurement/reviewer-key";
 import { OpenDocument } from "@/components/vault/open-document";
 import { UploadForm, type Reader } from "@/components/vault/upload-form";
@@ -34,28 +36,68 @@ export default async function Vault({ searchParams }: { searchParams: Promise<{ 
   const { data: acc } = await sb.from("document_access").select("document_id").eq("user_id", s.user.id);
   const canRead = new Set((acc ?? []).map((a) => a.document_id as string));
 
+  const readable = docs.filter((d) => canRead.has(d.id)).length;
+  const kb = (n: number) => (n < 1024 ? `${n} B` : `${(n / 1024).toFixed(1)} KB`);
+
   return (
     <>
-      <PageHeader title="Document Vault" description="Notes and small files sealed in your browser to the members you choose, using post-quantum hybrid encryption (QoreSeal). The server stores ciphertext only. Only a chosen reader's own key can open a document." badge={<Badge tone="live">ENCRYPTED IN BROWSER</Badge>} />
-      {sp.msg && <p role="status" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--live)_25%,transparent)] bg-[var(--live-bg)] px-4 py-3 text-[13.5px]">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{sp.error ?? error?.message}</p>}
+      <PageHeader title="Document Vault" eyebrow="Security"
+        description="Notes and small files sealed in your browser to the members you choose, with post-quantum hybrid encryption (QoreSeal). The server only ever stores ciphertext. Only a chosen reader's own key can open a document."
+        badge={<Badge tone="live">ENCRYPTED IN BROWSER</Badge>}
+        meta={<><span><strong className="font-semibold text-ink">{docs.length}</strong> document{docs.length === 1 ? "" : "s"}</span><span><strong className="font-semibold text-ink">{readable}</strong> you can open</span><span>{published ? "Your reading key is published" : "No reading key yet"}</span></>}
+        actions={published ? <a href="#upload" className={btnCls}>Add a document</a> : undefined} />
+      <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
-      <Card title="Your reading key" className="mb-4"><ReviewerKey orgId={s.org.id} userId={s.user.id} publishedFingerprint={published} publish={publishVaultKey} purpose="Documents" /></Card>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="min-w-0">
+          {docs.length === 0 ? <EmptyState icon={<FileLock2 size={18} aria-hidden />} title="No documents yet" action={published ? <a href="#upload" className={btnCls}>Add the first document</a> : undefined}>{published ? "Seal a note or a small file to the members who should read it." : "Create and publish your reading key first. Others need it to seal documents to you."}</EmptyState> : (
+            <Card title="Library" description="Newest first. Opening a document decrypts it in this browser only." flush>
+              <ul className="-mx-5 divide-y divide-line">
+                {docs.map((d) => {
+                  const mine = canRead.has(d.id);
+                  return (
+                    <li key={d.id}>
+                      <details className="group">
+                        <summary className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-surface-2/50">
+                          <span aria-hidden className={`grid size-8 shrink-0 place-items-center rounded-md ${mine ? "bg-accent-soft text-accent-text" : "bg-surface-2 text-subtle"}`}>{mine ? <FileLock2 size={15} /> : <Lock size={15} />}</span>
+                          <span className="min-w-0 flex-1"><span className="block truncate text-[14px] font-medium">{d.title ?? "Untitled"}</span>
+                            <span className="block text-[12.5px] text-muted">{relTime(d.created_at)} · {d.recipients.length} reader{d.recipients.length === 1 ? "" : "s"} · {kb(d.envelope_bytes)} sealed</span></span>
+                          {mine ? <Badge tone="info">YOU CAN READ</Badge> : <Badge tone="neutral">NOT A READER</Badge>}
+                        </summary>
+                        <div className="space-y-3 px-5 pb-4 sm:pl-[4.25rem]">
+                          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-[12.5px] sm:grid-cols-2">
+                            <div><dt className="text-muted">Added</dt><dd>{fmtUtc(d.created_at)}{d.uploaded_by === s.user!.id ? " by you" : ""}</dd></div>
+                            <div><dt className="text-muted">Encryption</dt><dd>QoreSeal hybrid (ML-KEM + X25519), sealed per reader</dd></div>
+                            <div className="sm:col-span-2"><dt className="text-muted">Ciphertext checksum (SHA-256)</dt><dd className="flex items-center gap-1"><span className="break-all font-mono text-[12px]">{d.ciphertext_sha256}</span><CopyButton value={d.ciphertext_sha256} label="Copy checksum" /></dd></div>
+                          </dl>
+                          {mine ? <OpenDocument id={d.id} orgId={s.org!.id} userId={s.user!.id} /> : <p className="text-[13px] text-muted">You were not chosen as a reader, so you cannot open it. Ask the uploader to seal a new copy to you.</p>}
+                          {(d.uploaded_by === s.user!.id || admin) && (
+                            <form action={deleteDocument}><input type="hidden" name="id" value={d.id} /><button className={`${btnDangerCls} min-h-8 text-[12.5px]`}>Delete</button></form>
+                          )}
+                        </div>
+                      </details>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          )}
+        </div>
 
-      {published && <Card id="upload" title="Add a document" className="mb-4"><UploadForm readers={readers} me={s.user.id} /></Card>}
-
-      {docs.length === 0 ? <EmptyState title="No documents">{published ? "Add the first one above." : "Create and publish your reading key first."}</EmptyState> : (
-        <div className="space-y-3">{docs.map((d) => (
-          <Card key={d.id} title={d.title ?? "Untitled"} right={canRead.has(d.id) ? <Badge tone="live">YOU CAN READ</Badge> : <Badge tone="neutral">NOT A READER</Badge>}>
-            <p className="text-[12.5px] text-muted">{new Date(d.created_at).toUTCString()} · {d.recipients.length} reader{d.recipients.length === 1 ? "" : "s"} · {d.envelope_bytes.toLocaleString()} bytes sealed · checksum <span className="font-mono">{d.ciphertext_sha256.slice(0, 16)}…</span></p>
-            {canRead.has(d.id) ? <div className="mt-3"><OpenDocument id={d.id} orgId={s.org!.id} userId={s.user!.id} /></div> : <p className="mt-2 text-[13.5px] text-muted">You were not chosen as a reader, so you cannot open it. Ask the uploader to share a new sealed copy.</p>}
-            {(d.uploaded_by === s.user!.id || admin) && (
-              <form action={deleteDocument} className="mt-3"><input type="hidden" name="id" value={d.id} /><button className="inline-flex min-h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface px-3 text-[12.5px] font-medium text-ink hover:border-line-strong hover:bg-surface-2 disabled:pointer-events-none disabled:opacity-50">Delete</button></form>
-            )}
+        <div className="space-y-6">
+          <Card title="Your reading key" description="Lets others seal documents to you. It stays in this browser."><ReviewerKey orgId={s.org.id} userId={s.user.id} publishedFingerprint={published} publish={publishVaultKey} purpose="Documents" /></Card>
+          {published && <Card id="upload" title="Add a document" description="Sealed in your browser before it is uploaded."><UploadForm readers={readers} me={s.user.id} /></Card>}
+          <Card title="What is and is not protected">
+            <ul className="space-y-2 text-[13px] leading-relaxed">
+              <li className="flex gap-2"><Check size={15} className="mt-0.5 shrink-0 text-[var(--live)]" aria-hidden /><span>Contents are encrypted; the server cannot read them.</span></li>
+              <li className="flex gap-2"><Minus size={15} className="mt-0.5 shrink-0 text-subtle" aria-hidden /><span className="text-muted">Titles and reader lists are not encrypted. Owners and administrators can see that a document exists.</span></li>
+              <li className="flex gap-2"><Minus size={15} className="mt-0.5 shrink-0 text-subtle" aria-hidden /><span className="text-muted">Checksums are stored but not yet anchored on chain.</span></li>
+              <li className="flex gap-2"><TriangleAlert size={15} className="mt-0.5 shrink-0 text-[var(--warn)]" aria-hidden /><span className="text-muted">Lose your reading key and its backup, and your documents cannot be recovered.</span></li>
+            </ul>
+            <Source>Version history is not kept: a new upload is a new document. QoreSeal is pre-1.0 and its specification awaits external review.</Source>
           </Card>
-        ))}</div>
-      )}
-      <p className="mt-4 text-[12.5px] text-muted">Titles and who-can-read lists are not encrypted, and owners and administrators can see that a document exists. Checksums are stored but are not anchored on-chain (PENDING). If you lose your reading key and its backup, your documents cannot be recovered. QoreSeal is pre-1.0 and its specification awaits external review.</p>
+        </div>
+      </div>
     </>
   );
 }

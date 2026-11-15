@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, PageHeader, chipCls } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, PageHeader, chipCls } from "@/components/ui";
 import { MODULE_LABELS, PAGE_SIZE, actorLabel, describe, moduleLabel, parseFilters, type AuditRow } from "@/lib/activity";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -42,24 +42,32 @@ export default async function Activity({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <PageHeader title="Activity" description={seeAll ? "Everything recorded for this organisation, newest first. Owners, administrators, security reviewers and auditors see all members' actions." : "The actions you took, newest first. Only owners, administrators, security reviewers and auditors can see everyone's."} badge={<Badge tone="neutral">RECORDED BY THE APP DATABASE</Badge>} />
-      {error && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{error.message}</p>}
+      <PageHeader title="Activity" eyebrow="Overview" description={seeAll ? "Everything recorded for this organisation, newest first. Owners, administrators, security reviewers and auditors see all members' actions." : "The actions you took, newest first. Only owners, administrators, security reviewers and auditors can see everyone's."} badge={<Badge tone="neutral">RECORDED BY THE APP DATABASE</Badge>} />
+      <FlashMessages error={error?.message} />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div role="group" aria-label="Filter by module" className="mb-5 flex flex-wrap items-center gap-1.5">
         <Link className={chip(!f.module)} href={href({ mine: f.mine })}>All modules</Link>
         {Object.entries(MODULE_LABELS).map(([k, v]) => <Link key={k} className={chip(f.module === k)} href={href({ module: k, mine: f.mine })}>{v}</Link>)}
         {seeAll && <Link className={`${chip(f.mine)} ml-auto`} href={href({ module: f.module, mine: !f.mine })}>{f.mine ? "Showing only mine" : "Only my actions"}</Link>}
       </div>
 
       {rows.length === 0 ? <EmptyState title="Nothing here">{f.module || f.before ? "No events match this filter." : "No events have been recorded for you yet. Actions in the other modules show up here."}</EmptyState> : (
-        <Card title={`${rows.length} event${rows.length === 1 ? "" : "s"}`}>
-          <ul className="divide-y divide-line text-[13.5px]">{rows.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2">
-              <span><strong>{actorLabel(e.actor, s.user!.id)}</strong> {describe(e)}.</span>
-              <span className="text-[12.5px] text-muted"><Badge tone="neutral">{moduleLabel(e.action)}</Badge> {new Date(e.created_at).toUTCString()}</span>
-            </li>
-          ))}</ul>
-          {more && <div className="mt-3"><Link className={chip(false)} href={href({ module: f.module, mine: f.mine, before: rows[rows.length - 1]!.id })}>Older events</Link></div>}
+        <Card title={`${rows.length} event${rows.length === 1 ? "" : "s"}`} description="Newest first, grouped by day (UTC).">
+          {[...new Set(rows.map((e) => e.created_at.slice(0, 10)))].map((day) => (
+            <section key={day} className="mb-5 last:mb-0">
+              <h3 className="sticky top-14 z-[1] -mx-5 bg-surface/95 px-5 py-1.5 text-[12px] font-medium text-muted backdrop-blur">{new Date(`${day}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}</h3>
+              <ol className="relative mt-2 space-y-3 border-l border-line pl-5">
+                {rows.filter((e) => e.created_at.startsWith(day)).map((e) => (
+                  <li key={e.id} className="relative">
+                    <span aria-hidden className="absolute -left-[24.5px] top-[7px] size-2 rounded-full border-2 border-surface bg-[var(--subtle)]" />
+                    <p className="text-[13.5px]"><span className="font-medium">{actorLabel(e.actor, s.user!.id)}</span> {describe(e)}.</p>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[12px] text-muted"><span className="rounded bg-surface-2 px-1.5 py-0.5">{moduleLabel(e.action)}</span><span>{new Date(e.created_at).toISOString().slice(11, 16)} UTC</span></p>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          ))}
+          {more && <div className="mt-4 border-t border-line pt-4"><Link className={chip(false)} href={href({ module: f.module, mine: f.mine, before: rows[rows.length - 1]!.id })}>Older events</Link></div>}
         </Card>
       )}
       <p className="mt-4 text-[12.5px] text-muted">The database rejects edits and deletes of these records, but they are not signed or anchored on-chain, so this feed is not tamper-proof against someone with direct database access. Actors are shown by short member id; names are not looked up. For the on-chain record see Live Proof.</p>

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, PageHeader, btnCls, inputCls } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, PageHeader, btnCls, inputCls } from "@/components/ui";
 import { buildProposal, formatQor, hashMatches, STATE_TONE } from "@/lib/approvals";
 import { LivePayments } from "@/components/live/live-payments";
 import { liveOperations } from "@/lib/live/list";
@@ -75,9 +75,10 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <PageHeader title="Approvals" description="Payments that need a human yes. Each request is tied to its exact amount, recipient and expiry by a hash that is re-checked before you can approve. The person who made a request can never approve it." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--live)_25%,transparent)] bg-[var(--live-bg)] px-4 py-3 text-[13.5px]">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{sp.error ?? error?.message}</p>}
+      <PageHeader title="Approvals" eyebrow="Overview" description="Payments that need a person's yes. Each request is bound to its exact amount, recipient and expiry by a hash that is re-checked before you can approve. Whoever made a request can never approve it."
+        meta={<><span><strong className="font-semibold text-ink tabular-nums">{live.ops.filter((o) => o.state === "AWAITING_APPROVAL").length}</strong> live waiting</span><span><strong className="font-semibold text-ink tabular-nums">{list.filter((t) => t.state === "AWAITING_APPROVAL").length}</strong> simulated waiting</span></>}
+        actions={canAct ? <a href="#request" className={btnCls}>New simulated request</a> : undefined} />
+      <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
       <div className="mb-6">
         <Card title="Live testnet payments" description="Real payments from the TreasuryVault. Each one needs a second administrator and is confirmed by the chain." right={<Badge tone="live">LIVE TESTNET</Badge>}>

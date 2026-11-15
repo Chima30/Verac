@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 // Pages that render without signing in. Signed-in pages need Supabase and test accounts, which this suite does not create.
-const PUBLIC = ["/dashboard", "/command-center", "/proof", "/treasury", "/threats", "/simulator", "/invoices", "/policies", "/settings/agents", "/settings/integrations", "/settings/wallets", "/login"];
+const PUBLIC = ["/dashboard", "/command-center", "/proof", "/treasury", "/threats", "/simulator", "/invoices", "/policies", "/settings/agents", "/settings/integrations", "/settings/wallets", "/strategies", "/arbitrage", "/login"];
 
 async function noHorizontalOverflow(page: Page) {
   const { sw, cw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));

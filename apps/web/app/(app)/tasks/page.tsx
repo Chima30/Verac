@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, fmtUtc, relTime } from "@/components/ui";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Tasks" };
 
-const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral"> = {
-  QUEUED: "pending", RUNNING: "neutral", AWAITING_HUMAN: "approval", COMPLETED: "live", FAILED: "failed", PAUSED_AI_UNAVAILABLE: "pending",
+const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral" | "info"> = {
+  QUEUED: "pending", RUNNING: "neutral", AWAITING_HUMAN: "approval", COMPLETED: "info", FAILED: "failed", PAUSED_AI_UNAVAILABLE: "pending",
 };
+const STATES: Array<[string, string]> = [["AWAITING_HUMAN", "Waiting for a person"], ["RUNNING", "Running"], ["QUEUED", "Queued"], ["COMPLETED", "Completed"], ["FAILED", "Failed"], ["PAUSED_AI_UNAVAILABLE", "Paused, AI unavailable"]];
 
 export default async function Tasks() {
   const s = await getSession();
@@ -22,22 +23,30 @@ export default async function Tasks() {
   const waiting = tasks.filter((t) => t.state === "AWAITING_HUMAN").length;
   return (
     <>
-      <PageHeader title="Tasks" description="Work items created by agents and the payment pipeline, with where each one is. A task waiting for a human links to the Approvals queue." />
-      {error && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{error.message}</p>}
+      <PageHeader title="Tasks" eyebrow="Overview" description="Work items created by agents and the payment pipeline, and where each one is. A task waiting for a person links to the Approvals queue."
+        meta={<>{STATES.map(([k, label]) => { const n = tasks.filter((t) => t.state === k).length; return n ? <span key={k}><strong className="font-semibold text-ink tabular-nums">{n}</strong> {label.toLowerCase()}</span> : null; })}</>} />
+      <FlashMessages error={error?.message} />
+      {waiting > 0 && <Notice tone="warn" className="mb-6" title={`${waiting} task${waiting === 1 ? " is" : "s are"} waiting for a person`}>Decide them on <Link href="/approvals">Approvals</Link>. Nothing moves until someone does.</Notice>}
       {tasks.length === 0 ? (
         <EmptyState title="No tasks yet">Tasks appear when something creates them. Right now the only source is a payment approval request: create one on <Link className="underline" href="/approvals">Approvals</Link>. There is no free-form task creation because no agent worker is running to pick tasks up.</EmptyState>
       ) : (
-        <Card title={`${tasks.length} task${tasks.length === 1 ? "" : "s"}${waiting ? `, ${waiting} waiting for a human` : ""}`}>
-          <ul className="divide-y divide-line text-[13.5px]">{tasks.map((t) => {
-            const txId = (t.result as { transaction_id?: string } | null)?.transaction_id;
-            return (
-              <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-                <span><span className="font-mono text-[12.5px]">{t.agent_id}</span> {t.intent}{t.error ? <span className="text-[12.5px] text-[var(--bad)]"> · {t.error}</span> : null}
-                  {txId && <> · <Link className="text-[12.5px] underline" href="/approvals">view approval</Link></>}</span>
-                <span className="flex items-center gap-2"><Badge tone={TONE[t.state] ?? "neutral"}>{t.state.replaceAll("_", " ")}</Badge><span className="text-[12.5px] text-muted">{new Date(t.updated_at).toISOString().replace("T", " ").slice(0, 16)} UTC</span></span>
-              </li>
-            );
-          })}</ul>
+        <Card title={`${tasks.length} task${tasks.length === 1 ? "" : "s"}`} description="Newest first. The latest 100." flush>
+          <div className="-mx-5 overflow-x-auto">
+            <table className="data-table min-w-[40rem] [&_td:first-child]:pl-5 [&_td:last-child]:pr-5 [&_th:first-child]:pl-5 [&_th:last-child]:pr-5">
+              <thead><tr><th>Agent</th><th>Work</th><th>State</th><th>Updated</th></tr></thead>
+              <tbody>{tasks.map((t) => {
+                const txId = (t.result as { transaction_id?: string } | null)?.transaction_id;
+                return (
+                  <tr key={t.id}>
+                    <td className="whitespace-nowrap font-mono text-[12.5px]">{t.agent_id}</td>
+                    <td><p className="text-[13.5px]">{t.intent}</p>{t.error && <p className="mt-0.5 text-[12.5px] text-[var(--bad)]">{t.error}</p>}{txId && <Link className="text-[12.5px] font-medium text-accent-text hover:underline" href="/approvals">View the payment request</Link>}</td>
+                    <td><Badge tone={TONE[t.state] ?? "neutral"}>{t.state.replaceAll("_", " ")}</Badge></td>
+                    <td className="whitespace-nowrap text-[12.5px] text-muted" title={fmtUtc(t.updated_at)}>{relTime(t.updated_at)}</td>
+                  </tr>
+                );
+              })}</tbody>
+            </table>
+          </div>
         </Card>
       )}
     </>

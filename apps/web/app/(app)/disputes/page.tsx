@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, PageHeader, btnCls, inputCls } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, btnCls, btnSecondaryCls, fmtUtc, inputCls, labelCls, relTime } from "@/components/ui";
 import { SummariseButton } from "@/components/disputes/summarise-button";
 import { formatQor } from "@/lib/approvals";
 import { getSession } from "@/lib/session";
@@ -21,7 +21,7 @@ interface N { dispute_id: string; author_role: string; body: string; created_at:
 
 function List({ title, items }: { title: string; items?: string[] }) {
   if (!items?.length) return null;
-  return <div><p className="text-[12.5px] font-medium text-muted">{title}</p><ul className="list-disc pl-5 text-[13.5px]">{items.map((x, i) => <li key={i}>{x}</li>)}</ul></div>;
+  return <div><p className="text-[12.5px] font-medium text-muted">{title}</p><ul className="mt-1 list-disc space-y-0.5 pl-5 text-[13.5px]">{items.map((x, i) => <li key={i}>{x}</li>)}</ul></div>;
 }
 
 export default async function Disputes({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
@@ -44,73 +44,104 @@ export default async function Disputes({ searchParams }: { searchParams: Promise
   const msById = new Map((ms ?? []).map((m) => [m.id as string, m]));
   const openable = (ms ?? []).filter((m) => OPENABLE.includes(m.status as string));
 
+  const openCount = list.filter((d) => d.status !== "resolved").length;
+  const sorted = [...list].sort((a, b) => Number(a.status === "resolved") - Number(b.status === "resolved"));
+
   return (
     <>
-      <PageHeader title="Disputes" description="The awarded vendor or a procurement reviewer can dispute a milestone. That freezes it. An owner or administrator who did not open the dispute then decides whether the work is accepted or sent back for new evidence." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--live)_25%,transparent)] bg-[var(--live-bg)] px-4 py-3 text-[13.5px]">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{sp.error ?? error?.message}</p>}
+      <PageHeader title="Disputes" eyebrow="Operations"
+        description="The awarded vendor or a procurement reviewer can dispute a milestone, which freezes it. An owner or administrator who did not open the dispute then decides: accept the work, or send it back for new evidence."
+        badge={<Badge tone="sim" />}
+        meta={<><span><strong className="font-semibold text-ink">{openCount}</strong> open</span><span><strong className="font-semibold text-ink">{list.length - openCount}</strong> resolved</span></>}
+        actions={canOpen && openable.length > 0 ? <a href="#open" className={btnCls}>Open a dispute</a> : undefined} />
+      <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
-      {canOpen && (
-        <Card title="Open a dispute" className="mb-4">
-          {openable.length === 0 ? <p className="text-[13.5px] text-muted">There is no milestone you can dispute right now.</p> : (
-            <form action={openDispute} className="space-y-2">
-              <select name="milestone" required className={inputCls} defaultValue="">
-                <option value="" disabled>Choose a milestone</option>
-                {openable.map((m) => <option key={m.id as string} value={m.id as string}>Milestone {m.idx as number}: {m.title as string} ({formatQor(String(m.amount))} QOR, {String(m.status).replace("_", " ")})</option>)}
-              </select>
-              <textarea name="reason" required minLength={10} maxLength={2000} rows={3} className={inputCls} placeholder="What is the disagreement?" />
-              <button className={btnCls}>Open dispute</button>
-              <p className="text-[12.5px] text-muted">Statements here are plain text, not encrypted. Do not paste secrets.</p>
-            </form>
-          )}
-        </Card>
-      )}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0 space-y-6">
+          {list.length === 0 ? <EmptyState title="Nothing is in dispute">When a vendor and a reviewer disagree about a milestone, either can open a case here. The milestone is frozen until it is resolved.</EmptyState> : sorted.map((d) => {
+            const m = msById.get(d.milestone_id);
+            const mine = notes.filter((n) => n.dispute_id === d.id);
+            const open = d.status !== "resolved";
+            return (
+              <Card key={d.id} title={m ? `Milestone ${m.idx as number}: ${m.title as string}` : "Milestone"}
+                description={<>Opened {relTime(d.created_at)}{m ? <> · {formatQor(String(m.amount))} QOR · milestone is <span className="font-medium">{String(m.status).replace("_", " ")}</span></> : null}</>}
+                right={<Badge tone={open ? "approval" : "neutral"}>{open ? (d.status === "under_review" ? "UNDER REVIEW" : "OPEN") : "RESOLVED"}</Badge>}>
+                {d.reason && <p className="rounded-md bg-surface-2/60 p-3 text-[13.5px] leading-relaxed"><span className="font-medium">Why it was opened: </span>{d.reason}</p>}
 
-      {list.length === 0 ? <EmptyState title="No disputes">Nothing is in dispute.</EmptyState> : (
-        <div className="space-y-3">{list.map((d) => {
-          const m = msById.get(d.milestone_id);
-          const mine = notes.filter((n) => n.dispute_id === d.id);
-          const open = d.status !== "resolved";
-          return (
-            <Card key={d.id} title={m ? `Milestone ${m.idx as number}: ${m.title as string}` : "Milestone"} right={<Badge tone={open ? "approval" : "live"}>{open ? "OPEN" : "RESOLVED"}</Badge>}>
-              <ul className="space-y-2">{mine.map((n, i) => (
-                <li key={i} className="rounded-md border border-line p-2 text-[13.5px]"><span className="text-[12.5px] text-muted">{n.author_role} · {new Date(n.created_at).toUTCString()}</span><p className="whitespace-pre-wrap break-words">{n.body}</p></li>
-              ))}</ul>
+                <h3 className="mt-5 text-[12.5px] font-medium text-muted">Statements, oldest first</h3>
+                {mine.length === 0 ? <p className="mt-1 text-[13px] text-muted">No statements yet.</p> : (
+                  <ol className="relative mt-3 space-y-4 border-l border-line pl-5">
+                    {mine.map((n, i) => (
+                      <li key={i} className="relative">
+                        <span aria-hidden className="absolute -left-[25px] top-1.5 size-2.5 rounded-full border-2 border-surface bg-[var(--subtle)]" />
+                        <p className="text-[12px] text-muted"><span className="font-medium capitalize text-ink">{n.author_role.replaceAll("_", " ")}</span> · {fmtUtc(n.created_at)}</p>
+                        <p className="mt-0.5 whitespace-pre-wrap break-words text-[13.5px] leading-relaxed">{n.body}</p>
+                      </li>
+                    ))}
+                  </ol>
+                )}
 
-              {d.summary?.summary && (
-                <div className="mt-3 space-y-2 rounded-md border border-line p-3">
-                  <Badge tone="neutral">{d.summary.label ?? "AI SUMMARY"}</Badge>
-                  <p className="text-[13.5px]">{d.summary.summary}</p>
-                  <List title="Agreed facts" items={d.summary.agreed_facts} />
-                  <List title="Points of disagreement" items={d.summary.points_of_disagreement} />
-                  <List title="Questions for the resolver" items={d.summary.questions_for_resolver} />
-                </div>
-              )}
-              {admin && open && <div className="mt-3"><SummariseButton id={d.id} again={!!d.summary} /></div>}
+                {d.summary?.summary && (
+                  <div className="mt-5 space-y-3 rounded-lg border border-[color-mix(in_srgb,var(--sim)_25%,transparent)] bg-[var(--sim-bg)]/50 p-4">
+                    <div className="flex flex-wrap items-center gap-2"><Badge tone="sim">{d.summary.label ?? "AI SUMMARY"}</Badge><span className="text-[12.5px] text-muted">Advice only. A person decides.</span></div>
+                    <p className="text-[13.5px]">{d.summary.summary}</p>
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2"><List title="Agreed facts" items={d.summary.agreed_facts} /><List title="Points of disagreement" items={d.summary.points_of_disagreement} /></div>
+                    <List title="Questions for the resolver" items={d.summary.questions_for_resolver} />
+                  </div>
+                )}
 
-              {open && (
-                <form action={addNote} className="mt-3 flex flex-wrap items-end gap-2">
-                  <input type="hidden" name="id" value={d.id} />
-                  <input name="body" required maxLength={2000} className={`${inputCls} max-w-xl`} placeholder="Add a statement" />
-                  <button className={btnCls}>Add</button>
+                {d.resolution && <Notice tone="neutral" className="mt-5" title={d.resolution.outcome === "accept_work" ? "Resolved: work accepted" : "Resolved: sent back for new evidence"}>{d.resolution.note}</Notice>}
+
+                {open && (
+                  <div className="mt-5 space-y-4 border-t border-line pt-4">
+                    {admin && <SummariseButton id={d.id} again={!!d.summary} />}
+                    <form action={addNote} className="flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="id" value={d.id} />
+                      <div className="min-w-[14rem] flex-1"><label htmlFor={`st-${d.id}`} className={labelCls}>Add a statement</label><input id={`st-${d.id}`} name="body" required maxLength={2000} className={inputCls} /></div>
+                      <button className={btnSecondaryCls}>Add</button>
+                    </form>
+                    {admin && (
+                      d.opened_by === s.user!.id ? <Notice tone="neutral">You opened this dispute, so someone else must resolve it.</Notice> : (
+                        <form action={resolveDispute} className="space-y-2 rounded-lg border border-line bg-surface-2/50 p-3">
+                          <input type="hidden" name="id" value={d.id} />
+                          <label htmlFor={`res-${d.id}`} className={labelCls}>Decision and reason</label>
+                          <input id={`res-${d.id}`} name="note" required minLength={5} maxLength={1000} className={inputCls} placeholder="Why you decided this way" />
+                          <div className="flex flex-wrap gap-2">
+                            <button name="outcome" value="accept_work" className={btnCls}>Accept the work</button>
+                            <button name="outcome" value="reject_work" className={btnSecondaryCls}>Send back for new evidence</button>
+                          </div>
+                        </form>
+                      )
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="space-y-6">
+          {canOpen && (
+            <Card id="open" title="Open a dispute" description="Freezes the milestone until it is resolved.">
+              {openable.length === 0 ? <p className="text-[13.5px] text-muted">There is no milestone you can dispute right now.</p> : (
+                <form action={openDispute} className="space-y-3">
+                  <div><label htmlFor="dp-m" className={labelCls}>Milestone</label>
+                    <select id="dp-m" name="milestone" required className={inputCls} defaultValue="">
+                      <option value="" disabled>Choose a milestone</option>
+                      {openable.map((m) => <option key={m.id as string} value={m.id as string}>Milestone {m.idx as number}: {m.title as string} ({formatQor(String(m.amount))} QOR, {String(m.status).replace("_", " ")})</option>)}
+                    </select></div>
+                  <div><label htmlFor="dp-r" className={labelCls}>What is the disagreement?</label><textarea id="dp-r" name="reason" required minLength={10} maxLength={2000} rows={4} className={inputCls} /></div>
+                  <button className={btnCls}>Open dispute</button>
+                  <p className="text-[12.5px] text-muted">Statements are plain text, not encrypted. Do not paste secrets.</p>
                 </form>
               )}
-              {open && admin && (
-                d.opened_by === s.user!.id ? <p className="mt-3 text-[13.5px] text-muted">You opened this dispute, so someone else must resolve it.</p> : (
-                  <form action={resolveDispute} className="mt-3 flex flex-wrap items-end gap-2">
-                    <input type="hidden" name="id" value={d.id} />
-                    <input name="note" required minLength={5} maxLength={1000} className={`${inputCls} max-w-sm`} placeholder="Reason for the decision" />
-                    <button name="outcome" value="accept_work" className={btnCls}>Accept the work</button>
-                    <button name="outcome" value="reject_work" className="inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-line bg-surface px-3.5 text-[13.5px] font-medium text-ink shadow-sm transition-[background-color,border-color] hover:border-line-strong hover:bg-surface-2 disabled:pointer-events-none disabled:opacity-50">Send back for new evidence</button>
-                  </form>
-                )
-              )}
-              {d.resolution && <p className="mt-3 text-[13.5px]">Resolved: <strong>{d.resolution.outcome === "accept_work" ? "work accepted" : "sent back for new evidence"}</strong>. {d.resolution.note}</p>}
             </Card>
-          );
-        })}</div>
-      )}
-      <p className="mt-4 text-[12.5px] text-muted">Resolving a dispute changes the milestone in this app only. No QOR moves and the on-chain MilestoneEscrow is not called. Accepted work still needs a payment request approved on the Approvals page.</p>
+          )}
+          <Card title="Escrow and money">
+            <p className="text-[13px] leading-relaxed text-muted">Resolving a dispute changes the milestone in Verac only. No QOR moves and the on-chain MilestoneEscrow is not called. Accepted work still needs a payment request approved on Approvals.</p>
+          </Card>
+        </div>
+      </div>
     </>
   );
 }

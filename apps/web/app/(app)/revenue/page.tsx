@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { PublicClient } from "viem";
-import { Badge, Card, EmptyState, PageHeader, btnCls, inputCls } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, Metric, Notice, PageHeader, Source, StatusDot, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Hash } from "@/components/ui-client";
 import { formatQor } from "@/lib/approvals";
 import { daysOverdue, effectiveStatus, matchTransfer, summarise, type MatchState, type RevenueRow } from "@/lib/revenue";
 import { reader } from "@/lib/server";
@@ -13,7 +14,7 @@ export const metadata = { title: "Revenue" };
 
 const FINANCE = ["owner", "administrator", "finance_manager"];
 const wei = (v: unknown) => String(v).split(".")[0]!;
-const STATE_TONE = { issued: "pending", overdue: "failed", paid: "live", void: "neutral" } as const;
+const STATE_TONE = { issued: "pending", overdue: "failed", paid: "info", void: "neutral" } as const;
 const MATCH_LABEL: Record<MatchState, string> = { VERIFIED: "VERIFIED ON TESTNET", NOT_VERIFIED: "NOT VERIFIED", NOT_FOUND: "TRANSACTION NOT FOUND" };
 
 /** Looks each claimed payment up on the chain now. The result is never stored or trusted from the database. */
@@ -49,67 +50,103 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
   const checks = await checkPayments(rows, treasury);
   const sum = summarise(rows, today);
 
+  const order = { overdue: 0, issued: 1, paid: 2, void: 3 } as const;
+  const sorted = [...rows].sort((a, b) => order[effectiveStatus(a, today)] - order[effectiveStatus(b, today)]);
+  const verified = [...checks.out.values()].filter((m) => m.state === "VERIFIED").length;
+  const unverified = [...checks.out.values()].filter((m) => m.state !== "VERIFIED").length;
+
   return (
     <>
-      <PageHeader title="Revenue" description="Record what customers owe, and record which on-chain payment settled it. Overdue is worked out from the due date. A payment counts as verified only when the page finds a successful testnet transfer to your treasury for at least the amount owed." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--live)_25%,transparent)] bg-[var(--live-bg)] px-4 py-3 text-[13.5px]">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{sp.error ?? error?.message}</p>}
-      {checks.error && <p role="status" className="mb-4 text-[13.5px] text-muted">{checks.error}</p>}
+      <PageHeader title="Revenue" eyebrow="Finance"
+        description="Record what customers owe and which on-chain payment settled it. Overdue is worked out from the due date. A payment counts as verified only when this page finds a successful testnet transfer to your treasury for at least the amount owed."
+        badge={<Badge tone="sim" />}
+        actions={finance ? <a href="#record" className={btnCls}>Record money owed</a> : undefined} />
+      <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
+      {checks.error && <Notice tone="warn" className="mb-6">{checks.error}</Notice>}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <Card title="Outstanding"><p className="text-lg">{formatQor(sum.outstanding.toString())} QOR</p></Card>
-        <Card title="Overdue"><p className="text-lg">{formatQor(sum.overdue.toString())} QOR</p><p className="text-[12.5px] text-muted">{sum.overdueCount} record{sum.overdueCount === 1 ? "" : "s"}</p></Card>
-        <Card title="Marked paid"><p className="text-lg">{formatQor(sum.paid.toString())} QOR</p><p className="text-[12.5px] text-muted">See each record for its on-chain check.</p></Card>
-      </div>
+      <section aria-label="Receivables overview" className="mb-6 rounded-lg border border-line bg-surface p-5 shadow-card">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4">
+          <Metric label="Outstanding" value={<>{formatQor(sum.outstanding.toString())} <span className="text-[13px] font-medium text-muted">QOR</span></>} />
+          <Metric label="Overdue" value={<>{formatQor(sum.overdue.toString())} <span className="text-[13px] font-medium text-muted">QOR</span></>} sub={`${sum.overdueCount} record${sum.overdueCount === 1 ? "" : "s"}`} tone={sum.overdueCount ? "bad" : undefined} />
+          <Metric label="Marked paid" value={<>{formatQor(sum.paid.toString())} <span className="text-[13px] font-medium text-muted">QOR</span></>} />
+          <Metric label="Payments checked on chain" value={`${verified} verified`} sub={unverified ? `${unverified} could not be verified` : "none failed the check"} tone={unverified ? "warn" : undefined} />
+        </dl>
+      </section>
 
-      {finance && (
-        <Card title="Record money owed" className="mb-4">
-          <form action={recordRevenue} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <input name="customer" required maxLength={160} className={inputCls} placeholder="Customer" />
-            <input name="reference" required maxLength={80} className={inputCls} placeholder="Reference (must be unique), e.g. INV-001" />
-            <input name="amount" required inputMode="decimal" className={inputCls} placeholder="Amount (QOR)" />
-            <input name="due" type="date" required className={inputCls} />
-            <input name="description" maxLength={500} className={`${inputCls} sm:col-span-2`} placeholder="What it is for (optional)" />
-            <div className="sm:col-span-2"><button className={btnCls}>Record</button></div>
-          </form>
-          <p className="mt-2 text-[12.5px] text-muted">Payments are expected in native QOR to the treasury {treasury ? <span className="break-all font-mono">{treasury}</span> : "(none linked yet)"}. This only records the debt. It does not invoice or message anyone.</p>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card title="Receivables" description="Overdue first. Open a record to settle or void it." flush>
+          {rows.length === 0 ? <p className="py-8 text-center text-[13.5px] text-muted">{finance ? "No records yet. Record the first one." : "Finance records appear here."}</p> : (
+            <ul className="-mx-5 divide-y divide-line">
+              {sorted.map((r) => {
+                const st = effectiveStatus(r, today);
+                const m = checks.out.get(r.id);
+                const actionable = finance && (r.status === "issued" || r.status === "overdue");
+                return (
+                  <li key={r.id}>
+                    <details className="group">
+                      <summary className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-surface-2/50">
+                        <span className="min-w-0 flex-1"><span className="text-[14px] font-medium">{r.customer}</span> <span className="font-mono text-[12px] text-muted">{r.reference}</span>
+                          <span className="block text-[12.5px] text-muted">due {r.due_date}{r.description ? ` · ${r.description}` : ""}</span></span>
+                        {m && <StatusDot tone={m.state === "VERIFIED" ? "live" : "failed"}>{m.state === "VERIFIED" ? "Verified on chain" : "Not verified"}</StatusDot>}
+                        <span className="text-[14px] font-semibold tabular-nums">{formatQor(wei(r.amount))} <span className="text-[12px] font-medium text-muted">QOR</span></span>
+                        <Badge tone={STATE_TONE[st]}>{st === "overdue" ? `OVERDUE ${daysOverdue(r.due_date!, today)}D` : st.toUpperCase()}</Badge>
+                      </summary>
+                      <div className="space-y-3 px-5 pb-4">
+                        {r.status === "paid" && r.matched_tx_hash && (
+                          <div className="rounded-lg bg-surface-2/60 p-3 text-[13px]">
+                            <p className="text-[12px] text-muted">Claimed payment</p>
+                            <Hash value={r.matched_tx_hash} href={`https://explore.qore.network/tx/${r.matched_tx_hash}`} />
+                            {m ? <p className="mt-2 flex flex-wrap items-center gap-2"><Badge tone={m.state === "VERIFIED" ? "live" : "failed"}>{MATCH_LABEL[m.state]}</Badge><span className="text-muted">{m.reason}</span></p>
+                              : <p className="mt-2 text-muted">Not checked: only the first 25 paid records are checked on each visit.</p>}
+                          </div>
+                        )}
+                        {r.status === "void" && <p className="text-[13px] text-muted">Voided: {r.void_reason}</p>}
+                        {actionable && (
+                          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.4fr_1fr]">
+                            <form action={markPaid} className="space-y-2 rounded-lg border border-line p-3">
+                              <input type="hidden" name="id" value={r.id} />
+                              <label htmlFor={`tx-${r.id}`} className={labelCls}>Payment transaction hash</label>
+                              <input id={`tx-${r.id}`} name="tx" required className={`${inputCls} font-mono text-[12.5px]`} placeholder="0x…" spellCheck={false} autoComplete="off" />
+                              <button className={btnCls}>Mark paid</button>
+                            </form>
+                            <form action={voidRecord} className="space-y-2 rounded-lg border border-line p-3">
+                              <input type="hidden" name="id" value={r.id} />
+                              <label htmlFor={`void-${r.id}`} className={labelCls}>Reason to void</label>
+                              <input id={`void-${r.id}`} name="reason" required minLength={5} maxLength={300} className={inputCls} />
+                              <button className={btnSecondaryCls}>Void</button>
+                            </form>
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </Card>
-      )}
 
-      {rows.length === 0 ? <EmptyState title="No revenue records">{finance ? "Record the first one above." : "Finance records appear here."}</EmptyState> : (
-        <div className="space-y-3">{rows.map((r) => {
-          const st = effectiveStatus(r, today);
-          const m = checks.out.get(r.id);
-          return (
-            <Card key={r.id} title={`${r.customer} · ${r.reference}`} right={<Badge tone={STATE_TONE[st]}>{st === "overdue" ? `OVERDUE ${daysOverdue(r.due_date!, today)}D` : st.toUpperCase()}</Badge>}>
-              <p className="text-[13.5px]">{formatQor(wei(r.amount))} QOR · due {r.due_date}{r.description ? ` · ${r.description}` : ""}</p>
-              {r.status === "paid" && r.matched_tx_hash && (
-                <div className="mt-2 space-y-1 text-[13.5px]">
-                  <p className="break-all font-mono text-[12.5px]">Claimed payment: {r.matched_tx_hash}</p>
-                  {m && <p><Badge tone={m.state === "VERIFIED" ? "live" : "failed"}>{MATCH_LABEL[m.state]}</Badge> <span className="text-muted">{m.reason}</span></p>}
-                  {!m && <p className="text-muted">Not checked (only the first 25 paid records are checked).</p>}
+        <div className="space-y-6">
+          {finance && (
+            <Card id="record" title="Record money owed" description="This only records the debt. It does not invoice or message anyone.">
+              <form action={recordRevenue} className="space-y-3">
+                <div><label htmlFor="rv-c" className={labelCls}>Customer</label><input id="rv-c" name="customer" required maxLength={160} className={inputCls} /></div>
+                <div><label htmlFor="rv-r" className={labelCls}>Reference (unique)</label><input id="rv-r" name="reference" required maxLength={80} className={inputCls} placeholder="INV-001" /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label htmlFor="rv-a" className={labelCls}>Amount (QOR)</label><input id="rv-a" name="amount" required inputMode="decimal" className={inputCls} /></div>
+                  <div><label htmlFor="rv-d" className={labelCls}>Due date</label><input id="rv-d" name="due" type="date" required className={inputCls} /></div>
                 </div>
-              )}
-              {r.status === "void" && <p className="mt-2 text-[13.5px] text-muted">Voided: {r.void_reason}</p>}
-              {finance && (r.status === "issued" || r.status === "overdue") && (
-                <div className="mt-3 space-y-2">
-                  <form action={markPaid} className="flex flex-wrap items-end gap-2">
-                    <input type="hidden" name="id" value={r.id} />
-                    <input name="tx" required className={`${inputCls} max-w-xl font-mono text-[12.5px]`} placeholder="Payment transaction hash 0x…" />
-                    <button className={btnCls}>Mark paid</button>
-                  </form>
-                  <form action={voidRecord} className="flex flex-wrap items-end gap-2">
-                    <input type="hidden" name="id" value={r.id} />
-                    <input name="reason" required minLength={5} maxLength={300} className={`${inputCls} max-w-sm`} placeholder="Reason to void" />
-                    <button className="inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-line bg-surface px-3.5 text-[13.5px] font-medium text-ink shadow-sm transition-[background-color,border-color] hover:border-line-strong hover:bg-surface-2 disabled:pointer-events-none disabled:opacity-50">Void</button>
-                  </form>
-                </div>
-              )}
+                <div><label htmlFor="rv-desc" className={labelCls}>What it is for (optional)</label><input id="rv-desc" name="description" maxLength={500} className={inputCls} /></div>
+                <button className={btnCls}>Record</button>
+              </form>
             </Card>
-          );
-        })}</div>
-      )}
-      <p className="mt-4 text-[12.5px] text-muted">Only native QOR transfers to the treasury can be checked. A record marked paid with a hash that does not check out stays flagged NOT VERIFIED. Nothing here sends money, emails customers or chases payments.</p>
+          )}
+          <Card title="Where payments go">
+            {treasury ? <Hash value={treasury} href={`https://explore.qore.network/address/${treasury}`} /> : <p className="text-[13.5px] text-muted">No treasury is linked yet, so payments cannot be verified. Link one in Organisation settings.</p>}
+            <Source>Only native QOR transfers to this address can be checked. A record marked paid with a hash that does not check out stays flagged as not verified. Nothing here sends money or chases customers.</Source>
+          </Card>
+        </div>
+      </div>
     </>
   );
 }
