@@ -34,28 +34,28 @@ export default async function Team({ searchParams }: { searchParams: Promise<{ m
   return (
     <>
       <PageHeader title="Team Members" description={`Members of ${s.org.name}. Visible to internal roles; row-level security hides this list from vendors and applicants.`} />
-      {sp.msg && <p role="status" className="mb-4 text-sm">{sp.msg}</p>}
-      {(sp.error) && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error}</p>}
-      {error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{error.message}</p>}
+      {sp.msg && <p role="status" className="mb-4 text-[13.5px]">{sp.msg}</p>}
+      {(sp.error) && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{sp.error}</p>}
+      {error && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{error.message}</p>}
       <Card title={`${data?.length ?? 0} member${data?.length === 1 ? "" : "s"}`}>
-        <ul className="divide-y divide-line text-sm">
+        <ul className="divide-y divide-line text-[13.5px]">
           {(data ?? []).map((m) => (
             <li key={`${m.user_id}-${m.role}`} className="flex items-center justify-between gap-3 py-2.5">
-              <span className="font-mono text-xs">{m.user_id === s.user!.id ? `${s.user!.email ?? m.user_id} (you)` : m.user_id}</span>
-              <span className="flex items-center gap-2"><Badge tone="neutral">{m.role}</Badge><span className="text-xs text-muted">{m.status}</span></span>
+              <span className="font-mono text-[12.5px]">{m.user_id === s.user!.id ? `${s.user!.email ?? m.user_id} (you)` : m.user_id}</span>
+              <span className="flex items-center gap-2"><Badge tone="neutral">{m.role}</Badge><span className="text-[12.5px] text-muted">{m.status}</span></span>
             </li>
           ))}
         </ul>
       </Card>
       <Card title="Add a member" className="mt-4">
-        <p className="mb-3 text-sm text-muted">There is no email invite yet. Ask the person to sign up on this site and send you their user ID (shown on this page when they open it). Your own ID is <span className="select-all break-all font-mono text-xs">{s.user.id}</span>. Approvals need at least two finance people, because nobody can approve their own request.</p>
+        <p className="mb-3 text-[13.5px] text-muted">There is no email invite yet. Ask the person to sign up on this site and send you their user ID (shown on this page when they open it). Your own ID is <span className="select-all break-all font-mono text-[12.5px]">{s.user.id}</span>. Approvals need at least two finance people, because nobody can approve their own request.</p>
         {s.org.role === "owner" || s.org.role === "administrator" ? (
           <form action={addMember} className="flex flex-wrap items-end gap-2">
-            <div className="min-w-64 flex-1"><label htmlFor="userId" className="mb-1 block text-xs text-muted">User ID</label><input id="userId" name="userId" required className={inputCls} placeholder="00000000-0000-0000-0000-000000000000" /></div>
-            <div><label htmlFor="role" className="mb-1 block text-xs text-muted">Role</label><select id="role" name="role" className={inputCls} defaultValue="finance_manager">{ROLES.map((r) => <option key={r} value={r}>{r}</option>)}</select></div>
+            <div className="min-w-64 flex-1"><label htmlFor="userId" className="mb-1.5 block text-[12.5px] font-medium text-muted">User ID</label><input id="userId" name="userId" required className={inputCls} placeholder="00000000-0000-0000-0000-000000000000" /></div>
+            <div><label htmlFor="role" className="mb-1.5 block text-[12.5px] font-medium text-muted">Role</label><select id="role" name="role" className={inputCls} defaultValue="finance_manager">{ROLES.map((r) => <option key={r} value={r}>{r}</option>)}</select></div>
             <button className={btnCls} type="submit">Add</button>
           </form>
-        ) : <p className="text-sm text-muted">Only owners and administrators can add members.</p>}
+        ) : <p className="text-[13.5px] text-muted">Only owners and administrators can add members.</p>}
       </Card>
     </>
   );

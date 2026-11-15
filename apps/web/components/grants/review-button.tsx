@@ -17,9 +17,9 @@ export function ReviewButton({ id, again }: { id: string; again: boolean }) {
     } catch { setErr("Could not reach the server."); } finally { setBusy(false); }
   }
   return (
-    <div className="text-sm">
+    <div className="text-[13.5px]">
       <button className={btnCls} disabled={busy} onClick={run}>{busy ? "Reviewing…" : again ? "Run AI review again" : "Run AI review"}</button>
-      <span className="ml-2 text-xs text-muted">Sends the pitch to Gemini (free tier).</span>
+      <span className="ml-2 text-[12.5px] text-muted">Sends the pitch to Gemini (free tier).</span>
       {err && <p role="alert" className="mt-1 text-[var(--bad)]">{err}</p>}
     </div>
   );

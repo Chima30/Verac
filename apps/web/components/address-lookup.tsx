@@ -16,9 +16,9 @@ function Section({ title, part, empty }: { title: string; part: Part; empty?: st
   return (
     <Card title={title} right={part.ok ? <Badge tone="live" /> : <Badge tone="unavailable" />}>
       {part.ok ? (
-        <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words font-mono text-xs">{part.data === undefined || part.data === null ? (empty ?? "No data returned.") : pretty(part.data)}</pre>
+        <pre className="scroll-quiet max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-surface-2 p-3 font-mono text-[12px] leading-relaxed">{part.data === undefined || part.data === null ? (empty ?? "No data returned.") : pretty(part.data)}</pre>
       ) : (
-        <p className="text-sm text-muted">Query failed: {part.error}</p>
+        <p className="text-[13.5px] text-muted">Query failed: {part.error}</p>
       )}
     </Card>
   );
@@ -56,13 +56,13 @@ export function AddressLookup({ focus, presetAddress }: { focus: Focus; presetAd
           <input id="addr" className={`${inputCls} font-mono`} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="0x…" spellCheck={false} autoComplete="off" />
           <button className={btnCls} disabled={busy || address.trim().length === 0} type="submit"><Search size={16} aria-hidden /> {busy ? "Querying…" : "Query chain"}</button>
         </form>
-        <p className="mt-2 text-xs text-muted">Public address only. Never paste a private key or seed phrase here. This is a read-only query; nothing is signed or sent.</p>
-        {error && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{error}</p>}
+        <p className="mt-2 text-[12px] text-muted">Public address only. Never paste a private key or seed phrase here. This is a read-only query; nothing is signed or sent.</p>
+        {error && <p role="alert" className="mt-3 text-[13px] text-[var(--bad)]">{error}</p>}
       </Card>
 
       {res && (
-        <>
-          <Card title="Account" right={<Badge tone="live" />}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Card title="Account" right={<Badge tone="live" />} className="md:col-span-2">
             <KV rows={[["EVM address", res.address], ["Native address", res.nativeAddress],
               ["Balance", res.balance.ok ? `${res.balance.qor} QOR (${res.balance.wei} wei)` : `unavailable: ${res.balance.error}`]]} />
           </Card>
@@ -71,7 +71,7 @@ export function AddressLookup({ focus, presetAddress }: { focus: Focus; presetAd
           {focus !== "balance" && <Section title="EVM authorisation window" part={res.window} empty="No window found." />}
           {focus === "pq" && <Section title="QoreSeal KEM key" part={res.kem} empty="No KEM key registered." />}
           {focus === "wallet" && <Section title="Delegated authenticators" part={res.authenticators} empty="None registered." />}
-        </>
+        </div>
       )}
     </div>
   );

@@ -36,7 +36,7 @@ export function OpenDocument({ id, orgId, userId }: { id: string; orgId: string;
   }
 
   return (
-    <div className="space-y-2 text-sm">
+    <div className="space-y-2 text-[13.5px]">
       {!out ? (
         <div className="flex flex-wrap items-center gap-3">
           <button className={btnCls} disabled={busy || hasKey === false} onClick={open}>{busy ? "Opening…" : "Open in this browser"}</button>

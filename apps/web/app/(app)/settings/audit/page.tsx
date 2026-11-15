@@ -16,13 +16,13 @@ export default async function Audit() {
   return (
     <>
       <PageHeader title="Audit History" description="Append-only: the database rejects updates and deletes. Only owners, administrators, security reviewers and auditors can read it." />
-      {error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{error.message}</p>}
+      {error && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{error.message}</p>}
       {!data || data.length === 0 ? (
         <EmptyState title="No audit events yet">Users cannot write audit events directly. The database functions behind each module write them, so this list fills as people use Approvals, Procurement, Payroll and the other modules. See the readable <a className="underline" href="/activity">Activity feed</a>. For the on-chain record see Live Proof.</EmptyState>
       ) : (
         <Card title={`Latest ${data.length}`}>
-          <ul className="divide-y divide-line text-sm">{data.map((e) => (
-            <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 py-2"><span><span className="font-mono text-xs">{e.action}</span> {e.subject ?? ""}</span><span className="text-xs text-muted">{e.actor} · {new Date(e.created_at).toISOString()}</span></li>
+          <ul className="divide-y divide-line text-[13.5px]">{data.map((e) => (
+            <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 py-2"><span><span className="font-mono text-[12.5px]">{e.action}</span> {e.subject ?? ""}</span><span className="text-[12.5px] text-muted">{e.actor} · {new Date(e.created_at).toISOString()}</span></li>
           ))}</ul>
         </Card>
       )}

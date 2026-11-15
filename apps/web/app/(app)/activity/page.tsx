@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, Card, EmptyState, PageHeader, chipCls } from "@/components/ui";
 import { MODULE_LABELS, PAGE_SIZE, actorLabel, describe, moduleLabel, parseFilters, type AuditRow } from "@/lib/activity";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -38,12 +38,12 @@ export default async function Activity({ searchParams }: { searchParams: Promise
   const rows = all.slice(0, PAGE_SIZE);
   const more = all.length > PAGE_SIZE;
 
-  const chip = (active: boolean) => `rounded-full border px-3 py-1 text-xs ${active ? "border-[var(--fg)] bg-[var(--neutral-bg)]" : "border-line hover:bg-[var(--neutral-bg)]"}`;
+  const chip = chipCls;
 
   return (
     <>
       <PageHeader title="Activity" description={seeAll ? "Everything recorded for this organisation, newest first. Owners, administrators, security reviewers and auditors see all members' actions." : "The actions you took, newest first. Only owners, administrators, security reviewers and auditors can see everyone's."} badge={<Badge tone="neutral">RECORDED BY THE APP DATABASE</Badge>} />
-      {error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{error.message}</p>}
+      {error && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{error.message}</p>}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Link className={chip(!f.module)} href={href({ mine: f.mine })}>All modules</Link>
@@ -53,16 +53,16 @@ export default async function Activity({ searchParams }: { searchParams: Promise
 
       {rows.length === 0 ? <EmptyState title="Nothing here">{f.module || f.before ? "No events match this filter." : "No events have been recorded for you yet. Actions in the other modules show up here."}</EmptyState> : (
         <Card title={`${rows.length} event${rows.length === 1 ? "" : "s"}`}>
-          <ul className="divide-y divide-line text-sm">{rows.map((e) => (
+          <ul className="divide-y divide-line text-[13.5px]">{rows.map((e) => (
             <li key={e.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2">
               <span><strong>{actorLabel(e.actor, s.user!.id)}</strong> {describe(e)}.</span>
-              <span className="text-xs text-muted"><Badge tone="neutral">{moduleLabel(e.action)}</Badge> {new Date(e.created_at).toUTCString()}</span>
+              <span className="text-[12.5px] text-muted"><Badge tone="neutral">{moduleLabel(e.action)}</Badge> {new Date(e.created_at).toUTCString()}</span>
             </li>
           ))}</ul>
           {more && <div className="mt-3"><Link className={chip(false)} href={href({ module: f.module, mine: f.mine, before: rows[rows.length - 1]!.id })}>Older events</Link></div>}
         </Card>
       )}
-      <p className="mt-4 text-xs text-muted">The database rejects edits and deletes of these records, but they are not signed or anchored on-chain, so this feed is not tamper-proof against someone with direct database access. Actors are shown by short member id; names are not looked up. For the on-chain record see Live Proof.</p>
+      <p className="mt-4 text-[12.5px] text-muted">The database rejects edits and deletes of these records, but they are not signed or anchored on-chain, so this feed is not tamper-proof against someone with direct database access. Actors are shown by short member id; names are not looked up. For the on-chain record see Live Proof.</p>
     </>
   );
 }

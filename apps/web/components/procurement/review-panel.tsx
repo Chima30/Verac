@@ -66,7 +66,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
   }
 
   return (
-    <div className="space-y-4 text-sm">
+    <div className="space-y-4 text-[13.5px]">
       {status === "review" && (
         <>
           <div className="flex flex-wrap items-center gap-3">
@@ -75,7 +75,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
             <Badge tone="neutral">DECRYPTED ONLY IN YOUR BROWSER</Badge>
           </div>
           {decrypted && bids.length > 0 && (
-            <div className="rounded-md border border-line p-3">
+            <div className="rounded-lg border border-line bg-surface p-4">
               <label className="flex items-start gap-2"><input type="checkbox" className="mt-1" checked={confirmAi} onChange={(e) => setConfirmAi(e.target.checked)} />
                 <span>Let Gemini score how well each approach fits the requirements. This sends the <strong>decrypted approach text</strong> (without vendor names) to Google&apos;s free Gemini service, which may use free-tier content to improve its products. Leave unticked for confidential bids; price and delivery are still ranked by fixed rules.</span></label>
               <button className={`${btnCls} mt-3`} disabled={busy} onClick={evaluate}>{busy ? "Ranking…" : "Rank bids"}</button>
@@ -89,7 +89,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
         {bids.map((b, i) => {
           const p = parsed(b.bid_id); const r = rankedBy.get(refOf(i)); const a = aiBy.get(refOf(i)); const st = plain[b.bid_id];
           return (
-            <div key={b.bid_id} className="rounded-md border border-line p-3">
+            <div key={b.bid_id} className="rounded-lg border border-line bg-surface p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-medium">{refOf(i)} · {b.vendor_name}</span>
                 <span className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
                 <div className="mt-2 border-t border-line pt-2">
                   {r.eligible && <p>Price score {r.priceScore}/10 · Delivery score {r.deliveryScore}/10{r.fit !== undefined ? ` · AI fit ${r.fit}/10` : ""} · <strong>Total {r.total}</strong></p>}
                   {r.flags.map((f) => <p key={f.code} className={f.blocking ? "text-[var(--bad)]" : "text-muted"}>{f.blocking ? "Blocking: " : "Note: "}{f.message}</p>)}
-                  {a && <div className="mt-1"><span className="text-xs text-muted">AI notes (advisory):</span>
+                  {a && <div className="mt-1"><span className="text-[12.5px] text-muted">AI notes (advisory):</span>
                     {a.strengths.map((s) => <p key={s}>+ {s}</p>)}{a.concerns.map((s) => <p key={s}>− {s}</p>)}</div>}
                 </div>
               )}
@@ -122,28 +122,28 @@ export function ReviewPanel({ tenderId, orgId, userId, requirements, budgetQor, 
           );
         })}
       </div>
-      {out?.ai && <p className="text-xs text-muted"><Badge tone="sim">AI ADVISORY, NOT A DECISION</Badge> {out.ai.model}: {out.ai.summary}</p>}
-      {out?.aiError && <p className="text-xs text-muted">AI scoring: {out.aiError}</p>}
+      {out?.ai && <p className="text-[12.5px] text-muted"><Badge tone="sim">AI ADVISORY, NOT A DECISION</Badge> {out.ai.model}: {out.ai.summary}</p>}
+      {out?.aiError && <p className="text-[12.5px] text-muted">AI scoring: {out.aiError}</p>}
 
       {status === "review" && decrypted && (
-        <div className="rounded-md border border-line p-3">
+        <div className="rounded-lg border border-line bg-surface p-4">
           <p className="mb-2 font-medium">Award (your decision)</p>
           <div className="space-y-1">
             {bids.map((b, i) => <label key={b.bid_id} className="flex items-center gap-2"><input type="radio" name="pick" checked={pick === b.bid_id} onChange={() => { setPick(b.bid_id); const p = parsed(b.bid_id); if (p?.amountQor && ms.length === 1 && !ms[0]!.amount) setMs([{ title: ms[0]!.title, amount: String(p.amountQor) }]); }} /> {refOf(i)} · {b.vendor_name}{rankedBy.get(refOf(i))?.eligible === false ? " (not ranked)" : ""}</label>)}
           </div>
-          <p className="mb-1 mt-3 text-xs text-muted">Milestones (total must not exceed the budget of {budgetQor} QOR)</p>
+          <p className="mb-1 mt-3 text-[12.5px] text-muted">Milestones (total must not exceed the budget of {budgetQor} QOR)</p>
           {ms.map((m, i) => (
             <div key={i} className="mb-2 flex gap-2">
               <input className={inputCls} value={m.title} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} placeholder="Milestone title" />
               <input className={`${inputCls} max-w-32`} value={m.amount} onChange={(e) => setMs(ms.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} placeholder="QOR" />
-              {ms.length > 1 && <button className="rounded-md border border-line px-2 text-xs" onClick={() => setMs(ms.filter((_, j) => j !== i))}>Remove</button>}
+              {ms.length > 1 && <button className="rounded-md border border-line px-2 text-[12.5px]" onClick={() => setMs(ms.filter((_, j) => j !== i))}>Remove</button>}
             </div>
           ))}
           <div className="flex gap-2">
-            {ms.length < 10 && <button className="rounded-md border border-line px-3 py-2 text-xs" onClick={() => setMs([...ms, { title: "", amount: "" }])}>Add milestone</button>}
+            {ms.length < 10 && <button className="rounded-md border border-line px-3 py-2 text-[12.5px]" onClick={() => setMs([...ms, { title: "", amount: "" }])}>Add milestone</button>}
             <button className={btnCls} disabled={awarding} onClick={award}>{awarding ? "Awarding…" : "Award tender"}</button>
           </div>
-          <p className="mt-2 text-xs text-muted">Awarding records the decision and the milestone plan. It does not move any QOR: funding the escrow on chain is a separate, approved step that is not wired to this page yet.</p>
+          <p className="mt-2 text-[12.5px] text-muted">Awarding records the decision and the milestone plan. It does not move any QOR: funding the escrow on chain is a separate, approved step that is not wired to this page yet.</p>
         </div>
       )}
     </div>

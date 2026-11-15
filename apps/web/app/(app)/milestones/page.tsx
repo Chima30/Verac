@@ -46,14 +46,14 @@ export default async function Milestones({ searchParams }: { searchParams: Promi
   return (
     <>
       <PageHeader title="Milestones" description="After a tender is awarded, the vendor submits sealed evidence for each milestone, in order. Reviewers open it in their own browser and accept or reject it. An accepted milestone can open a payment request that a different finance member must approve." badge={<Badge tone="sim" />} />
-      {sp.msg && <p role="status" className="mb-4 rounded-md border border-line bg-surface px-3 py-2 text-sm">{sp.msg}</p>}
-      {(sp.error || error) && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{sp.error ?? error?.message}</p>}
+      {sp.msg && <p role="status" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--live)_25%,transparent)] bg-[var(--live-bg)] px-4 py-3 text-[13.5px]">{sp.msg}</p>}
+      {(sp.error || error) && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{sp.error ?? error?.message}</p>}
 
       {isVendor && (
         <Card title="Where should you be paid?" className="mb-4">
-          <p className="mb-2 text-sm text-muted">Current payout address: <span className="break-all font-mono text-xs">{me?.payout_address ?? "not set"}</span>. Payment requests can only go to this address, and every change is recorded for the organisation.</p>
+          <p className="mb-2 text-[13.5px] text-muted">Current payout address: <span className="break-all font-mono text-[12.5px]">{me?.payout_address ?? "not set"}</span>. Payment requests can only go to this address, and every change is recorded for the organisation.</p>
           <form action={setPayoutAddress} className="flex flex-wrap items-end gap-2">
-            <input name="address" required className={`${inputCls} max-w-md font-mono text-xs`} placeholder="0x…" />
+            <input name="address" required className={`${inputCls} max-w-md font-mono text-[12.5px]`} placeholder="0x…" />
             <button className={btnCls}>Save address</button>
           </form>
         </Card>
@@ -62,18 +62,18 @@ export default async function Milestones({ searchParams }: { searchParams: Promi
       {list.length === 0 ? <EmptyState title="No milestones yet">Milestones appear when a tender is awarded. See <Link className="underline" href="/procurement">Procurement</Link>.</EmptyState> : (
         <div className="space-y-3">{list.map((m) => (
           <Card key={m.id} title={`${title.get(m.parent_id) ?? "Tender"} · milestone ${m.idx}: ${m.title}`} right={<Badge tone={TONE[m.status] ?? "neutral"}>{LABEL[m.status] ?? m.status}</Badge>}>
-            <p className="text-sm">{formatQor(m.amount)} QOR</p>
-            {m.review?.decision === "reject" && m.status === "pending" && <p className="mt-2 text-sm text-[var(--bad)]">Last evidence was rejected{m.review.note ? `: ${m.review.note}` : ""}. Submit new evidence.</p>}
-            {m.review?.decision === "approve" && m.review.note && <p className="mt-2 text-sm text-muted">Reviewer note: {m.review.note}</p>}
+            <p className="text-[13.5px]">{formatQor(m.amount)} QOR</p>
+            {m.review?.decision === "reject" && m.status === "pending" && <p className="mt-2 text-[13.5px] text-[var(--bad)]">Last evidence was rejected{m.review.note ? `: ${m.review.note}` : ""}. Submit new evidence.</p>}
+            {m.review?.decision === "approve" && m.review.note && <p className="mt-2 text-[13.5px] text-muted">Reviewer note: {m.review.note}</p>}
             <div className="mt-3">
-              {isVendor && m.status === "pending" && (unlocked(m) ? <EvidenceForm milestoneId={m.id} reviewers={keysBy.get(m.parent_id) ?? []} /> : <p className="text-sm text-muted">Waiting for the previous milestone to be accepted.</p>)}
-              {isVendor && m.status === "evidence_submitted" && <p className="text-sm text-muted">Your sealed evidence is with the reviewers.</p>}
+              {isVendor && m.status === "pending" && (unlocked(m) ? <EvidenceForm milestoneId={m.id} reviewers={keysBy.get(m.parent_id) ?? []} /> : <p className="text-[13.5px] text-muted">Waiting for the previous milestone to be accepted.</p>)}
+              {isVendor && m.status === "evidence_submitted" && <p className="text-[13.5px] text-muted">Your sealed evidence is with the reviewers.</p>}
               {reviewer && m.status === "evidence_submitted" && <EvidenceReview milestoneId={m.id} orgId={s.org!.id} userId={s.user!.id} />}
               {finance && m.status === "approved" && (
                 <form action={requestMilestonePayment} className="flex flex-wrap items-end gap-3">
                   <input type="hidden" name="id" value={m.id} />
-                  <div><label className="mb-1 block text-xs text-muted">Approvals needed</label><input name="required" type="number" min={1} max={10} defaultValue={1} className={`${inputCls} w-24`} /></div>
-                  <div><label className="mb-1 block text-xs text-muted">Valid for (hours)</label><input name="hours" type="number" min={1} max={168} defaultValue={48} className={`${inputCls} w-24`} /></div>
+                  <div><label className="mb-1.5 block text-[12.5px] font-medium text-muted">Approvals needed</label><input name="required" type="number" min={1} max={10} defaultValue={1} className={`${inputCls} w-24`} /></div>
+                  <div><label className="mb-1.5 block text-[12.5px] font-medium text-muted">Valid for (hours)</label><input name="hours" type="number" min={1} max={168} defaultValue={48} className={`${inputCls} w-24`} /></div>
                   <button className={btnCls}>Request payment</button>
                 </form>
               )}
@@ -81,7 +81,7 @@ export default async function Milestones({ searchParams }: { searchParams: Promi
           </Card>
         ))}</div>
       )}
-      <p className="mt-4 text-xs text-muted">Accepting a milestone and approving its payment are recorded in this app only. No QOR is sent, and nothing is released from the on-chain MilestoneEscrow: that needs a signing step this web app does not have.</p>
+      <p className="mt-4 text-[12.5px] text-muted">Accepting a milestone and approving its payment are recorded in this app only. No QOR is sent, and nothing is released from the on-chain MilestoneEscrow: that needs a signing step this web app does not have.</p>
     </>
   );
 }

@@ -23,18 +23,18 @@ export default async function Tasks() {
   return (
     <>
       <PageHeader title="Tasks" description="Work items created by agents and the payment pipeline, with where each one is. A task waiting for a human links to the Approvals queue." />
-      {error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{error.message}</p>}
+      {error && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{error.message}</p>}
       {tasks.length === 0 ? (
         <EmptyState title="No tasks yet">Tasks appear when something creates them. Right now the only source is a payment approval request: create one on <Link className="underline" href="/approvals">Approvals</Link>. There is no free-form task creation because no agent worker is running to pick tasks up.</EmptyState>
       ) : (
         <Card title={`${tasks.length} task${tasks.length === 1 ? "" : "s"}${waiting ? `, ${waiting} waiting for a human` : ""}`}>
-          <ul className="divide-y divide-line text-sm">{tasks.map((t) => {
+          <ul className="divide-y divide-line text-[13.5px]">{tasks.map((t) => {
             const txId = (t.result as { transaction_id?: string } | null)?.transaction_id;
             return (
               <li key={t.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-                <span><span className="font-mono text-xs">{t.agent_id}</span> {t.intent}{t.error ? <span className="text-xs text-[var(--bad)]"> · {t.error}</span> : null}
-                  {txId && <> · <Link className="text-xs underline" href="/approvals">view approval</Link></>}</span>
-                <span className="flex items-center gap-2"><Badge tone={TONE[t.state] ?? "neutral"}>{t.state.replaceAll("_", " ")}</Badge><span className="text-xs text-muted">{new Date(t.updated_at).toISOString().replace("T", " ").slice(0, 16)} UTC</span></span>
+                <span><span className="font-mono text-[12.5px]">{t.agent_id}</span> {t.intent}{t.error ? <span className="text-[12.5px] text-[var(--bad)]"> · {t.error}</span> : null}
+                  {txId && <> · <Link className="text-[12.5px] underline" href="/approvals">view approval</Link></>}</span>
+                <span className="flex items-center gap-2"><Badge tone={TONE[t.state] ?? "neutral"}>{t.state.replaceAll("_", " ")}</Badge><span className="text-[12.5px] text-muted">{new Date(t.updated_at).toISOString().replace("T", " ").slice(0, 16)} UTC</span></span>
               </li>
             );
           })}</ul>

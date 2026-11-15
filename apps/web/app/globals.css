@@ -1,94 +1,180 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+/* Desktop sidebar collapsed to icons. Set on <html> before first paint so there is no layout jump. */
+@custom-variant collapsed (&:where([data-sidebar="collapsed"] *));
 
-/* Calm sage page, white cards, one deep-green ink that is also the primary action, mint for highlights.
-   Taken from the mood of the Metrivo template; semantic colours only ever carry meaning. */
+/*
+ * Verac design tokens.
+ * Graphite neutrals with one restrained teal accent. Colour only ever carries meaning:
+ *   live     = confirmed on the testnet (muted green)
+ *   sim      = simulation / recorded in the app only (slate blue, never green, never amber)
+ *   warn     = needs a person, or a medium risk (amber)
+ *   bad      = failed, refused, high risk (red)
+ *   info     = neutral information about a state (teal tint)
+ * Pages read these through the Tailwind names in @theme below (bg-surface, text-muted, border-line, ...).
+ */
 :root {
-  --bg: #f2f4ef;
+  --bg: #f6f6f3;
   --surface: #ffffff;
-  --surface-2: #e8ede6;
-  --border: #d5ded3;
-  --text: #10372a;
-  --muted: #5d7166;
-  --accent: #10372a;
-  --accent-ink: #f2f4ef;
-  --ring: #2f8f62;
-  --live: #21744e;
-  --live-bg: #e4f5eb;
-  --sim: #7a5a00;
-  --sim-bg: #f8efd2;
-  --warn: #9a3d12;
-  --warn-bg: #fbe6da;
-  --bad: #b3261e;
-  --bad-bg: #fbe3e0;
-  --neutral-bg: #e6ebe3;
+  --surface-2: #f0f0ec;
+  --surface-3: #e8e8e3;
+  --border: #e2e2dc;
+  --border-strong: #cfcfc7;
+  --text: #17191c;
+  --fg: var(--text);
+  --muted: #5f636a;
+  --subtle: #8a8e95;
+  --accent: #0d6b66;
+  --accent-hover: #0a5955;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3f1ef;
+  --accent-text: #0b5f5a;
+  --ring: #14918b;
+  --live: #1d6f48;
+  --live-bg: #e5f2ea;
+  --sim: #414b97;
+  --sim-bg: #eceefa;
+  --warn: #855400;
+  --warn-bg: #fbf0d9;
+  --bad: #b0262d;
+  --bad-bg: #fbe8e8;
+  --info: #0b5f5a;
+  --info-bg: #e3f1ef;
+  --neutral-bg: #efefea;
+  --shadow-sm: 0 1px 2px rgb(23 25 28 / 0.05);
+  --shadow-md: 0 4px 16px -4px rgb(23 25 28 / 0.10), 0 1px 3px rgb(23 25 28 / 0.06);
+  --shadow-lg: 0 24px 48px -12px rgb(23 25 28 / 0.18), 0 2px 6px rgb(23 25 28 / 0.06);
+  --chart-1: #0d6b66;
+  --chart-2: #6c78c9;
 }
 .dark {
-  --bg: #0a2219;
-  --surface: #10372a;
-  --surface-2: #174536;
-  --border: #25503f;
-  --text: #f2f4ef;
-  --muted: #9fb8aa;
-  --accent: #8fd3ae;
-  --accent-ink: #0a2219;
-  --ring: #8fd3ae;
-  --live: #8fd3ae;
-  --live-bg: #174536;
-  --sim: #e3c15c;
-  --sim-bg: #3a3012;
-  --warn: #f0a77d;
-  --warn-bg: #3b2416;
-  --bad: #f1888f;
-  --bad-bg: #3d1c20;
-  --neutral-bg: #1c4636;
+  --bg: #0e0f11;
+  --surface: #15171a;
+  --surface-2: #1b1e22;
+  --surface-3: #23272c;
+  --border: #272a2f;
+  --border-strong: #363a41;
+  --text: #ebebe8;
+  --muted: #9b9fa6;
+  --subtle: #6f737a;
+  --accent: #4dbdb2;
+  --accent-hover: #6fcdc3;
+  --accent-ink: #061b19;
+  --accent-soft: #14302d;
+  --accent-text: #74d1c7;
+  --ring: #4dbdb2;
+  --live: #74c79a;
+  --live-bg: #15291e;
+  --sim: #a7aff0;
+  --sim-bg: #1d2138;
+  --warn: #e7b65d;
+  --warn-bg: #2c2312;
+  --bad: #f08e8e;
+  --bad-bg: #331a1c;
+  --info: #74d1c7;
+  --info-bg: #14302d;
+  --neutral-bg: #1f2226;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 16px -4px rgb(0 0 0 / 0.5), 0 1px 3px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 24px 48px -12px rgb(0 0 0 / 0.6), 0 2px 6px rgb(0 0 0 / 0.4);
+  --chart-1: #4dbdb2;
+  --chart-2: #a7aff0;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
   --color-ink: var(--text);
   --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-ink: var(--accent-ink);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  /* Nested radii: a control (12) sits inside a card (16) with 20 of padding between. */
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-live: var(--live);
+  --color-sim: var(--sim);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* Radii: controls 8, cards 12, overlays 16. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --shadow-card: var(--shadow-sm);
+  --shadow-pop: var(--shadow-md);
+  --shadow-overlay: var(--shadow-lg);
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
-  --default-transition-duration: 160ms;
+  --default-transition-duration: 150ms;
   --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 html { color-scheme: light; }
 html.dark { color-scheme: dark; }
-body { background: var(--bg); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.5; letter-spacing: -0.01em; }
-h1, h2 { letter-spacing: -0.025em; }
-/* Hand-written buttons and links get the same quick, named transitions as the shared ones. */
-@layer base {
-  button, a, summary { transition-property: color, background-color, border-color, opacity, transform; }
+body {
+  background: var(--bg); color: var(--text); font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-size: 14.5px; line-height: 1.55; letter-spacing: -0.006em;
+  text-rendering: optimizeLegibility;
 }
+h1, h2, h3 { letter-spacing: -0.02em; text-wrap: balance; }
+p { text-wrap: pretty; }
+::selection { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+
+@layer base {
+  button, a, summary { transition-property: color, background-color, border-color, opacity, transform, box-shadow; }
+  button:not(:disabled), [role="button"], summary { cursor: pointer; }
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  /* Links in body copy are visibly links. */
+  main p a:not([class]), main li a:not([class]) { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+  main p a:not([class]):hover, main li a:not([class]):hover { text-decoration-color: currentColor; }
+}
+
 /* Figures line up in columns everywhere. */
 table, dl, .tabular { font-variant-numeric: tabular-nums; }
-:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 8px; }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@layer base {
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: 6px; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset: 0; }
+}
 
-/* Motion: it explains state, it does not decorate. Short, one easing, transform and opacity only, and none at all
-   for people who ask for reduced motion (the rule above switches animation off). */
-@keyframes reveal { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes drawer-in { from { transform: translateX(-16px); opacity: 0; } to { transform: none; opacity: 1; } }
-/* A new page settles in. */
-.motion-page { animation: reveal 200ms var(--ease-out, cubic-bezier(0.2, 0, 0, 1)) both; }
-/* A result, a confirmation or an error that appears after an action (AI summaries, saved, failed) fades up so the change is noticed. */
-[role="status"], [role="alert"] { animation: reveal 200ms cubic-bezier(0.2, 0, 0, 1) both; }
-/* The mobile menu. */
-.motion-scrim { animation: scrim-in 150ms ease-out both; }
-.motion-drawer { animation: drawer-in 200ms cubic-bezier(0.2, 0, 0, 1) both; }
-/* Rows answer the pointer, so a table reads as something you can scan and act on. */
+/* Thin, quiet scrollbars for the sidebar and panels. */
+.scroll-quiet { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+/* Tables: one shared look. Use .data-table on <table>. */
+@layer components {
+  .data-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 13.5px; }
+  .data-table thead th { position: sticky; top: 0; z-index: 1; background: var(--surface); padding: 0.6rem 0.75rem; font-size: 12px; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .data-table tbody td { padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .data-table tbody tr:last-child td { border-bottom: 0; }
+  .data-table th:first-child, .data-table td:first-child { padding-left: 0; }
+  .data-table th:last-child, .data-table td:last-child { padding-right: 0; }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+}
 tbody tr { transition: background-color 120ms; }
-tbody tr:hover { background-color: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+tbody tr:hover { background-color: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+
+/* Motion explains state; it never decorates. Transform and opacity only, and none for people who ask for reduced motion. */
+@keyframes reveal { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drawer-in { from { transform: translateX(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pop-in { from { transform: translateY(-4px) scale(0.985); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes shimmer { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }
+.motion-page { animation: reveal 180ms var(--ease-out, cubic-bezier(0.2, 0, 0, 1)) both; }
+[role="status"]:not(.no-reveal), [role="alert"] { animation: reveal 180ms cubic-bezier(0.2, 0, 0, 1) both; }
+.motion-scrim { animation: scrim-in 140ms ease-out both; }
+.motion-drawer { animation: drawer-in 180ms cubic-bezier(0.2, 0, 0, 1) both; }
+.motion-pop { animation: pop-in 140ms cubic-bezier(0.2, 0, 0, 1) both; }
+.skeleton { background: var(--surface-3); border-radius: 6px; animation: shimmer 1.6s ease-in-out infinite; }
+details[open] > summary .chevron { transform: rotate(90deg); }
+.chevron { transition: transform 150ms var(--ease-out, ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

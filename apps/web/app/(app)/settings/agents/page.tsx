@@ -9,7 +9,7 @@ export default function AgentPermissions() {
     <>
       <PageHeader title="Agent Permissions" description="Tool allow-list per agent, enforced in code by the coordinator. Read-only view of the compiled configuration." badge={<Badge tone="neutral">READ ONLY</Badge>} />
       <Card className="overflow-x-auto">
-        <table className="w-full min-w-[56rem] border-collapse text-left text-xs">
+        <table className="w-full min-w-[56rem] border-collapse text-left text-[12.5px]">
           <thead><tr className="border-b border-line"><th className="py-2 pr-3 font-medium">Agent</th>{TOOLS.map((t) => <th key={t} className="px-2 py-2 font-mono font-normal text-muted">{t}</th>)}</tr></thead>
           <tbody>
             {agents.map((a) => (

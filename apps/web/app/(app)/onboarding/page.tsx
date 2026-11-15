@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Card, PageHeader, btnCls, inputCls } from "@/components/ui";
+import { Card, Notice, PageHeader, Steps, btnCls, inputCls, labelCls } from "@/components/ui";
+import { CopyButton } from "@/components/ui-client";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -32,19 +33,43 @@ export default async function Onboarding({ searchParams }: { searchParams: Promi
   const { error } = await searchParams;
   return (
     <>
-      <PageHeader title="Create your organisation" description="An organisation is the tenant that owns treasuries, policies, agents and records. You become its owner. Every row is isolated from other organisations by row-level security." />
-      <Card title="Joining an existing organisation?" className="mb-4">
-        <p className="text-sm text-muted">Send this user ID to the organisation owner so they can add you on their Team page. Then reload this site.</p>
-        <p className="mt-2 select-all break-all font-mono text-xs">{s.user.id}</p>
-      </Card>
-      <Card title="Organisation">
-        <form action={createOrganisation} className="max-w-md space-y-3">
-          <div><label htmlFor="name" className="mb-1 block text-xs text-muted">Name</label>
-            <input id="name" name="name" required maxLength={120} className={inputCls} placeholder="Nova DAO" /></div>
-          <button className={btnCls} type="submit">Create organisation</button>
-          {error && <p role="alert" className="text-sm text-[var(--bad)]">{error}</p>}
-        </form>
-      </Card>
+      <PageHeader title="Set up Verac" eyebrow="Welcome"
+        description="Seven short steps take you from an empty account to your first safe workflow. Start by creating your organisation, or join one that already exists. You can return to any step later from the dashboard." />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <Card title="Your setup">
+          <Steps compact steps={[
+            { label: "Create or join an organisation", detail: "You are here.", state: "current" },
+            { label: "Connect a QoreX wallet", detail: "Optional. Keys never enter this site.", state: "todo" },
+            { label: "Understand testnet status", detail: "Everything runs on Diana testnet with valueless QOR.", state: "todo" },
+            { label: "Link your treasury", detail: "Point Verac at your TreasuryVault.", state: "todo" },
+            { label: "Review default policies", detail: "Caps, approved recipients and approvals.", state: "todo" },
+            { label: "Choose permitted agents", detail: "See what each agent may do.", state: "todo" },
+            { label: "Try a safe first workflow", detail: "A simulated payment request needs no QOR.", state: "todo" },
+          ]} />
+        </Card>
+        <div className="min-w-0 space-y-6">
+          <Card title="Create an organisation" description="An organisation owns treasuries, policies, agents and records. You become its owner. Row-level security keeps every row separate from other organisations.">
+            <form action={createOrganisation} className="max-w-md space-y-4">
+              <div><label htmlFor="name" className={labelCls}>Organisation name</label>
+                <input id="name" name="name" required maxLength={120} className={inputCls} placeholder="Nova DAO" /></div>
+              <button className={btnCls} type="submit">Create organisation</button>
+              {error && <Notice tone="bad" role="alert">{error}</Notice>}
+            </form>
+          </Card>
+          <Card title="Joining an existing organisation?" description="Send this user ID to the organisation's owner. They add you on their Team page; then reload this site.">
+            <div className="flex items-center gap-1 rounded-md bg-surface-2 px-3 py-2"><span className="min-w-0 flex-1 select-all break-all font-mono text-[12.5px]">{s.user.id}</span><CopyButton value={s.user.id} label="Copy user ID" /></div>
+            <p className="mt-3 text-[12.5px] text-muted">This is an identifier, not a secret. You will never be asked to paste a private key or seed phrase into Verac.</p>
+          </Card>
+          <Card title="Words you will see">
+            <dl className="grid gap-x-6 gap-y-3 text-[13px] sm:grid-cols-2">
+              <div><dt className="font-medium">Testnet</dt><dd className="text-muted">A practice blockchain. QOR here has no value.</dd></div>
+              <div><dt className="font-medium">Treasury vault</dt><dd className="text-muted">A smart contract holding funds, with limits agents cannot exceed.</dd></div>
+              <div><dt className="font-medium">Escrow</dt><dd className="text-muted">Money set aside for a milestone, released only after review.</dd></div>
+              <div><dt className="font-medium">Simulation</dt><dd className="text-muted">Recorded in Verac only. Nothing is sent to the chain.</dd></div>
+            </dl>
+          </Card>
+        </div>
+      </div>
     </>
   );
 }

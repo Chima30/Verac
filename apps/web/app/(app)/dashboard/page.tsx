@@ -1,46 +1,384 @@
 import { AGENTS } from "@qoreops/agent-coordinator";
-import { Badge, Card, KV, PageHeader, Stat } from "@/components/ui";
+import { ArrowRight, Bot, Boxes, ClipboardCheck, Flag, Plus, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { Suspense, cache } from "react";
+import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
+import { Badge, Card, CardSkeleton, EmptyState, Metric, Notice, ShortHash, Source, StatusDot, Steps, btnCls, btnSecondaryCls, fmtUtc, relTime, type StepState } from "@/components/ui";
+import { formatQor } from "@/lib/approvals";
+import { orgData as loadOrgData, windowed, type OrgData } from "@/lib/dashboard";
+import { liveStatusFlags } from "@/lib/live/config";
+import { hasRole } from "@/lib/nav";
 import { aiStatus, chainSnapshot, contractSnapshot } from "@/lib/server";
+import { gatherPosture } from "@/lib/threats";
+import { evenSteps, formatWei, vaultSnapshot as loadVault } from "@/lib/vault";
+
+// One read per request even though several sections use the same data.
+const orgData = cache(loadOrgData);
+const vaultSnapshot = cache(loadVault);
+const contracts = cache(contractSnapshot);
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Dashboard" };
 
-export default async function Dashboard() {
-  const [chain, ai, contracts] = [await chainSnapshot(), aiStatus(), await contractSnapshot()];
-  const agents = Object.values(AGENTS);
+const DAY = 86_400_000;
+const qorFmt = (s: string) => { const [w, f] = s.split("."); return `${Number(w).toLocaleString("en-US")}${f ? `.${f}` : ""}`; };
+
+/* ---------------------------------------------------------------- 1 + 2: money */
+async function Money() {
+  const [v, c] = await Promise.all([vaultSnapshot(), contracts()]);
+  if (!v.ok) return (
+    <Card title="Funds" description="TreasuryVault on Diana testnet">
+      <Notice tone="bad" title="Could not read the vault from the chain">{v.error} Nothing is shown instead of a stale number.</Notice>
+    </Card>
+  );
+  const active = v.rules.filter((r) => r.active && r.validUntil * 1000 > Date.now());
+  const agentRoom = active.reduce((t, r) => t + r.remainingToday, 0n);
+  const escrow = c.rows.find((r) => r.name === "MilestoneEscrow");
+  const now = Date.now();
+  const hist = v.history;
+  const series: Record<string, ReturnType<typeof evenSteps>> = {};
+  const w7 = windowed(hist, 7 * DAY, now), w30 = windowed(hist, 30 * DAY, now);
+  if (w7.length >= 2) series["7 days"] = evenSteps(w7);
+  if (w30.length >= 2) series["30 days"] = evenSteps(w30);
+  if (hist.length >= 2) series["All time"] = evenSteps(hist);
+  const deposits = v.events.filter((e) => e.kind === "Deposited").length;
+  const paid = v.events.filter((e) => e.kind === "PaymentExecuted").length;
+  const escrowFunded = v.events.filter((e) => e.kind === "EscrowFunded").length;
+
   return (
-    <>
-      <PageHeader title="Dashboard" description="Status of QoreChain Diana testnet and the AI provider, read fresh each time you open this page." />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="sm:col-span-2"><Stat large label="Latest EVM block, Diana testnet" value={chain.block ?? "n/a"} badge={chain.block ? <Badge tone="live" /> : <Badge tone="unavailable" />} sub={chain.ok ? `Chain id ${chain.chainId}. Mainnet is disabled.` : chain.error} /></div>
-        <Stat label="QoreChain Diana" value={chain.ok ? "Connected" : "Unreachable"} badge={<Badge tone={chain.ok ? "live" : "unavailable"} />} sub={chain.ok ? "Reads succeed" : "Reads are failing"} />
-        <Stat label="Gemini" value={ai.status === "configured" ? <span className="text-lg">{ai.model}</span> : ai.status === "unconfigured" ? "No API key" : "Invalid config"} badge={<Badge tone={ai.status === "configured" ? "live" : "unavailable"}>{ai.status === "configured" ? "CONFIGURED" : "UNAVAILABLE"}</Badge>} sub={ai.status === "configured" ? "Free tier only" : ai.message} />
+    <Card title="Funds" description="TreasuryVault on Diana testnet, read from the chain when this page loaded."
+      right={<><Badge tone="live" />{v.paused && <Badge tone="failed">VAULT PAUSED</Badge>}</>}>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-[12.5px] text-muted">Vault balance</p>
+          <p className="mt-1 text-[38px] font-semibold leading-none tracking-tight tabular-nums sm:text-[44px]">{qorFmt(formatWei(v.balance!))}<span className="ml-2 text-[18px] font-medium text-muted">QOR</span></p>
+          <p className="mt-2 text-[12.5px] text-muted">at block {Number(v.readAtBlock).toLocaleString("en-US")} · {v.paused ? <span className="text-[var(--bad)]">all payments frozen</span> : "payments open within each agent's limits"}</p>
+        </div>
+        <Link href="/treasury" className={btnSecondaryCls}>Open treasury<ArrowRight size={14} aria-hidden /></Link>
       </div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card title="Network"><KV rows={[["Native chain", "qorechain-diana"], ["EVM chain id", "9800"], ["Mainnet", "disabled (refused at startup)"],
-          ["Abstract accounts", chain.aa ? (chain.aa.enabled ? `enabled, max ${chain.aa.maxSessionKeys} session keys, ${chain.aa.maxSpendingRules} rules` : "disabled") : "unknown"],
-          ["Agents defined", `${agents.length}, of which ${agents.filter((a) => a.canMoveFunds).length} can move funds, via the pipeline only`]]} /></Card>
-        <Card title="Not wired yet" right={<Badge tone="pending" />}>
-          <ul className="list-disc space-y-2 pl-5 text-sm">
-            <li>This app does not send transactions. Payments, escrow funding and releases are recorded here as approvals. The testnet ones so far were run from scripts (see docs/LIVE_RUN_2026-11-14.md).</li>
-            <li>{ai.status === "configured" ? "AI calls use the free tier only and never change a decision made by the fixed rules." : "AI features are off until a Gemini key is configured on this server."}</li>
-            <li>Document checksums are stored but not anchored on-chain.</li>
-          </ul>
-        </Card>
+
+      <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-5 md:grid-cols-4">
+        <Metric label="Agents may still spend today" value={<>{qorFmt(formatWei(agentRoom))} <span className="text-[13px] font-medium text-muted">QOR</span></>} sub={`${active.length} active spending rule${active.length === 1 ? "" : "s"}, enforced by the contract`} />
+        <Metric label="Held in milestone escrow" value={escrow?.balanceQor != null ? <>{qorFmt(escrow.balanceQor)} <span className="text-[13px] font-medium text-muted">QOR</span></> : "n/a"} sub="MilestoneEscrow contract balance" tone={escrow?.balanceQor == null ? "muted" : undefined} />
+        <Metric label="Human approvals needed" value={`${v.approvalThreshold} of ${v.approverCount}`} sub="above an agent's auto-approve amount" />
+        <Metric label="Vault events" value={v.events.length} sub={`${deposits} deposits · ${paid} payments · ${escrowFunded} escrow`} />
+      </dl>
+
+      <div className="mt-6 border-t border-line pt-5">
+        <div className="mb-1 flex items-baseline justify-between gap-2"><h3 className="text-[13.5px] font-medium">Balance over time</h3><span className="text-[12px] text-subtle">QOR, UTC</span></div>
+        {Object.keys(series).length ? <InteractiveAreaChart title="Vault balance" unit="QOR" data={series} defaultRange={series["30 days"] ? "30 days" : undefined} height={220} />
+          : <p className="py-6 text-[13.5px] text-muted">No chart yet: the vault&apos;s events do not give two real points to draw. A chart is never filled with estimates.</p>}
+        <Source>Rebuilt from the vault&apos;s Deposited, PaymentExecuted and EscrowFunded events and anchored to the balance read now. Separate inflow and outflow series need block timestamps per event, which are not stored yet.</Source>
       </div>
-      <Card title="Deployed contracts (Diana testnet)" className="mt-4" right={<Badge tone={contracts.error ? "unavailable" : "live"} />}>
+    </Card>
+  );
+}
+
+/* ---------------------------------------------------------------- 4: what needs me */
+function Queue({ d }: { d: OrgData }) {
+  const s = d.session;
+  if (!s.configured) return <Card title="Needs a decision"><EmptyState title="Organisation records are not connected">Approvals live in Supabase, which is not configured on this server.</EmptyState></Card>;
+  if (!s.user) return <Card title="Needs a decision"><EmptyState title="Sign in to see your queue" action={<Link href="/login?next=/dashboard" className={btnCls}>Sign in</Link>}>Payment requests are private to your organisation.</EmptyState></Card>;
+  const items = d.queue;
+  return (
+    <Card title="Needs a decision" description="Payment requests waiting for a person, oldest first."
+      right={items.length ? <Badge tone="approval">{items.length} WAITING</Badge> : undefined}
+      footer={<Link href="/approvals" className="inline-flex items-center gap-1 font-medium text-accent-text hover:underline">Open the approvals queue<ArrowRight size={13} aria-hidden /></Link>}>
+      {d.queueError && <Notice tone="bad" className="mb-3">{d.queueError}</Notice>}
+      {items.length === 0 ? (
+        <div className="py-6 text-center"><p className="text-[14px] font-medium">Nothing is waiting for you</p><p className="mt-1 text-[13px] text-muted">New payment requests appear here before any money moves.</p></div>
+      ) : (
+        <ul className="-mx-5 divide-y divide-line">
+          {items.map((t) => {
+            const expiresSoon = new Date(t.expiresAt).getTime() - Date.now() < 6 * 3600_000;
+            return (
+              <li key={t.id}>
+                <Link href="/approvals" className="block px-5 py-3 hover:bg-surface-2/60">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-semibold tabular-nums">{formatQor(t.amountWei)} <span className="text-[12.5px] font-medium text-muted">QOR</span></p>
+                      <p className="mt-0.5 truncate text-[12.5px] text-muted">{t.payroll ? `Payroll, ${t.payroll} recipients` : <>to <ShortHash value={t.recipient} /></>}{t.purpose ? ` · ${t.purpose}` : ""}</p>
+                    </div>
+                    {t.live ? <Badge tone="live" /> : <Badge tone="sim" />}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted">
+                    <span className="font-mono text-[11.5px]">{t.agent}</span>
+                    <span>policy v{t.policyVersion}</span>
+                    <span className="tabular-nums">{t.approvals} of {t.required} approvals</span>
+                    <span>{relTime(t.createdAt)}</span>
+                    <span className={expiresSoon ? "text-[var(--warn)]" : ""}>expires {relTime(t.expiresAt)}</span>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
+/* ---------------------------------------------------------------- 3: what agents are doing */
+const TASK: Record<string, { word: string; tone: "approval" | "failed" | "pending" | "info" | "neutral" }> = {
+  AWAITING_HUMAN: { word: "Approval required", tone: "approval" },
+  COMPLETED: { word: "Completed", tone: "info" },
+  FAILED: { word: "Failed", tone: "failed" },
+  QUEUED: { word: "Queued", tone: "pending" },
+  RUNNING: { word: "Running", tone: "neutral" },
+  PAUSED_AI_UNAVAILABLE: { word: "Paused, AI unavailable", tone: "pending" },
+};
+function Agents({ d }: { d: OrgData }) {
+  const all = Object.values(AGENTS);
+  const ai = all.filter((a) => a.usesAi).length;
+  const signedIn = !!d.session.org;
+  return (
+    <Card title="Agent activity" description={signedIn ? "The latest work items from agents and the payment pipeline." : `${all.length} agents are registered; sign in to see their work.`}
+      footer={<span className="flex flex-wrap items-center justify-between gap-2"><span>{all.length} agents · {ai} use Gemini · only PaymentAgent can move funds, through the pipeline</span><Link href="/command-center" className="inline-flex items-center gap-1 font-medium text-accent-text hover:underline">AI workforce<ArrowRight size={13} aria-hidden /></Link></span>}>
+      {d.tasksError && <Notice tone="bad" className="mb-3">{d.tasksError}</Notice>}
+      {!signedIn ? <p className="py-4 text-[13.5px] text-muted">Agent tasks are private to your organisation.</p>
+        : d.tasks.length === 0 ? <p className="py-4 text-[13.5px] text-muted">No agent tasks yet. The payment pipeline creates one each time a payment is requested on <Link href="/approvals">Approvals</Link>.</p> : (
+          <ol className="-mx-5 divide-y divide-line">
+            {d.tasks.map((t) => {
+              const st = TASK[t.state] ?? { word: t.state, tone: "neutral" as const };
+              return (
+                <li key={t.id} className="flex items-start gap-3 px-5 py-3">
+                  <span aria-hidden className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-md bg-surface-2 text-muted"><Bot size={14} /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13.5px] leading-snug"><span className="font-medium">{t.agent}</span> <span className="text-muted">{t.intent}</span></p>
+                    {t.error && <p className="mt-0.5 text-[12.5px] text-[var(--bad)]">{t.error}</p>}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted">
+                      <StatusDot tone={st.tone}>{st.word}</StatusDot>
+                      <span>{relTime(t.updatedAt)}</span>
+                      <Link href={t.txId ? "/approvals" : "/tasks"} className="text-accent-text hover:underline">{t.txId ? "View request" : "View task"}</Link>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      {signedIn && (d.live.submitted + d.live.confirmed + d.live.failed + d.live.rejected > 0) && (
+        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-line pt-4 text-[12.5px]">
+          <span className="text-muted">Live testnet payments:</span>
+          <StatusDot tone="live">{d.live.confirmed} confirmed</StatusDot>
+          {d.live.submitted > 0 && <StatusDot tone="sim">{d.live.submitted} submitted</StatusDot>}
+          {d.live.rejected > 0 && <StatusDot tone="failed">{d.live.rejected} rejected</StatusDot>}
+          {d.live.failed > 0 && <StatusDot tone="failed">{d.live.failed} failed</StatusDot>}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* ---------------------------------------------------------------- 5: is anything unsafe */
+async function Security() {
+  const [p, v] = await Promise.all([gatherPosture(), vaultSnapshot()]);
+  const flags = liveStatusFlags();
+  const count = (s: string) => p.findings.filter((f) => f.severity === s).length;
+  const high = count("high"), medium = count("medium");
+  const revoked = v.rules.filter((r) => !r.active).length;
+  const soon = v.rules.filter((r) => r.active && r.validUntil * 1000 - Date.now() < 7 * DAY);
+  const calm = p.ok && high === 0 && !v.paused;
+  const rows: Array<{ label: string; value: React.ReactNode; tone?: "bad" | "warn" }> = [
+    { label: "Posture findings", value: !p.ok ? "Could not read" : high + medium === 0 ? "None high or medium" : `${high} high · ${medium} medium`, tone: high ? "bad" : medium ? "warn" : undefined },
+    { label: "Vault", value: !v.ok ? "Could not read" : v.paused ? "Paused, payments frozen" : "Active", tone: v.paused ? "warn" : undefined },
+    { label: "Live execution", value: flags.emergencyStop ? "Emergency stop on" : !flags.switchOn ? "Switched off" : flags.ready ? "On, all keys configured" : `On, ${flags.missing.length} setting${flags.missing.length === 1 ? "" : "s"} missing`, tone: flags.emergencyStop ? "warn" : undefined },
+    { label: "Revoked agent rules", value: revoked },
+    { label: "Spending rules expiring in 7 days", value: soon.length, tone: soon.length ? "warn" : undefined },
+  ];
+  return (
+    <Card title="Security" description={calm ? "No high-severity finding on the accounts checked." : "Something here needs attention."}
+      right={!p.ok ? <Badge tone="unavailable" /> : high ? <Badge tone="failed">{high} HIGH</Badge> : <Badge tone="live" />}
+      footer={<Link href="/threats" className="inline-flex items-center gap-1 font-medium text-accent-text hover:underline">Threat Center<ArrowRight size={13} aria-hidden /></Link>}>
+      <dl className="-mx-5 divide-y divide-line text-[13.5px]">
+        {rows.map((r) => (
+          <div key={r.label} className="flex items-baseline justify-between gap-4 px-5 py-2.5">
+            <dt className="text-muted">{r.label}</dt>
+            <dd className={`text-right font-medium tabular-nums ${r.tone === "bad" ? "text-[var(--bad)]" : r.tone === "warn" ? "text-[var(--warn)]" : ""}`}>{r.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {p.ok && p.findings.filter((f) => f.severity === "high").slice(0, 2).map((f) => (
+        <Notice key={f.id + f.subject} tone="bad" title={f.title} className="mt-4">{f.subject}</Notice>
+      ))}
+      <Source>Rules applied to accounts read live from Diana testnet{p.readAtBlock ? ` at block ${Number(p.readAtBlock).toLocaleString("en-US")}` : ""}. Incidents are not tracked as records yet; this is posture, not an incident log.</Source>
+    </Card>
+  );
+}
+
+/* ---------------------------------------------------------------- 1: how is the organisation doing (operations) */
+function Operations({ d }: { d: OrgData }) {
+  if (!d.session.org) return null;
+  const t = d.ops.tenders;
+  const stages: Array<[string, string]> = [["draft", "Draft"], ["open", "Open for bids"], ["review", "Reviewing bids"], ["awarded", "Awarded"], ["closed", "Closed"]];
+  const totalT = Object.values(t).reduce((a, b) => a + b, 0);
+  return (
+    <Card title="Operations" description="Projects and decisions in progress in this organisation.">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <div>
+          <div className="flex items-baseline justify-between"><h3 className="text-[13px] font-medium">Procurement pipeline</h3><Link href="/procurement" className="text-[12.5px] text-accent-text hover:underline">{totalT} tender{totalT === 1 ? "" : "s"}</Link></div>
+          <ol className="mt-3 grid grid-cols-5 gap-1.5">
+            {stages.map(([k, label]) => (
+              <li key={k} className="min-w-0 rounded-md bg-surface-2 px-2 py-2.5">
+                <p className={`text-[20px] font-semibold tabular-nums leading-none ${t[k] ? "" : "text-subtle"}`}>{t[k] ?? 0}</p>
+                <p className="mt-1.5 truncate text-[11.5px] text-muted" title={label}>{label}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-2 text-[12px] text-muted">{formatQor(d.ops.tenderBudgetWei.toString())} QOR budgeted on tenders not yet closed.</p>
+        </div>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+          <Metric label={<Link href="/grants" className="hover:text-ink">Open grant rounds</Link>} value={d.ops.grantsOpen} sub={d.ops.grantsOpen ? `${formatQor(d.ops.grantsBudgetWei.toString())} QOR budget` : undefined} />
+          <Metric label={<Link href="/milestones" className="hover:text-ink">Milestones to review</Link>} value={d.ops.milestonesToReview} tone={d.ops.milestonesToReview ? "warn" : undefined} />
+          <Metric label={<Link href="/governance" className="hover:text-ink">Proposals in voting</Link>} value={d.ops.proposalsVoting} />
+          <Metric label={<Link href="/disputes" className="hover:text-ink">Open disputes</Link>} value={d.ops.disputesOpen} tone={d.ops.disputesOpen ? "warn" : undefined} />
+        </dl>
+      </div>
+    </Card>
+  );
+}
+
+/* ---------------------------------------------------------------- setup progress */
+function Setup({ d }: { d: OrgData }) {
+  const s = d.session;
+  if (!s.org) return null;
+  const flags = liveStatusFlags();
+  const items: Array<{ label: string; detail: string; done: boolean; href: string }> = [
+    { label: "Create your organisation", detail: `${s.org.name}, you are ${s.org.role.replaceAll("_", " ")}.`, done: true, href: "/settings/organization" },
+    { label: "Link a treasury address", detail: "So payments and balances are tied to your vault.", done: !!s.org.treasuryAddress, href: "/settings/organization" },
+    { label: "Add a second member", detail: "A person can never approve their own request, so approvals need two people.", done: (d.members ?? 0) > 1, href: "/settings/team" },
+    { label: "Connect a QoreX wallet", detail: "Lets you check addresses and sign from your own wallet. Keys never enter this site.", done: false, href: "/settings/wallets" },
+    { label: "Publish a reading key", detail: "Needed to open sealed bids and encrypted documents.", done: !!d.reviewerKey, href: "/procurement" },
+    { label: "Turn on live execution", detail: "Server configuration; until then payments are recorded but never sent.", done: flags.ready, href: "/settings/integrations" },
+  ];
+  // The wallet step cannot be checked on the server (the wallet lives in the browser), so it never counts as missing.
+  const counted = items.filter((i) => i.href !== "/settings/wallets");
+  const done = counted.filter((i) => i.done).length;
+  if (done === counted.length) return null;
+  const firstOpen = items.findIndex((i) => !i.done && i.href !== "/settings/wallets");
+  return (
+    <details className="group mb-6 rounded-lg border border-line bg-surface shadow-card" open={done < 3}>
+      <summary className="flex items-center gap-4 px-5 py-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-[14px] font-semibold">Finish setting up {s.org.name}</p>
+          <p className="text-[12.5px] text-muted">{done} of {counted.length} steps done. You can come back to any step.</p>
+        </div>
+        <div aria-hidden className="hidden h-1.5 w-40 overflow-hidden rounded-full bg-surface-3 sm:block"><div className="h-full rounded-full bg-accent" style={{ width: `${(done / counted.length) * 100}%` }} /></div>
+        <span className="text-[12.5px] text-muted group-open:hidden">Show</span><span className="hidden text-[12.5px] text-muted group-open:inline">Hide</span>
+      </summary>
+      <div className="grid gap-x-8 border-t border-line px-5 py-4 md:grid-cols-2">
+        <Steps compact steps={items.slice(0, 3).map((i, k) => ({ label: <Link href={i.href} className="hover:underline">{i.label}</Link>, detail: i.detail, state: (i.done ? "done" : k === firstOpen ? "current" : "todo") as StepState }))} />
+        <div className="mt-3 md:mt-0"><Steps compact steps={items.slice(3).map((i, k) => ({ label: <Link href={i.href} className="hover:underline">{i.label}</Link>, detail: i.href === "/settings/wallets" ? `${i.detail} Checked in your browser, not here.` : i.detail, state: (i.done ? "done" : k + 3 === firstOpen ? "current" : "todo") as StepState }))} /></div>
+      </div>
+    </details>
+  );
+}
+
+/* ---------------------------------------------------------------- system */
+async function System() {
+  const [chain, cs] = await Promise.all([chainSnapshot(), contracts()]);
+  const ai = aiStatus();
+  const flags = liveStatusFlags();
+  const missing = cs.rows.filter((r) => r.hasCode === false).length;
+  return (
+    <details className="group rounded-lg border border-line bg-surface shadow-card">
+      <summary className="flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-4 text-[13px]">
+        <span className="font-semibold">System</span>
+        <StatusDot tone={chain.ok ? "live" : "failed"}>Diana testnet {chain.ok ? `block ${Number(chain.block).toLocaleString("en-US")}` : "unreachable"}</StatusDot>
+        <StatusDot tone={ai.status === "configured" ? "live" : "unavailable"}>Gemini {ai.status === "configured" ? ai.model : "not configured"}</StatusDot>
+        <StatusDot tone={missing ? "failed" : cs.error ? "unavailable" : "live"}>{cs.rows.length} contracts{missing ? `, ${missing} without code` : cs.error ? ", not checked" : " deployed"}</StatusDot>
+        <StatusDot tone={flags.emergencyStop ? "approval" : flags.ready ? "live" : "unavailable"}>Live execution {flags.emergencyStop ? "stopped" : flags.ready ? "ready" : flags.switchOn ? "incomplete" : "off"}</StatusDot>
+        <span className="ml-auto text-[12.5px] text-muted group-open:hidden">Details</span><span className="ml-auto hidden text-[12.5px] text-muted group-open:inline">Hide</span>
+      </summary>
+      <div className="border-t border-line px-5 py-4">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[34rem] text-left text-sm">
-            <thead><tr className="border-b border-line text-xs text-muted"><th className="py-2 pr-3 font-medium">Contract</th><th className="py-2 pr-3 font-medium">Address</th><th className="py-2 pr-3 font-medium">Code on-chain</th><th className="py-2 font-medium">Balance (QOR)</th></tr></thead>
-            <tbody>{contracts.rows.map((c) => (
-              <tr key={c.name} className="border-b border-line last:border-0">
-                <td className="py-2 pr-3">{c.name}</td><td className="py-2 pr-3 font-mono text-xs break-all">{c.address}</td>
-                <td className="py-2 pr-3">{c.hasCode === null ? "unknown" : c.hasCode ? "yes" : "NO"}</td><td className="py-2 font-mono">{c.balanceQor ?? "n/a"}</td>
-              </tr>))}</tbody>
+          <table className="data-table min-w-[36rem]">
+            <thead><tr><th>Contract</th><th>Address</th><th>Code on-chain</th><th className="num">Balance (QOR)</th></tr></thead>
+            <tbody>{cs.rows.map((c) => (
+              <tr key={c.name}><td className="font-medium">{c.name}</td><td><ShortHash value={c.address} head={10} tail={8} /></td>
+                <td>{c.hasCode === null ? <StatusDot tone="unavailable">unknown</StatusDot> : c.hasCode ? <StatusDot tone="live">yes</StatusDot> : <StatusDot tone="failed">no code</StatusDot>}</td>
+                <td className="num font-mono text-[12.5px]">{c.balanceQor ?? "n/a"}</td></tr>
+            ))}</tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-muted">Not source-verified on an explorer; no external audit.</p>
-      </Card>
+        <Source>Chain id {chain.chainId ?? "n/a"} · mainnet is refused at startup · abstract accounts {chain.aa ? (chain.aa.enabled ? `enabled (max ${chain.aa.maxSessionKeys} session keys)` : "disabled") : "unknown"}. Contracts are not source-verified on an explorer and have had no external audit.</Source>
+      </div>
+    </details>
+  );
+}
+
+/* ---------------------------------------------------------------- page */
+async function OrgSections() {
+  const d = await orgData();
+  return (
+    <>
+      <Setup d={d} />
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        <div className="min-w-0 space-y-5 xl:col-span-8">
+          <Suspense fallback={<CardSkeleton rows={6} className="h-[30rem]" label="Reading the vault" />}><Money /></Suspense>
+          <Operations d={d} />
+        </div>
+        <div className="min-w-0 space-y-5 xl:col-span-4">
+          <Queue d={d} />
+          <Suspense fallback={<CardSkeleton rows={5} label="Checking security posture" />}><Security /></Suspense>
+        </div>
+      </div>
+      <div className="mt-5 grid gap-5 xl:grid-cols-12">
+        <div className="min-w-0 xl:col-span-8"><Agents d={d} /></div>
+        <div className="min-w-0 xl:col-span-4"><WhatThisIs /></div>
+      </div>
+    </>
+  );
+}
+
+function WhatThisIs() {
+  return (
+    <Card title="Reading this page">
+      <ul className="space-y-3 text-[13px] leading-relaxed text-muted">
+        <li className="flex gap-2.5"><Badge tone="live" /><span>Read from Diana testnet or confirmed there.</span></li>
+        <li className="flex gap-2.5"><Badge tone="sim" /><span>Recorded in Verac only. No QOR moves.</span></li>
+        <li className="flex gap-2.5"><ShieldCheck size={16} className="mt-0.5 shrink-0 text-subtle" aria-hidden /><span>AI suggests and drafts. Fixed rules and people decide, and the contracts enforce limits on chain.</span></li>
+      </ul>
+      <Source>Everything on this page is testnet. Mainnet is disabled.</Source>
+    </Card>
+  );
+}
+
+async function Header() {
+  const d = await orgData();
+  const role = d.session.org?.role ?? null;
+  const actions = [
+    hasRole(role, "finance") && <Link key="pay" href="/approvals#request" className={btnCls}><Plus size={15} aria-hidden />Request payment</Link>,
+    hasRole(role, "reviewer") && <Link key="t" href="/procurement#create" className={btnSecondaryCls}><Boxes size={15} aria-hidden />New tender</Link>,
+    hasRole(role, "admin") && <Link key="g" href="/grants#create" className={`${btnSecondaryCls} hidden sm:inline-flex`}><Flag size={15} aria-hidden />New grant round</Link>,
+    <Link key="ai" href="/command-center" className={btnSecondaryCls}><Bot size={15} aria-hidden />Ask Verac AI</Link>,
+  ].filter(Boolean);
+  const greeting = d.session.org ? d.session.org.name : "Dashboard";
+  const pending = d.queue.length;
+  return (
+    <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div className="min-w-0">
+        <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted"><span>QoreChain Diana testnet</span><span aria-hidden className="text-line-strong">·</span><span>Read at {fmtUtc(Date.now())}</span></p>
+        <h1 className="text-[26px] font-semibold leading-tight tracking-tight sm:text-[28px]">{greeting}</h1>
+        <p className="mt-1.5 max-w-2xl text-[14.5px] text-muted">
+          {!d.session.configured ? "Funds, agents and security on Diana testnet. Organisation records are not connected on this server, so approvals and tasks are hidden."
+            : !d.session.user ? "Funds, agents and security on Diana testnet. Sign in to see your organisation's approvals and agent work."
+              : pending ? <>{pending} payment request{pending === 1 ? " is" : "s are"} waiting for a decision. Funds and security are below.</> : "Nothing is waiting for your decision. Funds, agent work and security are below."}
+        </p>
+      </div>
+      <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}{pending > 0 && <Link href="/approvals" className={`${btnSecondaryCls} md:hidden`}><ClipboardCheck size={15} aria-hidden />Review {pending}</Link>}</div>
+    </header>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <>
+      <Suspense fallback={<div className="mb-7 h-[5.5rem]" />}><Header /></Suspense>
+      <Suspense fallback={<div className="grid grid-cols-1 gap-5 xl:grid-cols-12"><CardSkeleton rows={8} className="h-[30rem] xl:col-span-8" /><CardSkeleton rows={6} className="xl:col-span-4" /></div>}>
+        <OrgSections />
+      </Suspense>
+      <div className="mt-5"><Suspense fallback={<CardSkeleton rows={1} label="Checking system status" />}><System /></Suspense></div>
     </>
   );
 }

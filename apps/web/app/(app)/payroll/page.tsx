@@ -23,20 +23,20 @@ export default async function Payroll() {
   return (
     <>
       <PageHeader title="Payroll" description="Prepare a contributor payment batch, check it against last period, and send it for approval. Everything here is fixed rules: no AI prepares or approves payroll. The approver sees every line, and the batch hash binds each address and amount." badge={<Badge tone="sim" />} />
-      {error && <p role="alert" className="mb-4 text-sm text-[var(--bad)]">{error.message}</p>}
+      {error && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{error.message}</p>}
       {!internal ? <EmptyState title="Not available for your role">Payroll is visible to organisation staff only.</EmptyState> : (
-        <div className="grid gap-4 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           <div className="lg:col-span-3"><Card title="New batch"><PayrollWorkbench canSubmit={FINANCE.includes(s.org.role)} /></Card></div>
           <div className="lg:col-span-2">
             {!data || data.length === 0 ? <EmptyState title="No batches yet">Check a batch and submit it for approval. A second finance member must approve it on the <Link className="underline" href="/approvals">Approvals</Link> page.</EmptyState> : (
               <Card title="Batches">
-                <ul className="divide-y divide-line text-sm">{data.map((b) => (
+                <ul className="divide-y divide-line text-[13.5px]">{data.map((b) => (
                   <li key={b.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
-                    <span><span className="font-medium">{b.period}</span> <span className="text-xs text-muted">{(b.items as unknown[]).length} lines · {formatQor(b.total)} QOR</span></span>
+                    <span><span className="font-medium">{b.period}</span> <span className="text-[12.5px] text-muted">{(b.items as unknown[]).length} lines · {formatQor(b.total)} QOR</span></span>
                     <Badge tone={TONE[b.status] ?? "neutral"}>{b.status.replace("_", " ").toUpperCase()}</Badge>
                   </li>
                 ))}</ul>
-                <p className="mt-3 text-xs text-muted">Approved means approved in this app. No QOR has been sent: executing payroll on chain is not wired to the web app.</p>
+                <p className="mt-3 text-[12.5px] text-muted">Approved means approved in this app. No QOR has been sent: executing payroll on chain is not wired to the web app.</p>
               </Card>
             )}
           </div>

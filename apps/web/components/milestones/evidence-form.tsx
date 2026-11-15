@@ -23,12 +23,12 @@ export function EvidenceForm({ milestoneId, reviewers }: { milestoneId: string; 
       if (r.error) setErr(r.error); else setDone(true);
     } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }
-  if (done) return <p className="text-sm">Evidence sealed in your browser and submitted. Reload to see its status.</p>;
+  if (done) return <p className="text-[13.5px]">Evidence sealed in your browser and submitted. Reload to see its status.</p>;
   return (
-    <div className="space-y-2 text-sm">
+    <div className="space-y-2 text-[13.5px]">
       <textarea className={inputCls} rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder="What did you deliver? Include links or reference numbers." />
       <button className={btnCls} disabled={busy} onClick={submit}>{busy ? "Sealing…" : "Seal and submit evidence"}</button>
-      <p className="text-xs text-muted">Sealed to {reviewers.length} reviewer{reviewers.length === 1 ? "" : "s"} (ML-KEM-1024 + X25519), bound to this milestone.</p>
+      <p className="text-[12.5px] text-muted">Sealed to {reviewers.length} reviewer{reviewers.length === 1 ? "" : "s"} (ML-KEM-1024 + X25519), bound to this milestone.</p>
       {err && <p role="alert" className="text-[var(--bad)]">{err}</p>}
     </div>
   );

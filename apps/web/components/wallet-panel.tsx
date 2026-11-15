@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Badge, Card, btnCls } from "@/components/ui";
+import { Badge, Card, btnCls, btnSecondaryCls } from "@/components/ui";
 import { AddressLookup } from "@/components/address-lookup";
 import { checkNetwork, explainQorexError, isEvmAddress, isQorexAnnouncement, parseChainId } from "@/lib/qorex";
 
@@ -67,26 +67,26 @@ export function WalletPanel() {
     <div className="space-y-4">
       <Card title="QoreX wallet" right={badge}>
         {found === "no" && !address && (
-          <p className="text-sm text-muted">QoreX was not detected in this browser. Install the QoreX extension, reload this page and try again. Verac looks only for QoreX (it never uses another wallet).</p>
+          <p className="text-[13.5px] text-muted">QoreX was not detected in this browser. Install the QoreX extension, reload this page and try again. Verac looks only for QoreX (it never uses another wallet).</p>
         )}
         {found !== "no" && !address && (
           <div className="flex flex-wrap items-center gap-3">
             <button className={btnCls} onClick={connect} disabled={busy || found !== "yes"}>{busy ? "Waiting for QoreX…" : "Connect QoreX"}</button>
-            <span className="text-xs text-muted">Shows your address and chain status. It sends nothing and asks for no signature.</span>
+            <span className="text-[12.5px] text-muted">Shows your address and chain status. It sends nothing and asks for no signature.</span>
           </div>
         )}
         {address && (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-3 text-[13.5px]">
             <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_1fr]">
-              <dt className="text-muted">Address</dt><dd className="break-all font-mono text-xs">{address}</dd>
+              <dt className="text-muted">Address</dt><dd className="break-all font-mono text-[12.5px]">{address}</dd>
               <dt className="text-muted">Network</dt><dd>{chainId === null ? "unknown" : `chain ${chainId}`}{verdict.ok ? " (Diana testnet)" : ""}</dd>
             </dl>
             {!verdict.ok && <p role="alert" className="text-[var(--bad)]">{verdict.reason}</p>}
-            <button className="rounded-full border border-line px-4 py-2 text-sm hover:bg-surface-2" onClick={disconnect}>Disconnect</button>
+            <button className={btnSecondaryCls} onClick={disconnect}>Disconnect</button>
           </div>
         )}
-        {error && <p role="alert" className="mt-3 text-sm text-[var(--bad)]">{error}</p>}
-        <div className="mt-4 space-y-1 text-xs text-muted">
+        {error && <p role="alert" className="mt-3 text-[13.5px] text-[var(--bad)]">{error}</p>}
+        <div className="mt-4 space-y-1 text-[12.5px] text-muted">
           <p>QoreX&apos;s EVM side cannot send contract transactions yet, so Verac never asks your wallet to sign a payment. Approved testnet payments are sent by the Verac server inside the vault&apos;s on-chain limits.</p>
           <p>Disconnect only clears the address from this page. QoreX has no documented disconnect call, so revoke the site&apos;s access inside QoreX if you want it gone.</p>
           <p>Opening and closing your own EVM authorisation window from this page is <strong>not built</strong>: the message format could not be verified without a real QoreX wallet, and a wrong guess is not worth the risk. Use the scripts in the repository for now.</p>

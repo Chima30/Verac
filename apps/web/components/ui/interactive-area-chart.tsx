@@ -220,13 +220,13 @@ function Chart({ model, keys, defaultRange, title, unit, height, className, uid,
           </p>
         </div>
         {keys.length > 1 && (
-          <div role="tablist" aria-label="Range" className="flex shrink-0 self-start rounded-full bg-surface-2 p-0.5 sm:self-auto">
+          <div role="tablist" aria-label="Range" className="flex shrink-0 self-start rounded-md border border-line bg-surface-2 p-0.5 sm:self-auto">
             {keys.map((k) => (
               <button
                 key={k} role="tab" type="button" aria-selected={k === range} onClick={() => changeRange(k)}
-                className={`relative z-10 rounded-full px-3 py-1 text-xs font-medium outline-none transition-[color,transform] duration-150 ease-out active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${k === range ? "" : "text-muted"}`}
+                className={`relative z-10 rounded-[5px] px-3 py-1 text-[12px] font-medium outline-none transition-[color,transform] duration-150 ease-out active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${k === range ? "" : "text-muted"}`}
               >
-                {k === range && <motion.span layoutId={`${uid}-pill`} className="absolute inset-0 -z-10 rounded-full bg-surface shadow-sm" transition={{ type: "spring", duration: 0.3, bounce: 0.15 }} />}
+                {k === range && <motion.span layoutId={`${uid}-pill`} className="absolute inset-0 -z-10 rounded-[5px] bg-surface shadow-sm" transition={{ type: "spring", duration: 0.3, bounce: 0.15 }} />}
                 {k}
               </button>
             ))}

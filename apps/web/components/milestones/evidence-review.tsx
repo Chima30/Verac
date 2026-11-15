@@ -26,7 +26,7 @@ export function EvidenceReview({ milestoneId, orgId, userId }: { milestoneId: st
   }
 
   return (
-    <div className="space-y-2 text-sm">
+    <div className="space-y-2 text-[13.5px]">
       {text === null ? (
         <div className="flex flex-wrap items-center gap-3">
           <button className={btnCls} disabled={busy || hasKey === false} onClick={open}>{busy ? "Opening…" : "Open evidence in this browser"}</button>
@@ -40,7 +40,7 @@ export function EvidenceReview({ milestoneId, orgId, userId }: { milestoneId: st
             <input type="hidden" name="id" value={milestoneId} />
             <input name="note" maxLength={500} className={`${inputCls} max-w-sm`} placeholder="Note for the record (optional)" />
             <button name="decision" value="approve" className={btnCls}>Accept milestone</button>
-            <button name="decision" value="reject" className="inline-flex items-center rounded-md border border-line px-3.5 py-2 text-sm hover:bg-[var(--neutral-bg)]">Reject</button>
+            <button name="decision" value="reject" className="inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-line bg-surface px-3.5 text-[13.5px] font-medium text-ink shadow-sm transition-[background-color,border-color] hover:border-line-strong hover:bg-surface-2 disabled:pointer-events-none disabled:opacity-50">Reject</button>
           </form>
         </>
       )}

@@ -17,9 +17,9 @@ export function AnalyseButton({ id, again }: { id: string; again: boolean }) {
     } catch { setErr("Could not reach the server."); } finally { setBusy(false); }
   }
   return (
-    <div className="text-sm">
+    <div className="text-[13.5px]">
       <button className={btnCls} disabled={busy} onClick={run}>{busy ? "Analysing…" : again ? "Run AI summary again" : "Run AI summary"}</button>
-      <span className="ml-2 text-xs text-muted">Sends the proposal text to Gemini (free tier).</span>
+      <span className="ml-2 text-[12.5px] text-muted">Sends the proposal text to Gemini (free tier).</span>
       {err && <p role="alert" className="mt-1 text-[var(--bad)]">{err}</p>}
     </div>
   );
