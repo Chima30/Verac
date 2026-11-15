@@ -5,6 +5,9 @@ import { LivePayments } from "@/components/live/live-payments";
 import { Badge, Card, EmptyState, Metric, Notice, PageHeader, ShortHash, Source, StatusDot, Steps, btnCls } from "@/components/ui";
 import { Hash } from "@/components/ui-client";
 import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
+import { ChartCard, ChartEmpty } from "@/components/charts/chart-card";
+import { BarChart } from "@/components/charts/bar-chart";
+import { flowsFrom } from "@/lib/charts";
 import { windowed } from "@/lib/dashboard";
 import { liveStatusFlags } from "@/lib/live/config";
 import { liveOperations } from "@/lib/live/list";
@@ -40,6 +43,8 @@ export default async function Treasury() {
   const w30 = windowed(hist, 30 * DAY); if (w30.length >= 2) series["30 days"] = evenSteps(w30);
   const w90 = windowed(hist, 90 * DAY); if (w90.length >= 2) series["90 days"] = evenSteps(w90);
   if (hist.length >= 2) series["All time"] = evenSteps(hist);
+  const flows = flowsFrom(hist);
+  const flowIn = flows.reduce((t, b) => t + b.inflow, 0), flowOut = flows.reduce((t, b) => t + b.outflow, 0);
   const inflow = v.events.filter((e) => e.kind === "Deposited").length;
   const outflow = v.events.filter((e) => e.kind === "PaymentExecuted" || e.kind === "EscrowFunded").length;
 
@@ -74,10 +79,17 @@ export default async function Treasury() {
             ) : <EmptyState title="Sign in to make a payment" action={<Link href="/login?next=/treasury" className={btnCls}>Sign in</Link>}>Payment requests belong to your organisation. Nothing on this card is simulated.</EmptyState>}
           </Card>
 
-          <Card title="Balance over time" description="Native QOR in the vault." right={<Badge tone="live" />}>
-            {Object.keys(series).length ? <InteractiveAreaChart title="Vault balance" unit="QOR" data={series} height={260} /> : <p className="text-[13.5px] text-muted">Not enough events to draw a real line yet.</p>}
-            <Source>Rebuilt from the vault&apos;s own deposit, payment and escrow events and anchored to the balance read now. If the events ever fail to explain the balance, the chart is hidden rather than guessed.</Source>
-          </Card>
+          <ChartCard title="Treasury balance" description="Native QOR held by the vault." right={<Badge tone="live" />}
+            footer="Rebuilt from the vault's own deposit, payment and escrow events, dated by block timestamps and anchored to the balance read now. If the events ever fail to explain the balance, the chart is hidden rather than guessed.">
+            {Object.keys(series).length ? <InteractiveAreaChart title="Vault balance" unit="QOR" data={series} height={260} /> : <ChartEmpty title="Not enough history yet" height={260}>The vault's events do not give two real points to draw.</ChartEmpty>}
+          </ChartCard>
+
+          <ChartCard title="Money in and out" description={`QOR deposited into the vault and paid out of it, per ${flows.length && flows[0]!.key.length === 7 ? "month" : "day"}.`}
+            right={flows.length ? <span className="text-[12.5px] tabular-nums text-subtle"><span className="font-semibold text-[var(--live)]">+{flowIn.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span> in · <span className="font-semibold text-[#f59e0b]">−{flowOut.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span> out</span> : undefined}
+            footer="Each bar adds up real vault events. Outflows include agent payments and escrow funding. Refused payments revert and move nothing, so they never appear here.">
+            {flows.length ? <BarChart unit="QOR" caption="UTC, from block timestamps" series={[{ key: "in", label: "Deposited", color: "#10b981" }, { key: "out", label: "Paid out", color: "#f59e0b" }]} data={flows.map((b) => ({ key: b.key, label: b.label, values: { in: b.inflow, out: b.outflow } }))} />
+              : <ChartEmpty title="No movements yet">Deposits and payments will show here once the vault has events.</ChartEmpty>}
+          </ChartCard>
 
           <Card id="activity" title="Recent vault activity" description="Successful transactions emit events. Refused payments revert and leave none; those are on Live Proof." flush>
             {v.events.length === 0 ? <p className="py-6 text-center text-[13.5px] text-muted">No events found.</p> : (

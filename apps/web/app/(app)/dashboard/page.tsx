@@ -3,6 +3,8 @@ import { Activity, ArrowRight, Bot, Boxes, ClipboardCheck, Flag, Gauge, Landmark
 import Link from "next/link";
 import { Suspense, cache } from "react";
 import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
+import { ChartCard, ChartEmpty, ChartSkeleton } from "@/components/charts/chart-card";
+import { Ambient } from "@/components/ambient";
 import { Badge, Card, CardSkeleton, EmptyState, IconTile, Metric, Notice, ShortHash, Source, StatusDot, Steps, btnCls, btnSecondaryCls, fmtUtc, relTime, type StepState } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { orgData as loadOrgData, windowed, type OrgData } from "@/lib/dashboard";
@@ -46,6 +48,7 @@ async function Money() {
   const escrowFunded = v.events.filter((e) => e.kind === "EscrowFunded").length;
 
   return (
+    <>
     <Card icon={Landmark} tile="green" title="Funds" description="TreasuryVault on Diana testnet, read from the chain when this page loaded."
       right={<><Badge tone="live" />{v.paused && <Badge tone="failed">VAULT PAUSED</Badge>}</>}>
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -64,13 +67,13 @@ async function Money() {
         <Metric label="Vault events" value={v.events.length} sub={`${deposits} deposits · ${paid} payments · ${escrowFunded} escrow`} />
       </dl>
 
-      <div className="mt-6 border-t border-line pt-5">
-        <div className="mb-1 flex items-baseline justify-between gap-2"><h3 className="text-[13.5px] font-medium">Balance over time</h3><span className="text-[12px] text-subtle">QOR, UTC</span></div>
-        {Object.keys(series).length ? <InteractiveAreaChart title="Vault balance" unit="QOR" data={series} defaultRange={series["30 days"] ? "30 days" : undefined} height={220} />
-          : <p className="py-6 text-[13.5px] text-muted">No chart yet: the vault&apos;s events do not give two real points to draw. A chart is never filled with estimates.</p>}
-        <Source>Rebuilt from the vault&apos;s Deposited, PaymentExecuted and EscrowFunded events and anchored to the balance read now. Separate inflow and outflow series need block timestamps per event, which are not stored yet.</Source>
-      </div>
     </Card>
+    <ChartCard title="Treasury balance" description="Native QOR held by the vault over time." right={<Badge tone="live" />}
+      footer="Rebuilt from the vault's Deposited, PaymentExecuted and EscrowFunded events, dated by their block timestamps and anchored to the balance read now.">
+      {Object.keys(series).length ? <InteractiveAreaChart title="Vault balance" unit="QOR" data={series} defaultRange={series["30 days"] ? "30 days" : undefined} height={230} />
+        : <ChartEmpty title="Not enough history yet">The vault's events do not give two real points to draw. A chart is never filled with estimates.</ChartEmpty>}
+    </ChartCard>
+    </>
   );
 }
 
@@ -315,7 +318,7 @@ async function OrgSections() {
       <Setup d={d} />
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
         <div className="min-w-0 space-y-5 xl:col-span-8">
-          <Suspense fallback={<CardSkeleton rows={6} className="h-[30rem]" label="Reading the vault" />}><Money /></Suspense>
+          <Suspense fallback={<><CardSkeleton rows={4} className="h-[17rem]" label="Reading the vault" /><ChartSkeleton height={230} /></>}><Money /></Suspense>
           <Operations d={d} />
         </div>
         <div className="min-w-0 space-y-5 xl:col-span-4">
@@ -356,7 +359,8 @@ async function Header() {
   const greeting = d.session.org ? d.session.org.name : "Dashboard";
   const pending = d.queue.length;
   return (
-    <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <header className="relative isolate mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <Ambient ring={false} className="-z-10 !-inset-x-4 !-top-16 !bottom-[-2rem] opacity-70 [mask-image:linear-gradient(to_bottom,#000_40%,transparent)]" />
       <div className="min-w-0">
         <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted"><span>QoreChain Diana testnet</span><span aria-hidden className="text-line-strong">·</span><span>Read at {fmtUtc(Date.now())}</span></p>
         <div className="flex items-center gap-3"><IconTile icon={Gauge} tile="blue" size="lg" /><h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] sm:text-[32px]">{greeting}</h1></div>

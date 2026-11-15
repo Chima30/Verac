@@ -17,7 +17,7 @@
  * High contrast: pure white or near-black canvases, near-white or near-black text, bright secondary text,
  * and saturated colour reserved for icon tiles and status.
  */
-:root {
+:root, .theme-light {
   --bg: #ffffff;
   --surface: #ffffff;
   --surface-2: #f4f4f5;
@@ -64,7 +64,7 @@
   --tile-red: #e5484d;
   --tile-slate: #52525b;
 }
-.dark {
+.dark, .theme-dark {
   --bg: #000000;
   --surface: #0b0b0c;
   --surface-2: #151517;
@@ -201,3 +201,47 @@ details[open] > summary .chevron { transform: rotate(90deg); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* ------------------------------------------------------------------------------------------------
+ * Theme scopes. `.theme-light` keeps a region light (the sign-in page) and `.theme-dark` keeps it dark (chart cards),
+ * whatever the app theme is. Colour is re-set because body's colour is inherited as a value, not as the variable.
+ * ---------------------------------------------------------------------------------------------- */
+.theme-light { color: var(--text); color-scheme: light; }
+.theme-dark { color: var(--text); color-scheme: dark; }
+
+/* Structured background: a quiet grid that fades out towards the edges. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--border) 85%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border) 85%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 40%, #000 30%, transparent 100%);
+}
+
+/*
+ * Ambient motion: a few soft light fields that drift slowly. Radial gradients instead of filter blur keep it cheap,
+ * only transform is animated, the layer never takes pointer events, and reduced motion freezes it (rule above).
+ */
+.ambient { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.ambient .orb { position: absolute; border-radius: 9999px; will-change: transform; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate; }
+.ambient .orb-a { width: 46rem; height: 46rem; left: -12rem; top: -14rem; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 26%, transparent), transparent 72%); animation-name: drift-a; animation-duration: 26s; }
+.ambient .orb-b { width: 38rem; height: 38rem; right: -10rem; top: 18%; background: radial-gradient(closest-side, color-mix(in srgb, #6366f1 18%, transparent), transparent 72%); animation-name: drift-b; animation-duration: 32s; }
+.ambient .orb-c { width: 30rem; height: 30rem; left: 30%; bottom: -16rem; background: radial-gradient(closest-side, color-mix(in srgb, #f59e0b 13%, transparent), transparent 72%); animation-name: drift-c; animation-duration: 38s; }
+/* A slow-turning ring: the one "object" in the scene, glassy and faint. */
+.ambient .ring { position: absolute; right: 8%; top: 12%; width: 22rem; height: 22rem; border-radius: 9999px;
+  background: conic-gradient(from 0deg, transparent 0deg, color-mix(in srgb, var(--accent) 30%, transparent) 90deg, transparent 180deg, color-mix(in srgb, #6366f1 22%, transparent) 270deg, transparent 360deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 79%, #000 100%); mask: radial-gradient(closest-side, transparent 78%, #000 79%, #000 100%);
+  opacity: 0.55; will-change: transform; animation: spin-slow 60s linear infinite, float-y 14s ease-in-out infinite alternate; }
+@keyframes drift-a { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(9rem, 6rem, 0) scale(1.12); } }
+@keyframes drift-b { from { transform: translate3d(0, 0, 0) scale(1.05); } to { transform: translate3d(-8rem, 7rem, 0) scale(0.92); } }
+@keyframes drift-c { from { transform: translate3d(0, 0, 0) scale(0.95); } to { transform: translate3d(6rem, -5rem, 0) scale(1.1); } }
+@keyframes spin-slow { to { rotate: 360deg; } }
+@keyframes float-y { from { translate: 0 -0.75rem; } to { translate: 0 0.75rem; } }
+
+/* Chart cards: a deep surface with a soft light at the top edge. */
+.chart-card { background:
+  radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%),
+  linear-gradient(180deg, #0f0f11 0%, #09090a 100%);
+  border: 1px solid #1f1f23; box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 20px 40px -24px rgb(0 0 0 / 0.55); }
+@media (max-width: 639px) { .ambient .ring { display: none; } }

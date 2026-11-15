@@ -3,6 +3,9 @@ import type { PublicClient } from "viem";
 import { Badge, Card, EmptyState, FlashMessages, Metric, Notice, PageHeader, Source, StatusDot, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { Hash } from "@/components/ui-client";
 import { formatQor } from "@/lib/approvals";
+import { ChartCard } from "@/components/charts/chart-card";
+import { BarChart } from "@/components/charts/bar-chart";
+import { receivablesByMonth } from "@/lib/charts";
 import { daysOverdue, effectiveStatus, matchTransfer, summarise, type MatchState, type RevenueRow } from "@/lib/revenue";
 import { reader } from "@/lib/server";
 import { getSession } from "@/lib/session";
@@ -50,6 +53,7 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
   const checks = await checkPayments(rows, treasury);
   const sum = summarise(rows, today);
 
+  const byMonth = receivablesByMonth(rows, (w) => Number(formatQor(w).replace(/,/g, "")));
   const order = { overdue: 0, issued: 1, paid: 2, void: 3 } as const;
   const sorted = [...rows].sort((a, b) => order[effectiveStatus(a, today)] - order[effectiveStatus(b, today)]);
   const verified = [...checks.out.values()].filter((m) => m.state === "VERIFIED").length;
@@ -74,6 +78,13 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
       </section>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="min-w-0 space-y-6">
+        {byMonth.length > 0 && (
+          <ChartCard title="Receivables by due month" description="What customers settled and what is still owed, by the month it falls due."
+            footer="From your revenue records. Paid means marked paid in Verac; whether each payment checks out on chain is shown on the record. Void records are left out.">
+            <BarChart unit="QOR" caption="By due date, UTC" series={[{ key: "paid", label: "Paid", color: "#10b981" }, { key: "open", label: "Still owed", color: "#818cf8" }]} data={byMonth.map((b) => ({ key: b.key, label: b.label, values: { paid: b.paid, open: b.outstanding } }))} />
+          </ChartCard>
+        )}
         <Card title="Receivables" description="Overdue first. Open a record to settle or void it." flush>
           {rows.length === 0 ? <p className="py-8 text-center text-[13.5px] text-muted">{finance ? "No records yet. Record the first one." : "Finance records appear here."}</p> : (
             <ul className="-mx-5 divide-y divide-line">
@@ -125,6 +136,7 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
             </ul>
           )}
         </Card>
+        </div>
 
         <div className="space-y-6">
           {finance && (

@@ -1,82 +1,168 @@
 "use client";
+import { ArrowRight, Eye, EyeOff, Loader2, LockKeyhole, ShieldCheck, Users } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useId, useState } from "react";
+import { Ambient } from "@/components/ambient";
+import { Notice } from "@/components/ui";
 import { supabaseBrowser } from "@/lib/supabase/browser";
-import { Card, btnCls, inputCls } from "@/components/ui";
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** Supabase reports network failures as "Failed to fetch". Say what that means instead. */
+const explain = (m: string) => (/failed to fetch|network|fetch failed|load failed/i.test(m) ? "Could not reach the sign-in service. Check your connection and try again; nothing was changed." : m);
+const field = "h-11 w-full rounded-lg border bg-white px-3.5 text-[15px] text-ink shadow-[inset_0_1px_1px_rgb(0_0_0/0.03)] transition-[border-color,box-shadow] placeholder:text-subtle focus:outline-none focus:ring-4";
+const ok = "border-[#d9d9de] hover:border-[#bdbdc4] focus:border-[var(--accent)] focus:ring-[color-mix(in_srgb,var(--accent)_16%,transparent)]";
+const bad = "border-[var(--bad)] focus:border-[var(--bad)] focus:ring-[color-mix(in_srgb,var(--bad)_14%,transparent)]";
 
 function LoginForm() {
   const router = useRouter();
   const next = useSearchParams().get("next");
+  const id = useId();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
+  const [touched, setTouched] = useState({ email: false, password: false });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "error" | "info"; text: string } | null>(null);
   const sb = supabaseBrowser();
   const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/settings/organization";
 
+  const emailErr = touched.email && !EMAIL.test(email.trim()) ? "Enter a valid email address." : null;
+  const pwErr = touched.password && password.length < 8 ? "Use at least 8 characters." : null;
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!sb) return;
+    setTouched({ email: true, password: true });
+    if (!sb || !EMAIL.test(email.trim()) || password.length < 8) return;
     setBusy(true); setMsg(null);
     if (mode === "up") {
       const { data, error } = await sb.auth.signUp({ email, password });
-      if (error) setMsg({ kind: "error", text: error.message });
+      if (error) setMsg({ kind: "error", text: explain(error.message) });
       else if (!data.session) setMsg({ kind: "info", text: "Account created. Check your email to confirm it, then sign in." });
       else { router.push(safeNext); router.refresh(); }
     } else {
       const { error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) setMsg({ kind: "error", text: error.message });
+      if (error) setMsg({ kind: "error", text: explain(error.message) });
       else { router.push(safeNext); router.refresh(); }
     }
     setBusy(false);
   }
 
   if (!sb) {
-    return <Card title="Sign-in is not configured"><p className="text-[13.5px] text-muted">This deployment has no Supabase project connected, so there are no accounts. The read-only pages work without signing in.</p></Card>;
+    return (
+      <div className="rounded-2xl border border-[#e4e4e7] bg-white/90 p-7 shadow-[0_24px_60px_-28px_rgb(9_9_11/0.25)] backdrop-blur">
+        <h2 className="text-[20px] font-bold tracking-[-0.02em]">Sign-in is not configured</h2>
+        <p className="mt-2 text-[14.5px] leading-relaxed text-muted">This deployment has no Supabase project connected, so there are no accounts yet. Every read-only page still works.</p>
+        <Link href="/dashboard" className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-[15px] font-semibold text-primary-ink hover:bg-primary-hover">Open the dashboard<ArrowRight size={16} aria-hidden /></Link>
+      </div>
+    );
   }
+
   return (
-    <Card title={mode === "in" ? "Sign in" : "Create an account"}>
-      <form onSubmit={submit} className="space-y-3">
-        <div><label htmlFor="email" className="mb-1.5 block text-[12.5px] font-medium text-muted">Email</label>
-          <input id="email" type="email" required autoComplete="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-        <div><label htmlFor="pw" className="mb-1.5 block text-[12.5px] font-medium text-muted">Password (8+ characters)</label>
-          <input id="pw" type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
-        <button className={`${btnCls} w-full`} disabled={busy} type="submit">{busy ? "Please wait…" : mode === "in" ? "Sign in" : "Create account"}</button>
-        {msg && <p role={msg.kind === "error" ? "alert" : "status"} className={`text-[13.5px] ${msg.kind === "error" ? "text-[var(--bad)]" : "text-muted"}`}>{msg.text}</p>}
+    <div className="rounded-2xl border border-[#e4e4e7] bg-white/90 p-6 shadow-[0_24px_60px_-28px_rgb(9_9_11/0.25)] backdrop-blur sm:p-8">
+      <div role="tablist" aria-label="Account" className="grid grid-cols-2 rounded-lg bg-[#f1f1f3] p-1 text-[13.5px] font-semibold">
+        {(["in", "up"] as const).map((m) => (
+          <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setMsg(null); }}
+            className={`h-9 rounded-md transition-[background-color,color,box-shadow] ${mode === m ? "bg-white text-ink shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-subtle hover:text-ink"}`}>
+            {m === "in" ? "Sign in" : "Create account"}
+          </button>
+        ))}
+      </div>
+
+      <h2 className="mt-7 text-[22px] font-bold tracking-[-0.025em]">{mode === "in" ? "Welcome back" : "Create your account"}</h2>
+      <p className="mt-1 text-[14px] text-muted">{mode === "in" ? "Sign in to review and approve your organisation's work." : "You can create or join an organisation next."}</p>
+
+      <form onSubmit={submit} noValidate className="mt-6 space-y-4">
+        <div>
+          <label htmlFor={`${id}-email`} className="mb-1.5 block text-[13px] font-semibold text-ink">Work email</label>
+          <input id={`${id}-email`} type="email" required autoComplete="email" inputMode="email" value={email}
+            onChange={(e) => setEmail(e.target.value)} onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+            aria-invalid={!!emailErr} aria-describedby={emailErr ? `${id}-email-err` : undefined}
+            className={`${field} ${emailErr ? bad : ok}`} placeholder="you@organisation.com" />
+          {emailErr && <p id={`${id}-email-err`} className="mt-1.5 text-[13px] text-[var(--bad)]">{emailErr}</p>}
+        </div>
+        <div>
+          <div className="mb-1.5 flex items-baseline justify-between"><label htmlFor={`${id}-pw`} className="block text-[13px] font-semibold text-ink">Password</label><span className="text-[12px] text-subtle">8 characters or more</span></div>
+          <div className="relative">
+            <input id={`${id}-pw`} type={show ? "text" : "password"} required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} value={password}
+              onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+              aria-invalid={!!pwErr} aria-describedby={pwErr ? `${id}-pw-err` : undefined}
+              className={`${field} pr-11 ${pwErr ? bad : ok}`} />
+            <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? "Hide password" : "Show password"} aria-pressed={show}
+              className="absolute right-1.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-subtle hover:bg-[#f1f1f3] hover:text-ink">
+              {show ? <EyeOff size={17} aria-hidden /> : <Eye size={17} aria-hidden />}
+            </button>
+          </div>
+          {pwErr && <p id={`${id}-pw-err`} className="mt-1.5 text-[13px] text-[var(--bad)]">{pwErr}</p>}
+        </div>
+
+        {msg && <Notice tone={msg.kind === "error" ? "bad" : "info"} role={msg.kind === "error" ? "alert" : "status"}>{msg.text}</Notice>}
+
+        <button type="submit" disabled={busy} aria-busy={busy}
+          className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary text-[15px] font-semibold text-primary-ink shadow-[0_8px_20px_-10px_rgb(9_9_11/0.6)] transition-[background-color,transform] hover:bg-primary-hover active:translate-y-px disabled:opacity-70">
+          {busy ? <><Loader2 size={17} className="animate-spin" aria-hidden />{mode === "in" ? "Signing in…" : "Creating account…"}</> : <>{mode === "in" ? "Sign in" : "Create account"}<ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-0.5" /></>}
+        </button>
       </form>
-      <button type="button" className="mt-4 text-[13.5px] text-muted underline" onClick={() => { setMode(mode === "in" ? "up" : "in"); setMsg(null); }}>
-        {mode === "in" ? "No account yet? Create one" : "Already have an account? Sign in"}
-      </button>
-    </Card>
+
+      <p className="mt-6 flex items-start gap-2 border-t border-[#ececef] pt-5 text-[12.5px] leading-relaxed text-subtle">
+        <LockKeyhole size={14} className="mt-0.5 shrink-0" aria-hidden />
+        Your password is checked by Supabase Auth and never stored by Verac. Verac never asks for wallet keys or seed phrases.
+      </p>
+    </div>
   );
 }
 
-const POINTS = [
-  ["Agents advise, people decide", "Fifteen AI agents with fixed tool lists. Only PaymentAgent can submit a payment, and only after a second person approves."],
-  ["Limits live on chain", "Spending caps and approved recipients are enforced by the TreasuryVault contract, not by this website."],
-  ["Every claim has a receipt", "Live Proof re-reads each testnet transaction from QoreChain Diana and flags any mismatch."],
+const FACTS = [
+  { Icon: Users, title: "Two people per payment", text: "Whoever requests a payment can never approve it." },
+  { Icon: ShieldCheck, title: "Limits enforced on chain", text: "Agent caps and approved recipients live in the vault contract." },
+  { Icon: LockKeyhole, title: "Every claim has a receipt", text: "Live Proof re-reads each testnet transaction." },
 ];
 
 export default function LoginPage() {
   const name = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Verac";
   return (
-    <main className="grid min-h-dvh lg:grid-cols-[1fr_minmax(26rem,32rem)]">
-      <section aria-label={`About ${name}`} className="hidden flex-col justify-between border-r border-line bg-surface-2/60 p-12 lg:flex">
-        <span className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"><span aria-hidden className="grid size-8 place-items-center rounded-lg bg-ink text-bg"><svg viewBox="0 0 20 20" className="size-[15px]" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5l6 10 6-10" /><path d="M7.5 5h5" opacity=".55" /></svg></span>{name}</span>
-        <div className="max-w-lg">
-          <h2 className="text-[30px] font-semibold leading-tight tracking-tight">Financial operations run by AI agents, under rules you can verify.</h2>
-          <ul className="mt-8 space-y-5">{POINTS.map(([t, d]) => <li key={t} className="border-l-2 border-accent pl-4"><p className="text-[14px] font-medium">{t}</p><p className="mt-0.5 text-[13.5px] leading-relaxed text-muted">{d}</p></li>)}</ul>
-        </div>
-        <p className="text-[12.5px] text-subtle">QoreChain Diana testnet only. Mainnet is disabled.</p>
-      </section>
-      <div className="flex flex-col justify-center px-4 py-10 sm:px-10">
-        <div className="mx-auto w-full max-w-sm">
-          <h1 className="text-[24px] font-semibold tracking-tight">Welcome to {name}</h1>
-          <p className="mb-6 mt-1 text-[13.5px] text-muted">Sign in to manage your organisation. Testnet only.</p>
+    <main className="theme-light relative isolate min-h-dvh overflow-hidden bg-[#fafafa]">
+      <div aria-hidden className="bg-grid absolute inset-0 -z-10" />
+      <Ambient className="-z-10" />
+
+      <header className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
+        <span className="flex items-center gap-2.5 text-[18px] font-bold tracking-[-0.02em]">
+          <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-primary text-primary-ink"><svg viewBox="0 0 20 20" className="size-[15px]" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5l6 10 6-10" /><path d="M7.5 5h5" opacity=".55" /></svg></span>
+          {name}
+        </span>
+        <nav aria-label="Public pages" className="flex items-center gap-1 text-[14px] font-medium">
+          <Link href="/proof" className="hidden rounded-md px-3 py-2 text-muted hover:text-ink sm:inline-block">Live Proof</Link>
+          <Link href="/dashboard" className="rounded-md px-3 py-2 text-muted hover:text-ink">Explore read-only</Link>
+        </nav>
+      </header>
+
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-[1.15fr_minmax(24rem,28rem)] lg:gap-x-16 lg:gap-y-10 lg:pt-16">
+        <section aria-labelledby="hero-h" className="lg:col-start-1 lg:row-start-1">
+          <p className="inline-flex items-center gap-2 rounded-full border border-[#e4e4e7] bg-white/80 px-3 py-1 text-[12.5px] font-medium text-muted backdrop-blur">
+            <span aria-hidden className="size-1.5 rounded-full bg-[var(--live)]" />QoreChain Diana testnet · mainnet disabled
+          </p>
+          <h1 id="hero-h" className="mt-6 max-w-[14ch] text-[44px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[60px] lg:text-[72px]">
+            Operate your treasury with <span className="text-[var(--accent)]">control.</span>
+          </h1>
+          <p className="mt-6 max-w-[34rem] text-[17px] leading-relaxed text-muted sm:text-[18px]">
+            AI agents draft, check and explain. Policy decides what is allowed, a second person approves, and the contract enforces the limits. Every payment ends with a receipt you can verify.
+          </p>
+        </section>
+
+        <section aria-label="Sign in" className="w-full lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
           <Suspense><LoginForm /></Suspense>
-          <a href="/dashboard" className="mt-6 inline-block text-[13.5px] text-muted underline underline-offset-[3px] hover:text-ink">Continue without signing in (read-only)</a>
-        </div>
+          <p className="mt-5 text-center text-[13.5px] text-muted">Just looking? <Link href="/dashboard" className="font-semibold text-ink underline decoration-[#c9c9cf] underline-offset-4 hover:decoration-ink">Continue without signing in</Link></p>
+        </section>
+        <ul aria-label="How Verac keeps control" className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3 lg:col-start-1 lg:row-start-2 lg:self-start">
+          {FACTS.map(({ Icon, title, text }) => (
+            <li key={title} className="rounded-xl border border-[#e4e4e7] bg-white/70 p-4 backdrop-blur">
+              <Icon size={18} className="text-[var(--accent)]" aria-hidden />
+              <p className="mt-3 text-[14px] font-semibold leading-snug">{title}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted">{text}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </main>
   );

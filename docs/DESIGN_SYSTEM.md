@@ -69,3 +69,17 @@ The semantic colours never decorate. Green is for things the chain confirmed, no
 | Show an empty state that explains why it is empty and what to do next. | Write "Something went wrong" when the cause is known. |
 | Label simulated and live results differently every time. | Use green for anything that merely looks positive. |
 | Keep one primary action per area. | Add glows, gradients or decorative motion. |
+
+## Charts
+
+Every chart sits in `ChartCard` (`components/charts/chart-card.tsx`): a deep surface with a soft light at the top edge, forced to the dark tokens with `.theme-dark`, so charts look the same in both app themes.
+
+- **`InteractiveAreaChart`** (`components/ui/interactive-area-chart.tsx`) draws a bold headline value and a change pill, compact pill range tabs, a smooth line with a soft glow and gradient fill, a dashed quiet grid, a resting end dot and a dark glass tooltip. Arrow keys scrub it.
+- **`BarChart`** (`components/charts/bar-chart.tsx`) draws grouped bars without a chart library or client JavaScript. It shows a tooltip on hover or focus and carries a visually hidden table for screen readers.
+- **`ChartEmpty`** says why there is nothing to draw. **`ChartSkeleton`** keeps a real chart's proportions while it loads.
+- Data comes only from real records: `lib/charts.ts` turns the vault's dated balance steps into inflows and outflows, and revenue records into paid versus owed by due month. Both have unit tests.
+
+## Sign-in and ambient motion
+
+- The sign-in page (`app/login/page.tsx`) is always light (`.theme-light`). It has an editorial headline, a fading grid (`.bg-grid`) and the form card. On phones the form comes straight after the headline.
+- `Ambient` (`components/ambient.tsx`) draws three radial light fields drifting over 26–38 seconds and one faint turning ring, using pure CSS. Only `transform`, `rotate` and `translate` are animated, it takes no pointer events, it uses no `filter: blur`, and it is frozen under `prefers-reduced-motion`. The ring is hidden on phones. The dashboard header uses a masked, softer version.
