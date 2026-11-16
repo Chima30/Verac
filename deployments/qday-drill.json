@@ -1,0 +1,35 @@
+{
+  "network": "qorechain-diana",
+  "evmChainId": 9800,
+  "purpose": "Q-Day Survivor drill targets. Isolated from Verac's production contracts.",
+  "admin": "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc",
+  "drillAccount": "0x423Fdb77F097c81767C8f73C819869D6E3D04556",
+  "txs": {
+    "open admin window": "A0FED85AD1A36286BC345704D124AD7B95FECBA001745437AEF764E2F52D2ECF",
+    "deploy PolicyManager": "0x203744326cad109456e07dda0658b01e4d660a4591fa5403c1b9c0dacc8ccd37",
+    "deploy TreasuryVault": "0x23ed1d216a3b27db11c9fc4d477c1cd24dd247636131de0f56bafa5d1c55184c",
+    "activate drill policy v1": "0x619783b8f34002475042892af82ad9fc5017cf13dde3c846cc9cae4e4b881f71",
+    "set approver (admin)": "0x42687bd7b2a8330d64bd80ec2762f3f2ef124cb9cd92f76b9475b3a80217fe9a",
+    "approve recipient (admin)": "0x85cade27e1ba62cb41f909301e1f9d7a7dda77e6ee80cf1431cc0f6fd3ea4f9d",
+    "drill agent limits": "0x7bc3d8a5439f8438848f627eef347f95e3ab7e4d789b8722bfcb6ba19a9656ba",
+    "fund vault 5 QOR": "0x7ffaa9d13c609ac218e0c324a5b69ee61374bf8b1b9980a66dd24a8905604f3b",
+    "close admin window": "09F29AF647A00EFFCEE69B209C317A768661FA7F738C86858363F6F7B3DD77EB"
+  },
+  "PolicyManager": "0xA74487E1D499c6B35Ff14320B2cb5B1b81d743cA",
+  "TreasuryVault": "0x7ce4667EAB18072123AD28eD8E76aA89B70e2e6C",
+  "limits": {
+    "token": "native QOR",
+    "perTxCap": "0.5",
+    "dailyCap": "1",
+    "autoApproveCap": "0",
+    "validUntil": "2026-11-21T00:00:00.000Z",
+    "approvalThreshold": 1,
+    "approvers": [
+      "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc"
+    ],
+    "approvedRecipients": [
+      "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc"
+    ]
+  },
+  "deployedAt": "2026-11-16T23:47:51.999Z"
+}

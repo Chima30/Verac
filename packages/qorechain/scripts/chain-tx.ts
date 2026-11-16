@@ -16,7 +16,7 @@ import { resolve } from "node:path";
 import { StargateClient } from "@cosmjs/stargate";
 import {
   EthNativeSigner, msg, buildRegisterPqcKeyMsg, closeEvmWindowMsg, openEvmWindowMsg, signProofOfPossession,
-  unifiedAccountFromSeed, type UnifiedAccount,
+  pqcKeyFromRecoveryCode, unifiedAccountFromSeed, type UnifiedAccount,
 } from "@qorechain/sdk";
 import { QORE_NETWORK } from "@qoreops/shared-types";
 
@@ -26,10 +26,23 @@ const broadcast = rest.includes("--broadcast");
 const flag = (name: string, d: number) => { const i = rest.indexOf(name); return i >= 0 ? Number(rest[i + 1]) : d; };
 const unhex = (h: string) => Uint8Array.from(Buffer.from(h.replace(/^0x/, ""), "hex"));
 
-const f = JSON.parse(readFileSync(resolve(process.cwd(), process.env.ACCOUNT_FILE ?? ".secrets/testnet-account.json"), "utf8")) as {
-  qorAddress: string; secp256k1PrivateKey: string; mlDsa87PublicKey: string; mlDsa87SecretKey: string;
+// Two layouts: ACCOUNT_DIR (the split Q-Day drill layout from qday-account.ts) or ACCOUNT_FILE (one JSON file).
+const loadAccount = () => {
+  if (process.env.ACCOUNT_DIR) {
+    const dir = resolve(process.cwd(), process.env.ACCOUNT_DIR);
+    const pub = JSON.parse(readFileSync(resolve(dir, "account.json"), "utf8")) as { qorAddress: string; mlDsa87PublicKey: string };
+    const key = readFileSync(resolve(dir, "ecdsa-private-key.txt"), "utf8").trim();
+    const pq = pqcKeyFromRecoveryCode(readFileSync(resolve(dir, "pqc-recovery-code.txt"), "utf8").trim(), pub.qorAddress);
+    if (Buffer.from(pq.publicKey).toString("hex") !== pub.mlDsa87PublicKey) throw new Error("Recovery code does not give the recorded ML-DSA-87 key; refusing.");
+    return { qorAddress: pub.qorAddress, secp256k1PrivateKey: key, pqc: pq };
+  }
+  const j = JSON.parse(readFileSync(resolve(process.cwd(), process.env.ACCOUNT_FILE ?? ".secrets/testnet-account.json"), "utf8")) as {
+    qorAddress: string; secp256k1PrivateKey: string; mlDsa87PublicKey: string; mlDsa87SecretKey: string;
+  };
+  return { qorAddress: j.qorAddress, secp256k1PrivateKey: j.secp256k1PrivateKey, pqc: { publicKey: unhex(j.mlDsa87PublicKey), secretKey: unhex(j.mlDsa87SecretKey) } };
 };
-const pqc = { publicKey: unhex(f.mlDsa87PublicKey), secretKey: unhex(f.mlDsa87SecretKey) };
+const f = loadAccount();
+const pqc = f.pqc;
 // The SDK needs a UnifiedAccount; build it from the stored spend key, then use the stored PQC keypair.
 const base = unifiedAccountFromSeed(unhex(f.secp256k1PrivateKey), { pqcSecret: crypto.getRandomValues(new Uint8Array(32)) });
 const account: UnifiedAccount = { ...base, pqc };

@@ -1,0 +1,148 @@
+{
+  "checkedAt": "2026-11-16T23:49:03.741Z",
+  "drillAccount": "0x423Fdb77F097c81767C8f73C819869D6E3D04556",
+  "vault": "0x7ce4667EAB18072123AD28eD8E76aA89B70e2e6C",
+  "policyManager": "0xA74487E1D499c6B35Ff14320B2cb5B1b81d743cA",
+  "passed": 23,
+  "failed": 0,
+  "results": [
+    {
+      "check": "drill account: EVM window",
+      "expected": "closed",
+      "actual": "closed",
+      "pass": true
+    },
+    {
+      "check": "drill admin: EVM window",
+      "expected": "closed",
+      "actual": "closed",
+      "pass": true
+    },
+    {
+      "check": "drill account: ML-DSA-87 key registered",
+      "expected": "registered",
+      "actual": "true",
+      "pass": true
+    },
+    {
+      "check": "vault owner is the admin, not the drill account",
+      "expected": "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc",
+      "actual": "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc",
+      "pass": true
+    },
+    {
+      "check": "policy owner is the admin, not the drill account",
+      "expected": "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc",
+      "actual": "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc",
+      "pass": true
+    },
+    {
+      "check": "drill account is not an approver",
+      "expected": "false",
+      "actual": "false",
+      "pass": true
+    },
+    {
+      "check": "drill account is not an approved recipient",
+      "expected": "false",
+      "actual": "false",
+      "pass": true
+    },
+    {
+      "check": "drill agent caps",
+      "expected": "active, 0.5 per tx, 1 per day, auto-approve 0",
+      "actual": "active=true perTx=0.5 daily=1 auto=0",
+      "pass": true
+    },
+    {
+      "check": "vault balance",
+      "expected": "5 QOR",
+      "actual": "5 QOR",
+      "pass": true
+    },
+    {
+      "check": "pay 0.4 QOR to the approved recipient without approval",
+      "expected": "revert InsufficientApprovals",
+      "actual": "revert InsufficientApprovals",
+      "pass": true
+    },
+    {
+      "check": "pay 0.4 QOR to an attacker address",
+      "expected": "revert InsufficientApprovals",
+      "actual": "revert InsufficientApprovals",
+      "pass": true
+    },
+    {
+      "check": "pay 0.6 QOR (over the 0.5 per-payment cap)",
+      "expected": "revert ExceedsPerTxCap",
+      "actual": "revert ExceedsPerTxCap",
+      "pass": true
+    },
+    {
+      "check": "pay the whole 5 QOR vault",
+      "expected": "revert ExceedsPerTxCap",
+      "actual": "revert ExceedsPerTxCap",
+      "pass": true
+    },
+    {
+      "check": "approve its own payment",
+      "expected": "revert NotApprover",
+      "actual": "revert NotApprover",
+      "pass": true
+    },
+    {
+      "check": "add the attacker as an approved recipient",
+      "expected": "revert OwnableUnauthorizedAccount",
+      "actual": "revert OwnableUnauthorizedAccount",
+      "pass": true
+    },
+    {
+      "check": "raise its own caps",
+      "expected": "revert OwnableUnauthorizedAccount",
+      "actual": "revert OwnableUnauthorizedAccount",
+      "pass": true
+    },
+    {
+      "check": "make itself an approver",
+      "expected": "revert OwnableUnauthorizedAccount",
+      "actual": "revert OwnableUnauthorizedAccount",
+      "pass": true
+    },
+    {
+      "check": "take ownership of the vault",
+      "expected": "revert OwnableUnauthorizedAccount",
+      "actual": "revert OwnableUnauthorizedAccount",
+      "pass": true
+    },
+    {
+      "check": "pause the vault",
+      "expected": "revert NotGuardianOrOwner",
+      "actual": "revert NotGuardianOrOwner",
+      "pass": true
+    },
+    {
+      "check": "swap the policy",
+      "expected": "revert OwnableUnauthorizedAccount",
+      "actual": "revert OwnableUnauthorizedAccount",
+      "pass": true
+    },
+    {
+      "check": "classical-only native transfer (stolen ECDSA key alone)",
+      "expected": "refused",
+      "actual": "refused: Broadcasting transaction failed with code 20 (codespace: pqc). Log: account qor1gglakalsjlypwe7g7u7grxrf6m3aq32kzgu6ak has a registered PQC key and must include the hybrid signature extension (hybrid ",
+      "pass": true
+    },
+    {
+      "check": "EVM transfer with the window closed (stolen ECDSA key alone)",
+      "expected": "refused",
+      "actual": "refused before inclusion: \"no-window\"",
+      "pass": true
+    },
+    {
+      "check": "drill account balance unchanged by the attempts",
+      "expected": "79730000000000000000",
+      "actual": "79730000000000000000",
+      "pass": true
+    }
+  ]
+}
