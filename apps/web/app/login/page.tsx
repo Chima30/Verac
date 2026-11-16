@@ -124,9 +124,11 @@ export default function LoginPage() {
   const name = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Verac";
   return (
     <main className="theme-light relative isolate min-h-dvh overflow-hidden bg-[#fafafa]">
-      <div aria-hidden className="bg-grid absolute inset-0 -z-10" />
-      <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-80" density={0.7} />
-      <Ambient className="-z-10" />
+      {/* Rings radiate from the sign-in card; two ripples travel outward slowly. */}
+      <div aria-hidden className="bg-rings absolute inset-0 -z-10" />
+      <div aria-hidden className="rings-ripple -z-10"><span /><span /></div>
+      <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-60" density={0.5} />
+      <Ambient ring={false} className="-z-10" />
 
       <header className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
         <span className="flex items-center gap-2.5 text-[18px] font-bold tracking-[-0.02em]">

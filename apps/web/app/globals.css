@@ -243,3 +243,24 @@ details[open] > summary .chevron { transform: rotate(90deg); }
 .chart-card { background: #19191b; border: 1px solid #2a2a2e; box-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 18px 40px -26px rgb(0 0 0 / 0.6); }
 .chart-card { --border: #2a2a2e; --subtle: #8e8e96; --muted: #b4b4bb; }
 @media (max-width: 639px) { .ambient .ring { display: none; } }
+
+/*
+ * Concentric rings radiating from one point (the sign-in card), fading towards the edges. Replaces the grid there.
+ * Set the centre with --rx / --ry. Two ripples travel outward slowly; reduced motion leaves only the still rings.
+ */
+.bg-rings {
+  --rx: 50%; --ry: 58%;
+  background-image: repeating-radial-gradient(circle at var(--rx) var(--ry), transparent 0 71px, color-mix(in srgb, var(--border-strong) 70%, transparent) 71px 72px);
+  -webkit-mask-image: radial-gradient(circle at var(--rx) var(--ry), #000 0%, rgb(0 0 0 / 0.55) 30%, transparent 62%);
+  mask-image: radial-gradient(circle at var(--rx) var(--ry), #000 0%, rgb(0 0 0 / 0.55) 30%, transparent 62%);
+}
+@media (min-width: 1024px) { .bg-rings, .rings-ripple { --rx: 71%; --ry: 46%; } }
+.rings-ripple { --rx: 50%; --ry: 58%; position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.rings-ripple span {
+  position: absolute; left: var(--rx); top: var(--ry); width: 56rem; height: 56rem; margin: -28rem 0 0 -28rem; border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  opacity: 0; transform: scale(0.18); will-change: transform, opacity;
+  animation: ripple 9s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.rings-ripple span:nth-child(2) { animation-delay: 4.5s; }
+@keyframes ripple { 0% { opacity: 0; transform: scale(0.18); } 12% { opacity: 0.55; } 100% { opacity: 0; transform: scale(1); } }

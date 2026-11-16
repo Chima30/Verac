@@ -81,5 +81,5 @@ Every chart sits in `ChartCard` (`components/charts/chart-card.tsx`): a deep sur
 
 ## Sign-in and ambient motion
 
-- The sign-in page (`app/login/page.tsx`) is always light (`.theme-light`). It has an editorial headline, a fading grid (`.bg-grid`) and the form card. On phones the form comes straight after the headline.
+- The sign-in page (`app/login/page.tsx`) is always light (`.theme-light`). It has an editorial headline, concentric rings radiating from the form card (`.bg-rings`, with two slow ripples in `.rings-ripple`), faint connected dots and the form card. On phones the form comes straight after the headline.
 - `Ambient` (`components/ambient.tsx`) draws three radial light fields drifting over 26–38 seconds and one faint turning ring, using pure CSS. Only `transform`, `rotate` and `translate` are animated, it takes no pointer events, it uses no `filter: blur`, and it is frozen under `prefers-reduced-motion`. The ring is hidden on phones. The dashboard header uses a masked, softer version.
