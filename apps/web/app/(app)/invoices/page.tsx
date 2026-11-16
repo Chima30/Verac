@@ -5,7 +5,7 @@ import { InvoiceChecker } from "@/components/invoices/checker";
 import { formatQor } from "@/lib/approvals";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
-import { clearDemo, loadDemo, recordInvoice, saveVendor } from "./actions";
+import { recordInvoice, resetDemo, saveVendor } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Bills and Invoices" };
@@ -54,7 +54,7 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_23rem]">
         <Card icon={Receipt} tile="orange" title="Recorded invoices" description="Linked to a vendor and a milestone. An invoice is marked paid only when its payment is confirmed on chain." flush>
           {invoices.length === 0 ? (
-            <div className="py-6"><EmptyState title="No invoices recorded yet" action={admin ? <form action={loadDemo}><button className={btnSecondaryCls}>Load the three-invoice demo</button></form> : undefined}>Record one on the right{admin ? ", or load the demo: three synthetic invoices (one eligible, one waiting for its milestone, one with a suspicious payout address), clearly marked DEMO" : ""}.</EmptyState></div>
+            <div className="py-6"><EmptyState title="No invoices recorded yet" action={admin ? <form action={resetDemo}><button className={btnSecondaryCls}>Load the three-invoice demo</button></form> : undefined}>Record one on the right{admin ? ", or load the demo: three synthetic invoices (one eligible, one waiting for its milestone, one with a suspicious payout address), clearly marked DEMO" : ""}.</EmptyState></div>
           ) : (
             <div className="-mx-5 overflow-x-auto">
               <table className="data-table min-w-[44rem] [&_td:first-child]:pl-5 [&_td:last-child]:pr-5 [&_th:first-child]:pl-5 [&_th:last-child]:pr-5">
@@ -113,12 +113,8 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
           )}
           {admin && invoices.length > 0 && (
             <Card title="Demo data" description="Three synthetic DEMO-* invoices: one eligible, one waiting for its milestone, one with a suspicious payout address.">
-              <div className="flex flex-wrap gap-2">
-                {invoices.some((i) => i.is_demo && !i.transaction_id && ["received", "held", "approved"].includes(i.status))
-                  ? <form action={clearDemo}><button className={btnSecondaryCls}>Clear the open demo invoices</button></form>
-                  : <form action={loadDemo}><button className={btnSecondaryCls}>Load the three-invoice demo</button></form>}
-              </div>
-              <p className="mt-2 text-[12px] text-muted">Clearing keeps any demo invoice already linked to a payment request, as part of the record.</p>
+              <form action={resetDemo}><button className={`${btnSecondaryCls} w-full`}>Reset and load a fresh demo</button></form>
+              <p className="mt-2 text-[12px] text-muted">Replaces the open DEMO-* invoices with a fresh set (invoice A is 1.25 QOR). Demo invoices already linked to a payment request are kept, as part of the record.</p>
             </Card>
           )}
         </div>
