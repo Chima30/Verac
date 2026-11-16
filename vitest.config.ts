@@ -1,6 +1,9 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // The web app imports its own modules as "@/..."; tests resolve them the same way.
+  resolve: { alias: { "@": fileURLToPath(new URL("./apps/web", import.meta.url)) } },
   test: {
     include: ["packages/**/*.test.ts", "services/**/*.test.ts", "apps/**/*.test.ts", "tests/**/*.test.ts"],
     exclude: ["**/node_modules/**", "**/*.live.test.ts"],

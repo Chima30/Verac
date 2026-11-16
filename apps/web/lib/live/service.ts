@@ -50,7 +50,11 @@ export interface RpcClient { rpc(fn: string, args: Record<string, unknown>): Pro
 export type ProposeOutcome = { ok: true; id: string; paymentHash: Hex; calldataHash: Hex; requiredApprovals: number; expiresAt: string } | { ok: false; status: number; error: string };
 
 /** Checks the proposal against the REAL chain state, then records it as AWAITING_APPROVAL. Nothing is sent to the chain here. */
-export async function proposeLivePayment(userClient: RpcClient, orgId: string, raw: unknown): Promise<ProposeOutcome> {
+/**
+ * `context` is stored with the request's evaluation (for example the workflow and invoice it came from). It is never part of
+ * the payment hash, so it cannot change what is approved or paid.
+ */
+export async function proposeLivePayment(userClient: RpcClient, orgId: string, raw: unknown, context: Record<string, unknown> = {}): Promise<ProposeOutcome> {
   const parsed = ProposeSchema.safeParse(raw);
   if (!parsed.success) return { ok: false, status: 400, error: parsed.error.issues[0]?.message ?? "Invalid input." };
   const flags = liveStatusFlags();
@@ -89,7 +93,7 @@ export async function proposeLivePayment(userClient: RpcClient, orgId: string, r
     p_org: orgId, p_idempotency_key: idempotencyKey, p_kind: "payment", p_agent_account: agent, p_payment_hash: paymentHash, p_token: NATIVE, p_recipient: recipient,
     p_amount: amount.toString(), p_purpose_hash: purposeHash, p_policy_version: Number(policyVersion), p_nonce: nonce.toString(), p_expires_at: new Date(expiry * 1000).toISOString(),
     p_required: required, p_calldata_hash: calldataHash, p_project_id: null,
-    p_evaluation: { purpose, simulatedBeforeApproval: sim.ok ? "ok" : sim.errorName, onChain: { perTxCap: state.perTxCap.toString(), remainingDaily: state.remainingDaily.toString(), recipientApproved: approved } },
+    p_evaluation: { ...context, purpose, simulatedBeforeApproval: sim.ok ? "ok" : sim.errorName, onChain: { perTxCap: state.perTxCap.toString(), remainingDaily: state.remainingDaily.toString(), recipientApproved: approved } },
   });
   if (error) return { ok: false, status: /duplicate key|unique/.test(error.message) ? 409 : 400, error: /duplicate key|unique/.test(error.message) ? "This request was already submitted." : error.message };
   return { ok: true, id: data as string, paymentHash, calldataHash, requiredApprovals: required, expiresAt: new Date(expiry * 1000).toISOString() };
