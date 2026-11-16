@@ -2,7 +2,7 @@
 
 ## Before recording
 
-- [ ] Branch `feat/agent-workflow` deployed (owner approval needed; not done yet).
+- [x] Workflow deployed to production (feat/foundation, 2026-11-16).
 - [ ] Migrations `0016_agent_workflows.sql` and `0017_demo_reset.sql` applied to the hosted Supabase project.
 - [ ] `AGENT_MESSAGE_ROOT_SECRET` set in Vercel (Sensitive). Optional: `CRON_SECRET`, `LIVE_APPROVER_ADDRESS`.
 - [ ] Live execution on: `LIVE_EXECUTION_ENABLED=true`, agent and approver keys set, `LIVE_EMERGENCY_STOP` unset.
@@ -16,8 +16,8 @@
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| Multi-agent coordination: an instruction makes several agents process permitted records and return one evidence-backed result | **Built; verified by automated tests; not yet run on the deployed site** | `invoice-review.test.ts` (14), `engine.test.ts` (8), `workflows.test.ts` (10) |
-| Payment execution: an eligible invoice becomes an exact request, is approved properly and executes through the existing pipeline | **Pipeline proven on chain (1 QOR website payment, 2026-11-15). Workflow-to-pipeline link built and tested with mocks** | LIVE_PAYMENT_2026-11-15.md; `engine.test.ts` |
+| Multi-agent coordination: an instruction makes several agents process permitted records and return one evidence-backed result | **Done on the deployed site, 2026-11-16** (and by automated tests) | `invoice-review.test.ts` (14), `engine.test.ts` (8), `workflows.test.ts` (10) |
+| Payment execution: an eligible invoice becomes an exact request, is approved properly and executes through the existing pipeline | **Verified on chain, 2026-11-16**: 1.25 QOR for DEMO-A-101, tx `0x5007c5d6…8dd6`, block 10202342 | LIVE_WORKFLOW_2026-11-16.md |
 | Security enforcement: each category requirement shown by real configuration and recorded tests | **Partial**: A and C2 verified on chain; G by local tests; B, C1, D, E and F scripted but not broadcast | CATEGORY_COMPLIANCE.md; Live Proof |
 | Authenticated messaging: invalid and replayed messages rejected | **Verified by local test** | `messaging-attacks.test.ts` (13) |
 | Auditability: request, findings, policy, approvals, execution and receipt traceable | **Built**: task page and decision receipt (JSON and text) | `receipt.ts`; task page |

@@ -14,7 +14,7 @@ The goal is to let people ask for an outcome, not manually coordinate every step
 
 > Review our outstanding contractor invoices, check whether the milestones were approved, flag anything suspicious, and prepare eligible payments for approval.
 
-Verac now runs that request as a real workflow (on the `feat/agent-workflow` branch). Six agents work over the organisation's own records and pass signed messages to a coordinator, and every eligible payment goes into the same approval and execution pipeline that made the first live website payment. The workflow is covered by automated tests (scenario, engine, database security and message-attack tests). **It has not yet been run on the deployed site**: that needs migration `0016` applied to the hosted database and the branch deployed. The strongest completed on-chain demonstration is still the payment requested on the website, approved by a different administrator and executed on QoreChain.
+Verac now runs that request as a real workflow. On **November 16, 2026**, on the deployed site, the agents reviewed three demo invoices: they found one eligible and held two, one for an unapproved milestone and one for a suspicious payout address with an injected instruction. They prepared the eligible payment. A different administrator approved it, and **1.25 QOR was paid on Diana testnet** (transaction `0x5007c5d6…8dd6`, block 10202342), with the vault's `PaymentExecuted` event matching the approved payment hash. See [the workflow payment](docs/LIVE_WORKFLOW_2026-11-16.md). The invoices were synthetic, and the native smart-account proofs are still to be run.
 
 The important distinction is simple: **AI helps with the work, but it doesn't get to decide on its own when money moves.**
 
@@ -34,7 +34,7 @@ This was a testnet transaction, not a simulated success screen. The agent was li
 
 An earlier testnet run on **November 14, 2026** also demonstrated escrow funding, a **60 QOR milestone release to a contractor**, and rejected operations. Those earlier transactions were executed through scripts, **not from the website**.
 
-**Evidence:** [Website payment](docs/LIVE_PAYMENT_2026-11-15.md) · [Earlier testnet run](docs/LIVE_RUN_2026-11-14.md) · [Agent and approver setup](docs/LIVE_SETUP_2026-11-15.md) · [Deployment addresses](deployments/diana-testnet.json)
+**Evidence:** [Agent workflow payment](docs/LIVE_WORKFLOW_2026-11-16.md) · [Website payment](docs/LIVE_PAYMENT_2026-11-15.md) · [Earlier testnet run](docs/LIVE_RUN_2026-11-14.md) · [Agent and approver setup](docs/LIVE_SETUP_2026-11-15.md) · [Deployment addresses](deployments/diana-testnet.json)
 
 ### What happens before a payment goes through?
 
@@ -195,7 +195,6 @@ Verac is a **testnet MVP**, not a production treasury service. The priorities ar
 2. Verify hosted Supabase migration `0015` and run full browser workflows against the deployed database.
 3. Add Playwright end-to-end coverage and rerun the Foundry contract suite in the current environment.
 4. Test the QoreX wallet panel against the real extension. Its documented EVM provider does not support `eth_sendTransaction`, so contract calls currently use server-held testnet keys.
-5. Apply migration `0016` to the hosted database, deploy `feat/agent-workflow`, and record the invoice workflow end to end on the live site.
 6. Run the scripted category proofs (transaction-count, value, duration and target limits on EVM windows; native delegated-key spending rules) from a dedicated test account. They are written but not yet broadcast: see [category compliance](docs/CATEGORY_COMPLIANCE.md).
 
 The server currently holds separate **agent and approver signing keys** for testnet execution. The administrator's website approval is recorded separately, but both signing credentials live in the server's trust environment. A compromised server therefore remains a serious risk; on-chain vault limits are an important independent boundary, not a replacement for production key management. There has been **no external security audit**, and mainnet use is not supported.

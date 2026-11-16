@@ -19,6 +19,7 @@ export function classify(t: Pick<RunTx, "group" | "label" | "expect">): ProofKin
 
 /** The written record each run came from, in the repository's docs folder. */
 export function evidenceDoc(group: string): string {
+  if (group.includes("2026-11-16")) return "docs/LIVE_WORKFLOW_2026-11-16.md";
   if (group.includes("2026-11-15") && group.toLowerCase().includes("payment")) return "docs/LIVE_PAYMENT_2026-11-15.md";
   if (group.includes("2026-11-15")) return "docs/LIVE_SETUP_2026-11-15.md";
   return "docs/LIVE_RUN_2026-11-14.md";

@@ -149,12 +149,13 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
             return (
               <li key={o.id} className="rounded-lg border border-line bg-surface p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[15px] font-semibold tabular-nums">{qor(o.amount)} QOR <span className="text-[13px] font-normal text-muted">to</span> <span className="font-mono text-[13px] font-normal">{short(o.recipient)}</span></p>
+                  <p className="flex flex-wrap items-center gap-x-1.5 text-[15px] font-semibold tabular-nums">{qor(o.amount)} QOR <span className="text-[13px] font-normal text-muted">to</span> <a href={`${explorer.replace(/\/$/, "")}/address/${o.recipient}`} target="_blank" rel="noreferrer" title={`${o.recipient} (open in the QoreChain explorer)`} className="font-mono text-[13px] font-normal underline decoration-line-strong underline-offset-[3px] hover:decoration-current">{short(o.recipient)}</a><CopyButton value={o.recipient} label="Copy recipient address" /></p>
                   <Badge tone={l.tone}>{l.text}</Badge>
                 </div>
                 {o.purpose && <p className="mt-1 text-[13.5px] text-muted">{o.purpose}</p>}
                 <Progress state={o.state} approvals={o.approvals} required={o.required} />
                 <dl className="mt-3 grid grid-cols-1 gap-x-3 gap-y-1 text-[12.5px] sm:grid-cols-[8rem_1fr]">
+                  <dt className="text-muted">Recipient</dt><dd className="flex items-start gap-1"><span className="break-all font-mono">{o.recipient}</span><CopyButton value={o.recipient} label="Copy recipient address" className="-mt-1" /></dd>
                   <dt className="text-muted">Payment hash</dt><dd className="flex items-start gap-1"><span className="break-all font-mono">{o.paymentHash}</span><CopyButton value={o.paymentHash} label="Copy payment hash" className="-mt-1" /></dd>
                   <dt className="text-muted">Approvals</dt><dd>{o.approvals} of {o.required} administrator{o.required === 1 ? "" : "s"}</dd>
                   <dt className="text-muted">Expires</dt><dd>{new Date(o.expiresAt).toLocaleString()}</dd>

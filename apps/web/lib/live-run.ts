@@ -72,3 +72,11 @@ RUN.push(
   { group: "First website payment, 2026-11-15", label: "Approval relayed by the server's approver key, bound to the payment hash", lane: "evm", hash: h("0x1bd9aa176131f7486eca60e0291837f290f58f3f4995cd1fd6c1c9b8453000ac"), expect: "success" },
   { group: "First website payment, 2026-11-15", label: "PAYMENT: 1 QOR to the approved recipient, executed by the bounded agent key", lane: "evm", hash: h("0x75ac37df6b0f686616559ee4028ca51f101bc75d037d0066426b44fe984c0636"), expect: "success" },
 );
+
+// 2026-11-16: the first payment prepared by the multi-agent invoice workflow (see docs/LIVE_WORKFLOW_2026-11-16.md).
+// A finance manager asked Verac to review three invoices; the agents found DEMO-A-101 eligible and prepared the request;
+// a different administrator approved it with a password re-entry and executed it.
+RUN.push(
+  { group: "Agent workflow payment, 2026-11-16", label: "Approval relayed by the server's approver key, bound to the payment hash", lane: "evm", hash: h("0xc58c67a3cb9c83b8d9d58240cc32d89b0cb45e33ca224c95a7acc7d75cdd691e"), expect: "success" },
+  { group: "Agent workflow payment, 2026-11-16", label: "PAYMENT: 1.25 QOR for invoice DEMO-A-101, prepared by the agents, executed by the bounded agent key", lane: "evm", hash: h("0x5007c5d6bbde27022f38958d4b6d1a7d78bf48d825e665be7ba04daeeb0a8dd6"), expect: "success" },
+);

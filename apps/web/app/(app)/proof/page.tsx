@@ -106,7 +106,7 @@ export default async function Proof() {
 
           <Card title="What this does not prove">
             <ul className="list-disc space-y-2 pl-4 text-[13px] leading-relaxed text-muted">
-              <li>Most steps were run from scripts. One payment so far was sent from the website (see “First website payment”).</li>
+              <li>Most steps were run from scripts. Two payments were made from the website: one typed in by hand (“First website payment”) and one prepared by the agent workflow (“Agent workflow payment”).</li>
               <li>No AI made any of these decisions.</li>
               <li>In the 2026-11-14 runs one throwaway key acted as owner, approver and reviewer, so separation of duties is shown only from 2026-11-15.</li>
               <li>The contracts are not source-verified on an explorer and have had no external audit.</li>
