@@ -79,7 +79,7 @@ Live execution lets the website send real **testnet** payments through the Treas
 
 ## Agent workflows (feat/agent-workflow)
 
-1. Apply `supabase/migrations/0016_agent_workflows.sql` to the hosted database. It is safe to re-run.
+1. Apply `supabase/migrations/0016_agent_workflows.sql`, then `0017_demo_reset.sql`, to the hosted database. Both are safe to re-run.
 2. Set `AGENT_MESSAGE_ROOT_SECRET` (`openssl rand -hex 32`) as a Sensitive variable. Without it, workflows stop at the first agent step with a clear error.
 3. Optional: set `CRON_SECRET`, and schedule `GET /api/agent/workflows/tick` with `Authorization: Bearer <CRON_SECRET>` to resume unattended workflows. Optional: `LIVE_APPROVER_ADDRESS` (public address, shown on Live Proof) and `DEMO_APPROVED_RECIPIENT`.
 4. Deploy. No contract changes are needed.

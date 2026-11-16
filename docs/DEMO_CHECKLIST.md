@@ -3,7 +3,7 @@
 ## Before recording
 
 - [ ] Branch `feat/agent-workflow` deployed (owner approval needed; not done yet).
-- [ ] Migration `0016_agent_workflows.sql` applied to the hosted Supabase project.
+- [ ] Migrations `0016_agent_workflows.sql` and `0017_demo_reset.sql` applied to the hosted Supabase project.
 - [ ] `AGENT_MESSAGE_ROOT_SECRET` set in Vercel (Sensitive). Optional: `CRON_SECRET`, `LIVE_APPROVER_ADDRESS`.
 - [ ] Live execution on: `LIVE_EXECUTION_ENABLED=true`, agent and approver keys set, `LIVE_EMERGENCY_STOP` unset.
 - [ ] Vault balance at least 2 QOR; the agent's daily allowance not used up (Treasury → Agent spending rules).

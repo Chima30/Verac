@@ -40,9 +40,10 @@ beforeAll(async () => {
     alter default privileges in schema public grant execute on functions to authenticated, service_role;
   `);
   const dir = resolve(__dirname, "../../supabase/migrations");
-  for (const f of ["0001_core.sql", "0002_creator_membership.sql", "0003_approvals.sql", "0004_procurement.sql", "0005_payroll.sql", "0006_milestones.sql", "0014_live_execution.sql", "0015_live_decision_guard.sql", "0016_agent_workflows.sql"]) await db.exec(readFileSync(resolve(dir, f), "utf8"));
+  for (const f of ["0001_core.sql", "0002_creator_membership.sql", "0003_approvals.sql", "0004_procurement.sql", "0005_payroll.sql", "0006_milestones.sql", "0014_live_execution.sql", "0015_live_decision_guard.sql", "0008_disputes.sql", "0016_agent_workflows.sql", "0017_demo_reset.sql"]) await db.exec(readFileSync(resolve(dir, f), "utf8"));
   // It must be safe to apply twice.
   await db.exec(readFileSync(resolve(dir, "0016_agent_workflows.sql"), "utf8"));
+  await db.exec(readFileSync(resolve(dir, "0017_demo_reset.sql"), "utf8")); // later migrations re-apply on top, as in production
   await db.exec(`grant usage on schema public to authenticated, service_role; grant all on all tables in schema public to authenticated, service_role; grant all on all sequences in schema public to authenticated, service_role;`);
   await db.exec(`
     insert into organizations(id,name,created_by) values ('${ORG}','Nova DAO','${U.owner}'), ('${OTHER}','Other DAO','${U.stranger}');
@@ -140,5 +141,23 @@ describe("demo scenario", () => {
     const r = await one(`select count(*)::int as n, bool_and(is_demo) as demo from invoices where organization_id = '${ORG}' and invoice_number like 'DEMO-%'`);
     expect(r).toMatchObject({ n: 3, demo: true });
     await expect(val(U.admin, `select seed_invoice_demo('${ORG}', '${GOOD}', '${BAD}')`)).rejects.toThrow(/already loaded/);
+  });
+});
+
+describe("demo reset", () => {
+  it("clears open demo data, keeps anything linked to a payment, and reloads with 1.25 QOR for invoice A", async () => {
+    const before = await one(`select count(*)::int as n from invoices where organization_id = '${ORG}' and is_demo`);
+    expect(before.n).toBe(3);
+    // Pretend invoice C already has a payment request: it must survive the reset.
+    const kept = (await one(`select id from invoices where organization_id = '${ORG}' and invoice_number = 'DEMO-C-7'`)).id as string;
+    const tx = (await one(`select id from transactions where organization_id = '${ORG}' limit 1`)).id as string;
+    await db.exec(`update invoices set transaction_id = '${tx}' where id = '${kept}'`);
+    await expect(val(U.fin, `select clear_invoice_demo('${ORG}')`)).rejects.toThrow(/administrator required/);
+    const r = (await val(U.admin, `select clear_invoice_demo('${ORG}')`)) as { invoices: number };
+    expect(r.invoices).toBe(2);
+    expect((await one(`select count(*)::int as n from invoices where id = '${kept}'`)).n).toBe(1);
+    await val(U.admin, `select seed_invoice_demo('${ORG}', '${GOOD}', '${BAD}')`);
+    const a = await one(`select amount::text as amount from invoices where organization_id = '${ORG}' and invoice_number = 'DEMO-A-101' and transaction_id is null`);
+    expect(a.amount).toBe("1250000000000000000");
   });
 });

@@ -53,3 +53,13 @@ export async function loadDemo() {
   if (error) back("error", error.message);
   back("msg", "Demo loaded: three invoices named DEMO-*, two vendors and three milestones, all marked as demo data.");
 }
+
+/** Clears the open demo invoices (and their unused demo vendors, milestones and projects) so the demo can be loaded again. */
+export async function clearDemo() {
+  const s = await getSession(); const sb = await supabaseServer();
+  if (!s.user || !s.org || !sb) redirect("/login?next=/invoices");
+  const { data, error } = await sb!.rpc("clear_invoice_demo", { p_org: s.org!.id });
+  if (error) back("error", /clear_invoice_demo/.test(error.message) ? "The database needs migration 0017 first." : error.message);
+  const n = (data as { invoices?: number } | null)?.invoices ?? 0;
+  back("msg", `Cleared ${n} open demo invoice${n === 1 ? "" : "s"}. Anything linked to a payment request was kept as part of the record.`);
+}

@@ -5,7 +5,7 @@ import { InvoiceChecker } from "@/components/invoices/checker";
 import { formatQor } from "@/lib/approvals";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
-import { loadDemo, recordInvoice, saveVendor } from "./actions";
+import { clearDemo, loadDemo, recordInvoice, saveVendor } from "./actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Bills and Invoices" };
@@ -111,8 +111,15 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
               </form>
             </Card>
           )}
-          {admin && invoices.length > 0 && !invoices.some((i) => i.is_demo) && (
-            <form action={loadDemo}><button className={`${btnSecondaryCls} w-full`}>Load the three-invoice demo</button></form>
+          {admin && invoices.length > 0 && (
+            <Card title="Demo data" description="Three synthetic DEMO-* invoices: one eligible, one waiting for its milestone, one with a suspicious payout address.">
+              <div className="flex flex-wrap gap-2">
+                {invoices.some((i) => i.is_demo && !i.transaction_id && ["received", "held", "approved"].includes(i.status))
+                  ? <form action={clearDemo}><button className={btnSecondaryCls}>Clear the open demo invoices</button></form>
+                  : <form action={loadDemo}><button className={btnSecondaryCls}>Load the three-invoice demo</button></form>}
+              </div>
+              <p className="mt-2 text-[12px] text-muted">Clearing keeps any demo invoice already linked to a payment request, as part of the record.</p>
+            </Card>
           )}
         </div>
       </div>
