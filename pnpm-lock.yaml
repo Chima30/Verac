@@ -108,6 +108,9 @@ importers:
 
   packages/qorechain:
     dependencies:
+      '@noble/curves':
+        specifier: 2.4.0
+        version: 2.4.0
       '@qorechain/qoreseal':
         specifier: 0.1.0
         version: 0.1.0

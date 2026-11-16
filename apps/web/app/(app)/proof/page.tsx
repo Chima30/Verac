@@ -1,5 +1,6 @@
 import { QORE_NETWORK } from "@qoreops/shared-types";
 import { ExternalLink } from "lucide-react";
+import { CategorySection } from "@/components/proof/category-section";
 import { ProofLedger, type ProofRow } from "@/components/proof/ledger";
 import { Badge, Card, Metric, PageHeader, StatusDot, fmtUtc } from "@/components/ui";
 import { Hash } from "@/components/ui-client";
@@ -114,6 +115,7 @@ export default async function Proof() {
           </Card>
         </div>
       </div>
+      <CategorySection />
     </>
   );
 }

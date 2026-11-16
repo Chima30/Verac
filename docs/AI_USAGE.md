@@ -18,3 +18,7 @@ Do not treat this paragraph as a claim that it has been.
 Gemini (`@google/genai`, free-tier models only) is used for tasks that benefit from language reasoning: invoice anomaly explanation,
 bid comparison, policy drafting from natural language, summaries. Deterministic code handles money, limits, validation and escrow rules.
 Model output is schema-validated and is never authorisation. No live Gemini call has been made yet in this repository.
+
+## Agent workflow (2026-11-16)
+
+Gemini has one job in the invoice workflow: turning the typed instruction into the allow-listed intent (`review_invoices`, prepare payments yes or no, optional count and invoice numbers). Its answer is validated with Zod and can only narrow the deterministic reading, never widen it. Without Gemini, or when the quota is exhausted, the deterministic parser is used and the workflow still runs. Every finding, decision, amount and payment field comes from code. Invoice text is never sent to Gemini.

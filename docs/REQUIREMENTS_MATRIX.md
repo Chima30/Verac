@@ -19,6 +19,8 @@ been deployed to the testnet yet.
 | Q-Day drill (optional, register by 2026-11-17 23:59 UTC) | ⬜ 🔒 | needs account + ECDSA key handed to organisers |
 | `AI_USAGE.md` (special award) | ✅ draft | `docs/AI_USAGE.md` |
 
+> Updated 2026-11-16: the category requirements are tracked requirement by requirement, with evidence status, in [CATEGORY_COMPLIANCE.md](CATEGORY_COMPLIANCE.md). That file supersedes the category rows below where they differ.
+
 ## Platform requirements (from the brief)
 
 | Req | State | Notes |

@@ -2,6 +2,7 @@ import { AddressLookup } from "@/components/address-lookup";
 import { Scenarios, type Scenario } from "@/components/simulator/scenarios";
 import { Badge, PageHeader, SectionHeading } from "@/components/ui";
 import { RUN } from "@/lib/live-run";
+import categoryRuns from "../../../../../deployments/category-proofs.json";
 import { reader } from "@/lib/server";
 
 export const revalidate = 300;
@@ -105,13 +106,75 @@ export default async function Simulator() {
       next: "Find out why the agent was still being called; rotate its key before reinstating it.",
     },
   ];
-  const proven = items.filter((i) => i.evidence).length;
+  // Category scenarios: their evidence comes from runs recorded by category-proofs.ts, or from automated tests here.
+  const run = (id: string) => [...(categoryRuns as { runs: Array<{ id: string; txHash?: string; height?: string; actual: string; denial: string | null; rpcError?: string; verifiedAt: string }> }).runs].reverse().find((r) => r.id === id);
+  const evidenceOf = (id: string): Pick<Scenario, "evidence" | "rpcRefusal"> => {
+    const r = run(id);
+    if (!r || /unexpected/i.test(r.actual)) return { evidence: null, rpcRefusal: null };
+    if (r.denial === "before-inclusion") return { evidence: null, rpcRefusal: { error: (r.rpcError ?? r.actual).slice(0, 400), recordedAt: r.verifiedAt } };
+    if (r.txHash && r.denial === "on-chain") return { evidence: { hash: r.txHash, reason: r.actual, block: r.height ?? null, url: `${explorer}/tx/${r.txHash}` }, rpcRefusal: null };
+    return { evidence: null, rpcRefusal: null };
+  };
+  const planned = "Not yet run on Diana testnet. The proof is scripted (packages/qorechain/scripts/category-proofs.ts) and waits for the owner's approval to broadcast from a dedicated test account.";
+  items.push(
+    { id: "window-count", title: "Exceeded transaction limit", ...evidenceOf("B-2"),
+      summary: "A key that holds a window for one transaction tries to send a second.",
+      steps: [
+        { label: "Owner opens a window: 60 blocks, 1 transaction", detail: "Hybrid-signed native message; the classical key alone cannot open it.", state: "step" },
+        { label: "First EVM transaction is admitted", detail: "The window's remaining count drops to 0.", state: "step" },
+        { label: "Second transaction is refused at admission", detail: run("B-2") ? "Recorded below." : planned, state: run("B-2") ? "failed" : "blocked" },
+      ], next: "A refused transaction moves nothing. Open a new window only for a new, approved operation." },
+    { id: "window-expiry", title: "Expired EVM window", ...evidenceOf("D-1"),
+      summary: "A transaction arrives after the window's expiry height. Duration is counted in blocks by the chain, not by a timer in Verac.",
+      steps: [
+        { label: "Window opened for 3 blocks", detail: "The chain stores the expiry height.", state: "step" },
+        { label: "Five blocks pass", detail: "No transaction is sent.", state: "step" },
+        { label: "Late transaction is refused", detail: run("D-1") ? "Recorded below." : planned, state: run("D-1") ? "failed" : "blocked" },
+      ], next: "Nothing to undo. This is why Verac opens windows only right before an approved payment." },
+    { id: "window-target", title: "Unapproved target", ...evidenceOf("E-2"),
+      summary: "Inside a window narrowed to the TreasuryVault, the key tries to send to another address.",
+      steps: [
+        { label: "Window opened with allowedTargets = [TreasuryVault]", detail: "Exactly how Verac's payment agent window is opened.", state: "step" },
+        { label: "A call to the vault is admitted", detail: "A harmless read-only call.", state: "step" },
+        { label: "A transfer to 0x…dEaD is refused", detail: run("E-2") ? "Recorded below." : planned, state: run("E-2") ? "failed" : "blocked" },
+      ], next: "A stolen agent key inside an open window can still only reach the vault, where the contract's own caps apply." },
+    { id: "aa-limit", title: "Delegated key over its limit", ...evidenceOf("F-3"),
+      summary: "A delegated (abstract-account) key with a 0.1 QOR per-transaction rule tries to send 0.15 QOR.",
+      steps: [
+        { label: "Owner links an ed25519 key with proof of possession", detail: "Permissions: send only. Rule: 0.1 QOR per transaction, 0.2 QOR per day, uqor only, expires in 24 hours.", state: "step" },
+        { label: "Key sends 0.05 QOR: succeeds", detail: "Within the rule.", state: "step" },
+        { label: "Key sends 0.15 QOR: execution fails on chain", detail: run("F-3") ? "Recorded below. The envelope can be code 0; the execution result says it failed." : planned, state: run("F-3") ? "failed" : "blocked" },
+      ], next: "Revoke the key if it was not expected to try this." },
+    { id: "aa-revoked", title: "Revoked authenticator", ...evidenceOf("F-7"),
+      summary: "The owner revokes a delegated key; the key then tries to spend.",
+      steps: [
+        { label: "Owner sends MsgRevokeAuthenticator", detail: "Takes effect at once.", state: "step" },
+        { label: "Revoked key tries to send", detail: run("F-7") ? "Recorded below." : planned, state: run("F-7") ? "failed" : "blocked" },
+      ], next: "Link a fresh key only after finding out how the old one was used." },
+    { id: "duplicate", title: "Duplicate payment", evidence: null,
+      localTest: { file: "services/agent-coordinator/src/workflows/invoice-review.test.ts, apps/web/lib/workflows/engine.test.ts", cases: ["duplicate invoice number from the same vendor is rejected", "an invoice that already has a payment request is rejected", "a retried workflow never prepares the same invoice twice"] },
+      summary: "The same invoice is submitted twice, or a workflow is retried after a crash.",
+      steps: [
+        { label: "Security Agent finds an existing request for the invoice", detail: "Or the same amount to the same address within 30 days.", state: "step" },
+        { label: "Policy rejects the invoice", detail: "Fixed rule; a model cannot change it.", state: "step" },
+        { label: "Database refuses a second request with the same idempotency key", detail: "Unique (organisation, idempotency key).", state: "step" },
+      ], next: "Check where the duplicate came from (a resent invoice or a vendor-side error)." },
+    { id: "recipient", title: "Changed payment recipient", evidence: null,
+      localTest: { file: "services/agent-coordinator/src/workflows/invoice-review.test.ts, tests/security/live-execution.test.ts", cases: ["an invoice whose payout differs from the vendor record is held", "an approval is bound to the exact payment hash; a changed recipient is a different payment that needs its own approvals"] },
+      summary: "An invoice asks to be paid to a new address, or someone edits a request after it was approved.",
+      steps: [
+        { label: "Invoice Agent compares with the vendor's approved payout address", detail: "A mismatch is held for review.", state: "step" },
+        { label: "Approvals are bound to the payment hash", detail: "Recipient, amount, token, purpose, nonce and expiry are all inside the hash.", state: "step" },
+        { label: "The vault checks the recipient again on chain", detail: "Unapproved recipients revert (see the on-chain scenario above).", state: "step" },
+      ], next: "Confirm any payout change with the vendor through a channel already on file." },
+  );
+  const proven = items.filter((i) => i.evidence || i.rpcRefusal).length;
 
   return (
     <>
       <PageHeader title="Quantum Simulator" eyebrow="Security"
         description="What stops a stolen key, a greedy agent or a premature release, step by step. Scenarios backed by a real refused transaction on Diana testnet say so and link to it. The rest are walkthroughs of the rules, clearly marked as not executed."
-        badge={<Badge tone="neutral">{proven} OF {items.length} BACKED BY ON-CHAIN EVIDENCE</Badge>} />
+        badge={<Badge tone="neutral">{proven} OF {items.length} BACKED BY CHAIN EVIDENCE</Badge>} />
       <Scenarios items={items} />
 
       <SectionHeading id="lookup" title="Inspect a real account" description="Live post-quantum posture of any address on Diana testnet: hybrid key status, QoreSeal key and EVM authorisation window." />

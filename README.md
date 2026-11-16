@@ -1,7 +1,5 @@
 # Verac
 
-## The problem
-
 Paying a contractor should be straightforward. But for a DAO, the payment is often the last step in a much longer process: someone checks the invoice, confirms the work was approved, makes sure the payment address is right, checks the treasury balance, gets another person to sign off, and finally sends the money.
 
 Now add grants, supplier bids, payroll and governance decisions. The details end up spread across messages, spreadsheets, documents and wallets. It takes time to piece everything together, mistakes are easy to miss, and it's not always clear who approved what.
@@ -16,7 +14,7 @@ The goal is to let people ask for an outcome, not manually coordinate every step
 
 > Review our outstanding contractor invoices, check whether the milestones were approved, flag anything suspicious, and prepare eligible payments for approval.
 
-That's the workflow we're building toward. Verac already has the invoice checks, milestone records, AI-assisted payment drafting, approval system and testnet payment infrastructure. **The full cross-module request above is not yet a proven end-to-end AI workflow.** Today, the strongest completed demonstration is a payment requested on the website, approved by a different administrator and executed on QoreChain.
+Verac now runs that request as a real workflow (on the `feat/agent-workflow` branch). Six agents work over the organisation's own records and pass signed messages to a coordinator, and every eligible payment goes into the same approval and execution pipeline that made the first live website payment. The workflow is covered by automated tests (scenario, engine, database security and message-attack tests). **It has not yet been run on the deployed site**: that needs migration `0016` applied to the hosted database and the branch deployed. The strongest completed on-chain demonstration is still the payment requested on the website, approved by a different administrator and executed on QoreChain.
 
 The important distinction is simple: **AI helps with the work, but it doesn't get to decide on its own when money moves.**
 
@@ -57,6 +55,28 @@ Payment record and audit history
 ```
 
 Gemini can turn a plain-English request into a payment draft, but it cannot bypass the form checks, spending limits or approval requirements. The payment's details are bound to a hash, so an approval for one recipient and amount cannot be reused for a different payment.
+
+## One instruction, six agents
+
+Type into the AI Command Center:
+
+> Review our three outstanding contractor invoices, check whether their milestones were approved, flag anything suspicious, and prepare eligible payments.
+
+| Step | Who | What actually happens |
+|---|---|---|
+| Understand | Coordinator | The instruction becomes one allow-listed intent (review invoices, prepare payments yes or no). Gemini may parse it; fixed rules check the result, and anything else is refused. |
+| Load | Coordinator | The organisation's invoices, vendors, payout-address history, milestones and earlier payment requests are read, plus the vault's balance, caps, today's allowance and recipient list from Diana testnet. |
+| Invoice Agent | `InvoiceFraudAgent` | Duplicate numbers, payout address against the vendor record, look-alike vendors, dates, and instructions hidden in invoice text. |
+| Milestone Agent | `MilestoneAgent` | Is the milestone the invoice bills for approved, disputed or already paid, and does the amount match? |
+| Security Agent | `SecurityAgent` | Existing requests for the same invoice (replay), recent payout changes, prompt injection, split payments, emergency stop. |
+| Treasury Agent | `TreasuryAgent` | Recipient on the vault's approved list, per-payment cap, balance, today's allowance. |
+| Policy | `PolicyAgent` | Fixed code decides ELIGIBLE, HOLD or REJECT for each invoice and sets the required approvals. No model is involved. |
+| Payment | `PaymentAgent` | For each eligible invoice, the exact payment request goes through the existing pipeline, as the person who started the workflow. Nothing is executed. |
+| Report | Coordinator | A summary written from the decisions, for example: "3 invoices reviewed. 1 is eligible for approval (DEMO-A-101). DEMO-B-102 is on hold: … has not been approved. DEMO-C-7 is on hold: the invoice asks for payment to 0x0000…dEaD, but the vendor's approved payout address is 0x200c…f5af. I prepared 1 live testnet payment request for administrator approval. No funds have moved." |
+
+A different administrator then approves the exact payment (with their password) and executes it. The receipt is checked on chain, the invoice is marked paid by a database trigger, and the workflow page offers a decision receipt (JSON or text) that keeps AI recommendations, human decisions and chain results apart.
+
+Every agent turn is a pair of HMAC-authenticated messages: a handoff from the coordinator, and a report back that carries a digest of the full findings. Messages are rejected if they are spoofed, altered, replayed, expired, or for the wrong organisation or task. They are stored with a unique (organisation, nonce) key. Each step is persisted and runs under a worker lease, so a refresh or a crashed worker resumes rather than repeats. [How the workflow is built](docs/ARCHITECTURE.md#multi-agent-workflow) · [Category evidence](docs/CATEGORY_COMPLIANCE.md) · [Demo script](docs/DEMO_SCRIPT.md)
 
 ## What's inside Verac?
 
@@ -175,7 +195,8 @@ Verac is a **testnet MVP**, not a production treasury service. The priorities ar
 2. Verify hosted Supabase migration `0015` and run full browser workflows against the deployed database.
 3. Add Playwright end-to-end coverage and rerun the Foundry contract suite in the current environment.
 4. Test the QoreX wallet panel against the real extension. Its documented EVM provider does not support `eth_sendTransaction`, so contract calls currently use server-held testnet keys.
-5. Connect invoice review, milestone evidence and payment preparation into a single demonstrable multi-agent workflow.
+5. Apply migration `0016` to the hosted database, deploy `feat/agent-workflow`, and record the invoice workflow end to end on the live site.
+6. Run the scripted category proofs (transaction-count, value, duration and target limits on EVM windows; native delegated-key spending rules) from a dedicated test account. They are written but not yet broadcast: see [category compliance](docs/CATEGORY_COMPLIANCE.md).
 
 The server currently holds separate **agent and approver signing keys** for testnet execution. The administrator's website approval is recorded separately, but both signing credentials live in the server's trust environment. A compromised server therefore remains a serious risk; on-chain vault limits are an important independent boundary, not a replacement for production key management. There has been **no external security audit**, and mainnet use is not supported.
 

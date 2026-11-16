@@ -26,3 +26,14 @@ a per-agent key, carries a nonce and ≤5-minute TTL, is checked against a sende
 verifies once. Payloads are data only (ids, severities, short text); there is no field for code or calldata.
 
 Per-agent prompts and output schemas are **not written yet**.
+
+## Invoice workflow roles (2026-11-16)
+
+| Agent | Reads | Produces | Cannot |
+|---|---|---|---|
+| InvoiceFraudAgent | invoices, vendor records, the vendor's earlier invoices | findings: duplicate, payout mismatch, look-alike vendor, dates, hidden instructions | decide, approve, pay |
+| MilestoneAgent | milestones and their reviewer decisions | findings: not approved, disputed, already released, amount above milestone | release escrow |
+| SecurityAgent | earlier payment requests, payout-address history, the other agents' findings | findings: existing request (replay), recent payout change, prompt injection, split pattern, emergency stop | pause the vault (it can only recommend) |
+| TreasuryAgent | vault balance, agent rule, recipient list (chain) | findings: recipient not approved, above cap, inactive rule | move funds |
+| PolicyAgent | all findings, policy version (chain), approvals required | ELIGIBLE, HOLD or REJECT per invoice (deterministic) | be overridden by a model |
+| PaymentAgent | policy decisions | payment requests through `proposeLivePayment`, as the requester | approve or execute |

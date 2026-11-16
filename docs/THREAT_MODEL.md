@@ -25,3 +25,14 @@ Status key: ✅ mitigated and tested locally · 🟡 mitigated by design, live p
 | Admin collusion / lost keys | threshold approvals, guardians; no recovery beyond owner re-adding agents | documented |
 
 Out of scope: external audit, MEV, validator-level attacks, UI phishing, mainnet.
+
+## Added with the agent workflow (2026-11-16)
+
+| Threat | Control | Evidence |
+|---|---|---|
+| Invoice text instructs the AI to pay | Decisions are fixed code; injected instructions are flagged and hold the invoice; Gemini never sees invoice text | `invoice-review.test.ts` |
+| Changed payout address | Compared with the vendor record; recent changes held; the vault's recipient list is checked again on chain | `invoice-review.test.ts`, Live Proof C2-2 |
+| Duplicate or replayed payment | Duplicate numbers rejected; existing requests rejected; idempotency key per workflow and invoice; unique key in the database | `invoice-review.test.ts`, `engine.test.ts`, `workflows.test.ts` |
+| Forged or replayed agent message | HMAC per agent, nonce, expiry, organisation, task and recipient binding, digest of the full report | `messaging-attacks.test.ts` |
+| Two workers advancing one workflow | `claim_workflow` lease; service role only | `workflows.test.ts` |
+| Requester approves their own AI-prepared payment | The request is made as the requester; `decide_live_payment` refuses them | `live-execution.test.ts` |

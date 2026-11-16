@@ -76,3 +76,10 @@ Live execution lets the website send real **testnet** payments through the Treas
    [LIVE_SETUP_2026-11-15.md](LIVE_SETUP_2026-11-15.md); `packages/qorechain/scripts/owner-ops.ts` does both and is a dry run unless you add `--broadcast`).
 4. Redeploy. The Treasury page's **Live payments** card lists any variable that is still missing. Branch deployments are behind Vercel's own login.
 5. Nothing is sent until someone requests a payment, a different administrator approves it with their password, and someone presses Execute.
+
+## Agent workflows (feat/agent-workflow)
+
+1. Apply `supabase/migrations/0016_agent_workflows.sql` to the hosted database. It is safe to re-run.
+2. Set `AGENT_MESSAGE_ROOT_SECRET` (`openssl rand -hex 32`) as a Sensitive variable. Without it, workflows stop at the first agent step with a clear error.
+3. Optional: set `CRON_SECRET`, and schedule `GET /api/agent/workflows/tick` with `Authorization: Bearer <CRON_SECRET>` to resume unattended workflows. Optional: `LIVE_APPROVER_ADDRESS` (public address, shown on Live Proof) and `DEMO_APPROVED_RECIPIENT`.
+4. Deploy. No contract changes are needed.

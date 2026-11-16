@@ -51,6 +51,27 @@ custody**, and it has had no external audit. How it is bounded, and what it does
 * A single owner key still configures the vault. It is not a multisig.
 * The post-quantum protection covers the account windows; the EVM transactions themselves are classical secp256k1.
 
+## Custody audit (2026-11-16)
+
+Question: can the server approve and execute a payment without a genuinely authenticated administrator decision?
+
+* **Through any HTTP endpoint: no.** The only code that loads the agent and approver keys for signing is `runLiveExecution`, called only by `POST /api/live/execute`. That route needs a signed-in finance user. It then calls `live_claim_execution`, which refuses any operation not in state `APPROVED`. Only `decide_live_payment` can set `APPROVED`: the caller must be an owner or administrator who is not the requester, and the route first re-checks their password. `proposeLivePayment` reads only the agent's public address.
+* **The agent workflow never executes or approves.** It prepares requests through `proposeLivePayment` as the person who started it, so that person can never approve them. It cannot call the decide or execute paths.
+* **With control of the server: yes, up to the vault's caps.** Two keys stored on one server are not two independent security domains. Anyone with the server's environment or memory can relay an approval and execute. The vault's on-chain limits (10 QOR per payment, 20 per day, approved recipients, approval threshold) are the boundary that holds then. The fix is for the approver to sign `approvePayment` from their own wallet. QoreX's EVM provider does not support `eth_sendTransaction` yet, so this is not built.
+
+## Agent messages and untrusted documents
+
+* Agent messages are HMAC-SHA256 with one key per agent (and one for the coordinator), derived by HKDF from `AGENT_MESSAGE_ROOT_SECRET`. This authenticates messages inside Verac's server. **It is not a post-quantum signature**, and the only party that holds the root secret is the same server.
+* A message is rejected for:
+  * a bad tag (spoofed sender, altered payload, foreign secret);
+  * expiry or a time in the future;
+  * a replayed nonce (memory, plus a unique `(organisation, nonce)` in `agent_messages`);
+  * the wrong organisation, task or recipient, or a payload naming a different task than its envelope;
+  * an unauthorised sender, or unknown fields.
+
+  See `messaging-attacks.test.ts`.
+* Invoice and milestone text is untrusted. Instructions inside it are flagged as `INSTRUCTION_IN_INVOICE` / `PROMPT_INJECTION` and hold the invoice. Eligibility is decided by fixed code, so text can never change a decision. Gemini sees only the user's own instruction, wrapped as untrusted and checked against fixed rules. It sees no invoice text and no sealed documents.
+
 ## Reporting
 
 Hackathon project; open an issue on the repository.

@@ -69,3 +69,16 @@ Single `AiProvider`: concurrency semaphore, RPM window, per-global/org/user dail
 fallback model then provider pause, timeouts, output-token and input-size caps, secret detection (keys/seed phrases
 are never sent), metadata-only usage records. If unconfigured or exhausted it throws; it never fabricates output and
 never switches to a paid model (`AI_FREE_TIER_ONLY` + a verified free-model allow-list).
+
+## Multi-agent workflow
+
+`services/agent-coordinator/src/workflows/invoice-review.ts` holds the agents. They are pure functions over a `Snapshot` of one organisation's records. `apps/web/lib/workflows` holds the server side:
+
+* `loader.ts` reads invoices, vendors, payout history, milestones and payment requests (service role, filtered by organisation), plus the vault, the agent rule, recipient approvals and the policy version from Diana testnet.
+* `engine.ts` runs **one step per call** under a lease (`claim_workflow`, 60 s). The steps are: intent, load, InvoiceFraudAgent, MilestoneAgent, SecurityAgent, TreasuryAgent, PolicyAgent, PaymentAgent, report.
+  * Each agent step is a signed handoff and report pair, stored in `agent_messages`, plus a child `agent_tasks` row holding the report.
+  * Step results and timestamps are kept in `agent_tasks.steps` and `result`.
+  * A failed step is retried, and the third failure of the same step stops the workflow.
+* `receipt.ts` builds the decision receipt from stored records, plus a fresh receipt read for executed payments.
+
+The flow: the browser starts a workflow (`POST /api/agent/workflows`, idempotency key) and then calls `POST /api/agent/workflows/[id]/advance` while someone is watching. `GET /api/agent/workflows/tick` (with `CRON_SECRET`) resumes unattended runs. The payment step runs only in a request from the person who started the workflow, so payment requests carry their identity. There is no queue service: the database row is the queue and the lease is the lock. This survives refreshes and crashed workers without any single long request.
