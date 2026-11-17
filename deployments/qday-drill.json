@@ -31,5 +31,16 @@
       "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc"
     ]
   },
-  "deployedAt": "2026-11-16T23:47:51.999Z"
+  "deployedAt": "2026-11-16T23:47:51.999Z",
+  "freeze": {
+    "at": "2026-11-17T16:45:06.850Z",
+    "paused": true,
+    "agentActive": false,
+    "txs": {
+      "open admin window (vault only)": "6C9D21556171DD237FDD3608D8FE134652A4AAC284252E4C0D3633474854C25F",
+      "pause vault": "0x79375c327d471fe10f366d91a6345f269e66b199da69cc382406f333e67843f3",
+      "revoke drill agent": "0x589bc977a5160523d44187e6e883113e06a59b85089597149504f38b44b1f302",
+      "close admin window": "D1157A1F826366B8BC43AA6CCD39D72F8A7340085FFDB6000208B34FC750A1BC"
+    }
+  }
 }

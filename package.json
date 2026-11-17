@@ -20,6 +20,8 @@
     "qday:account": "tsx packages/qorechain/scripts/qday-account.ts",
     "qday:stack": "tsx packages/qorechain/scripts/qday-stack.ts",
     "qday:verify": "tsx packages/qorechain/scripts/qday-verify.ts",
+    "qday:freeze": "tsx packages/qorechain/scripts/qday-freeze.ts",
+    "qday:watch": "tsx packages/qorechain/scripts/qday-watch.ts",
     "ai:probe": "tsx --env-file=apps/web/.env.local packages/ai-provider/scripts/probe.ts"
   },
   "devDependencies": {

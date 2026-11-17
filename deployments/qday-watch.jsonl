@@ -1,0 +1,10 @@
+{"at":"2026-11-17T16:46:01.114Z","type":"start","intervalS":30,"once":true}
+{"at":"2026-11-17T16:46:02.666Z","type":"reading","snap":{"drill.window":"closed","drill.sequence":"2","drill.QOR":"79.730000","drill.fUSD":"1000000000","drill.fETH":"500000000000000000","drill.fBTC":"2000000","admin.window":"closed","admin.sequence":"14","admin.QOR":"14.174057","vault.QOR":"5.000000","vault.paused":"true","vault.drillAgentActive":"false"},"changes":[],"alerts":[]}
+{"at":"2026-11-17T16:46:02.667Z","type":"stop"}
+{"at":"2026-11-17T16:46:29.986Z","type":"start","intervalS":30,"once":true}
+{"at":"2026-11-17T16:46:35.738Z","type":"action","account":"admin","action":"close-window","result":"closed, tx 20257978040AE4E270FDA47C1E490173498B64E6505BAEE6E62FBCD991DDAF25"}
+{"at":"2026-11-17T16:46:36.423Z","type":"reading","snap":{"drill.window":"closed","drill.sequence":"2","drill.QOR":"79.730000","drill.fUSD":"1000000000","drill.fETH":"500000000000000000","drill.fBTC":"2000000","admin.window":"OPEN(1 txs, 24 blocks)","admin.sequence":"15","admin.QOR":"14.099057","vault.QOR":"5.000000","vault.paused":"true","vault.drillAgentActive":"false"},"changes":[],"alerts":["admin EVM window OPEN","admin window closed, tx 20257978040AE4E270FDA47C1E490173498B64E6505BAEE6E62FBCD991DDAF25"]}
+{"at":"2026-11-17T16:46:36.424Z","type":"stop"}
+{"at":"2026-11-17T16:46:47.976Z","type":"start","intervalS":30,"once":true}
+{"at":"2026-11-17T16:46:49.494Z","type":"reading","snap":{"drill.window":"closed","drill.sequence":"2","drill.QOR":"79.730000","drill.fUSD":"1000000000","drill.fETH":"500000000000000000","drill.fBTC":"2000000","admin.window":"closed","admin.sequence":"16","admin.QOR":"14.054057","vault.QOR":"5.000000","vault.paused":"true","vault.drillAgentActive":"false"},"changes":[],"alerts":[]}
+{"at":"2026-11-17T16:46:49.495Z","type":"stop"}
