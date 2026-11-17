@@ -28,4 +28,4 @@ The first live runs held DEMO-A-101 with `SAME_PAYMENT_RECENTLY`. The demo invoi
 
 - The invoices are synthetic demo data.
 - The approval is relayed by a server-held approver key after a person approves in Verac. Both signing keys live on the same server; see SECURITY.md.
-- The native smart-account (delegated key) and window-limit proofs are separate and have not been run yet; see CATEGORY_COMPLIANCE.md.
+- The native smart-account (delegated key) and window-limit proofs are separate; they were run on 2026-11-17 on a dedicated account (see CATEGORY_COMPLIANCE.md and TESTNET_PROOFS.md).

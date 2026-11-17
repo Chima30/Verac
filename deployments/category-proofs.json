@@ -1,4 +1,606 @@
 {
   "note": "Written only by packages/qorechain/scripts/category-proofs.ts --broadcast. Each entry is what Diana testnet returned. Do not edit by hand.",
-  "runs": []
+  "runs": [
+    {
+      "id": "B-1",
+      "requirement": "B Transaction-count limits",
+      "scenario": "window-count",
+      "target": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+      "txHash": "0x077ba1ebf2f5c00faf2f5ff67824ef7bf5bbeea938300e967063ba5e9156994e",
+      "height": "10264481",
+      "expected": "first tx admitted",
+      "actual": "admitted",
+      "denial": null,
+      "before": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10264478",
+        "expiryHeight": "10264538",
+        "maxTxs": "1",
+        "usedTxs": "0",
+        "maxValue": "200000",
+        "usedValue": "0",
+        "remainingBlocks": "59",
+        "remainingTxs": "1",
+        "remainingValue": "200000",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "after": {
+        "found": true,
+        "live": false,
+        "openedHeight": "10264478",
+        "expiryHeight": "10264538",
+        "maxTxs": "1",
+        "usedTxs": "1",
+        "maxValue": "200000",
+        "usedValue": "15300",
+        "remainingBlocks": "57",
+        "remainingTxs": "0",
+        "remainingValue": "184700",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:14:32.697Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "B-2",
+      "requirement": "B Transaction-count limits",
+      "scenario": "window-count",
+      "target": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+      "expected": "second tx refused, remainingTxs 0",
+      "actual": "refused",
+      "denial": "before-inclusion",
+      "rpcError": "Missing or invalid parameters.\nDouble check you have provided the correct parameters.\n\nURL: https://evm-testnet.qore.host\nRequest body: {\"method\":\"eth_sendRawTransaction\",\"params\":[\"0x02f86e822648038502e90edd00853b5f2f360082ea6094d995513527951c6c48c561f313f2a0e3ac5ff0df8080c001a0c676bfd7e74de18277b49b4eebdb644327313073dfa70f408b1a44f355d39b96a07e49b88f84ede8e7cd78a62c9730caa167cc159920dfe6218b70ecf823244566\"]}\n \nRequest Arguments:\n  from:   0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df\n  to:     0x",
+      "classified": "exhausted",
+      "before": {
+        "found": true,
+        "live": false,
+        "openedHeight": "10264478",
+        "expiryHeight": "10264538",
+        "maxTxs": "1",
+        "usedTxs": "1",
+        "maxValue": "200000",
+        "usedValue": "15300",
+        "remainingBlocks": "57",
+        "remainingTxs": "0",
+        "remainingValue": "184700",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "after": {
+        "found": true,
+        "live": false,
+        "openedHeight": "10264478",
+        "expiryHeight": "10264538",
+        "maxTxs": "1",
+        "usedTxs": "1",
+        "maxValue": "200000",
+        "usedValue": "15300",
+        "remainingBlocks": "57",
+        "remainingTxs": "0",
+        "remainingValue": "184700",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:14:32.700Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "D-1",
+      "requirement": "D Duration limits",
+      "scenario": "window-expiry",
+      "target": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+      "txHash": "FD6652A71459AD0381A9A4883F9146CABE8963222E2533A0CB5AAF3329183A1C",
+      "height": "10264492",
+      "expected": "tx after expiry height 10264495 refused",
+      "actual": "refused",
+      "denial": "before-inclusion",
+      "rpcError": "Missing or invalid parameters.\nDouble check you have provided the correct parameters.\n\nURL: https://evm-testnet.qore.host\nRequest body: {\"method\":\"eth_sendRawTransaction\",\"params\":[\"0x02f86e822648058502e90edd00853b5f2f360082ea6094d995513527951c6c48c561f313f2a0e3ac5ff0df8080c001a06c7ccf97be2766c17db9213782063a65799a170ecf26630dfa36ff590db28fa8a0741469a90defd4b869f6ed1d20d5d1cd8b930db69fe246bb286b2ebbb598fe6f\"]}\n \nRequest Arguments:\n  from:   0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df\n  to:     0x",
+      "classified": "exhausted",
+      "before": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10264492",
+        "expiryHeight": "10264495",
+        "maxTxs": "3",
+        "usedTxs": "0",
+        "maxValue": "200000",
+        "usedValue": "0",
+        "remainingBlocks": "2",
+        "remainingTxs": "3",
+        "remainingValue": "200000",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "after": {
+        "found": true,
+        "live": false,
+        "openedHeight": "10264492",
+        "expiryHeight": "10264495",
+        "maxTxs": "3",
+        "usedTxs": "0",
+        "maxValue": "200000",
+        "usedValue": "0",
+        "remainingBlocks": "0",
+        "remainingTxs": "3",
+        "remainingValue": "200000",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:15:00.826Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "E-1",
+      "requirement": "E Target restrictions",
+      "scenario": "window-target",
+      "target": "0xa343930CE94b1d1629791823A75fb14a1D7C7Ab8",
+      "txHash": "0x748240e0108ebd1b662467d15ccfc17163904d96f14b30f838fa2c69e09bad3a",
+      "height": "10264512",
+      "expected": "call to the approved vault admitted",
+      "actual": "admitted",
+      "denial": null,
+      "before": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10264509",
+        "expiryHeight": "10264569",
+        "maxTxs": "3",
+        "usedTxs": "0",
+        "maxValue": "300000",
+        "usedValue": "0",
+        "remainingBlocks": "59",
+        "remainingTxs": "3",
+        "remainingValue": "300000",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xa343930ce94b1d1629791823a75fb14a1d7c7ab8"
+        ]
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:15:19.134Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "E-2",
+      "requirement": "E Target restrictions",
+      "scenario": "window-target",
+      "target": "0x000000000000000000000000000000000000dEaD",
+      "expected": "transfer to an unapproved target refused",
+      "actual": "refused",
+      "denial": "before-inclusion",
+      "rpcError": "Missing or invalid parameters.\nDouble check you have provided the correct parameters.\n\nURL: https://evm-testnet.qore.host\nRequest body: {\"method\":\"eth_sendRawTransaction\",\"params\":[\"0x02f86e822648078502e90edd00853b5f2f360082ea6094000000000000000000000000000000000000dead8080c001a01e86fce89c6bda92a930a75f6d5df0713c77515370ba64e5ea48217ef7ee8e87a01aa2b8cef647f1a9000207c1f7fc33e080a97a1d00ef4491fe5cad2c3edb6c79\"]}\n \nRequest Arguments:\n  from:   0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df\n  to:     0x",
+      "classified": "exhausted",
+      "after": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10264509",
+        "expiryHeight": "10264569",
+        "maxTxs": "3",
+        "usedTxs": "1",
+        "maxValue": "300000",
+        "usedValue": "15300",
+        "remainingBlocks": "56",
+        "remainingTxs": "2",
+        "remainingValue": "284700",
+        "nativeOnly": false,
+        "allowedTargets": [
+          "0xa343930ce94b1d1629791823a75fb14a1d7c7ab8"
+        ]
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:15:19.136Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-1",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-link",
+      "txHash": "6846A70C418C725F08B3C875E7444BCAFBBAC86DE9C2DA3AD81035395F72A3CF",
+      "height": "10264542",
+      "expected": "delegated ed25519 key linked with proof of possession, bounded by a spending rule",
+      "actual": "linked",
+      "denial": null,
+      "before": {
+        "authenticators": "Error: abstractaccount query failed: HTTP 404 from https://api-testnet.qore.host/qorechain/abstractaccount/v1/accounts/qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv/authenticators: account qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv not found",
+        "spendingRules": "Error: abstractaccount query failed: HTTP 404 from https://api-testnet.qore.host/qorechain/abstractaccount/v1/accounts/qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv/spending_rules: account qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv not found"
+      },
+      "after": {
+        "authenticators": [
+          {
+            "scheme": "ed25519",
+            "pubkeyHex": "2434c755615684864a03011349f9cdb27602dbf2912a262c84745579e41d9b59",
+            "permissions": [
+              "send"
+            ],
+            "expiryUnix": "1795018555",
+            "label": "verac-category-proof",
+            "createdAtUnix": "1794932158",
+            "revoked": false,
+            "hasSpendRule": false
+          }
+        ],
+        "spendingRules": {
+          "rules": [
+            {
+              "id": "verac-proof",
+              "dailyLimit": "200000",
+              "perTxLimit": "100000",
+              "allowedDenoms": [
+                "uqor"
+              ],
+              "enabled": true,
+              "allowedEvmCalls": [],
+              "denomLimits": [
+                {
+                  "denom": "uqor",
+                  "perTxLimit": "100000",
+                  "dailyLimit": "200000"
+                }
+              ]
+            }
+          ],
+          "authenticatorRules": []
+        }
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:16:01.427Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-6",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-revoke",
+      "txHash": "D6F3E35D41023F26066F0BC3F29C24A67558185FEAD036D0F8E86080DB716847",
+      "height": "10264595",
+      "expected": "key revoked",
+      "actual": "revoked",
+      "denial": null,
+      "after": {
+        "authenticators": [
+          {
+            "scheme": "ed25519",
+            "pubkeyHex": "2434c755615684864a03011349f9cdb27602dbf2912a262c84745579e41d9b59",
+            "permissions": [
+              "send"
+            ],
+            "expiryUnix": "1795018555",
+            "label": "verac-category-proof",
+            "createdAtUnix": "1794932158",
+            "revoked": true,
+            "hasSpendRule": false
+          }
+        ],
+        "spendingRules": {
+          "rules": [
+            {
+              "id": "verac-proof",
+              "dailyLimit": "200000",
+              "perTxLimit": "100000",
+              "allowedDenoms": [
+                "uqor"
+              ],
+              "enabled": true,
+              "allowedEvmCalls": [],
+              "denomLimits": [
+                {
+                  "denom": "uqor",
+                  "perTxLimit": "100000",
+                  "dailyLimit": "200000"
+                }
+              ]
+            }
+          ],
+          "authenticatorRules": []
+        }
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:17:18.206Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-1",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-link",
+      "txHash": "6BE2CE1BCB131B82F24EA787F23BC7DA3ADFB1318F4365B743954433985DCA8D",
+      "height": "10264679",
+      "expected": "delegated ed25519 key linked with proof of possession, bounded by a spending rule",
+      "actual": "linked",
+      "denial": null,
+      "before": {
+        "authenticators": [
+          {
+            "scheme": "ed25519",
+            "pubkeyHex": "2434c755615684864a03011349f9cdb27602dbf2912a262c84745579e41d9b59",
+            "permissions": [
+              "send"
+            ],
+            "expiryUnix": "1795018555",
+            "label": "verac-category-proof",
+            "createdAtUnix": "1794932158",
+            "revoked": true,
+            "hasSpendRule": false
+          }
+        ],
+        "spendingRules": {
+          "rules": [
+            {
+              "id": "verac-proof",
+              "dailyLimit": "200000",
+              "perTxLimit": "100000",
+              "allowedDenoms": [
+                "uqor"
+              ],
+              "enabled": true,
+              "allowedEvmCalls": [],
+              "denomLimits": [
+                {
+                  "denom": "uqor",
+                  "perTxLimit": "100000",
+                  "dailyLimit": "200000"
+                }
+              ]
+            }
+          ],
+          "authenticatorRules": []
+        }
+      },
+      "after": {
+        "authenticators": [
+          {
+            "scheme": "ed25519",
+            "pubkeyHex": "2434c755615684864a03011349f9cdb27602dbf2912a262c84745579e41d9b59",
+            "permissions": [
+              "send"
+            ],
+            "expiryUnix": "1795018555",
+            "label": "verac-category-proof",
+            "createdAtUnix": "1794932158",
+            "revoked": true,
+            "hasSpendRule": false
+          },
+          {
+            "scheme": "ed25519",
+            "pubkeyHex": "c17fe9f97cccb2e78f6fdc441324d01ef2f9996f45add4a46f2ec9e35bf89579",
+            "permissions": [
+              "send"
+            ],
+            "expiryUnix": "1795018751",
+            "label": "verac-category-proof",
+            "createdAtUnix": "1794932354",
+            "revoked": false,
+            "hasSpendRule": false
+          }
+        ],
+        "spendingRules": {
+          "rules": [
+            {
+              "id": "verac-proof",
+              "dailyLimit": "200000",
+              "perTxLimit": "100000",
+              "allowedDenoms": [
+                "uqor"
+              ],
+              "enabled": true,
+              "allowedEvmCalls": [],
+              "denomLimits": [
+                {
+                  "denom": "uqor",
+                  "perTxLimit": "100000",
+                  "dailyLimit": "200000"
+                }
+              ]
+            }
+          ],
+          "authenticatorRules": []
+        }
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:19:18.170Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-2",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-within",
+      "txHash": "9BBE5F5F58A59133FD10CF79FF1CA9349B0A2D05F60934639A2AA2435C0325C2",
+      "height": "10264689",
+      "expected": "success",
+      "actual": "execution succeeded",
+      "denial": null,
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:19:31.532Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-3",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-over-per-tx",
+      "txHash": "01D93889DB917AA3D6203CD719AFDF56B7521FFB519F3409DB9504EE9A09C6B6",
+      "height": "10264703",
+      "expected": "failed: per-transaction limit",
+      "actual": "execution failed: per-tx limit 100000uqor exceeded (attempted 150000): spending limit exceeded",
+      "denial": "on-chain",
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:19:52.254Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-4.1",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-over-daily",
+      "txHash": "1F558D935D9F10D776128887AA82BB5EE7CE2890FAD7D26591208CEAA07305C4",
+      "height": "10264712",
+      "expected": "first within limits succeeds",
+      "actual": "execution succeeded",
+      "denial": null,
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:20:05.109Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-4.2",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-over-daily",
+      "txHash": "0AC5B8C58748A74C098E2E1DF72884AA7B1E7F137A64BCFC88DCB7EAF5529E75",
+      "height": "10264716",
+      "expected": "second execution failed: daily limit",
+      "actual": "execution failed: daily limit 200000uqor exceeded: spent 140000, remaining 60000, attempted 90000: spending limit exceeded",
+      "denial": "on-chain",
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:20:09.867Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-5",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-wrong-denom",
+      "txHash": "7659665B220B619F262F6FC182C32C79B754BEA224BFD9EF890BFB4DB3F760D2",
+      "height": "10264725",
+      "expected": "refused: denomination not allowed",
+      "actual": "execution failed: denom ibc/NOTALLOWED not allowed for this linked key: authenticator not permitted for this action",
+      "denial": "on-chain",
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:20:22.455Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-8",
+      "requirement": "F Native smart-account spending rules (replay)",
+      "scenario": "aa-replay",
+      "txHash": "4B88E05CC69BED3F6629E0AA3E1050555E02E19B2A1CC86F7F1A6D143EF1E22B",
+      "height": "0",
+      "expected": "refused: nonce already used",
+      "actual": "refused, code 11",
+      "denial": "on-chain",
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:20:35.652Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-6",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-revoke",
+      "txHash": "9B9AA9FB0856B765EF119CCDC039A88A080F5D10DDDAD0F6E03A6FE8CE50CFBF",
+      "height": "10264749",
+      "expected": "key revoked",
+      "actual": "revoked",
+      "denial": null,
+      "after": {
+        "authenticators": [
+          {
+            "scheme": "ed25519",
+            "pubkeyHex": "2434c755615684864a03011349f9cdb27602dbf2912a262c84745579e41d9b59",
+            "permissions": [
+              "send"
+            ],
+            "expiryUnix": "1795018555",
+            "label": "verac-category-proof",
+            "createdAtUnix": "1794932158",
+            "revoked": true,
+            "hasSpendRule": false
+          },
+          {
+            "scheme": "ed25519",
+            "pubkeyHex": "c17fe9f97cccb2e78f6fdc441324d01ef2f9996f45add4a46f2ec9e35bf89579",
+            "permissions": [
+              "send"
+            ],
+            "expiryUnix": "1795018751",
+            "label": "verac-category-proof",
+            "createdAtUnix": "1794932354",
+            "revoked": true,
+            "hasSpendRule": false
+          }
+        ],
+        "spendingRules": {
+          "rules": [
+            {
+              "id": "verac-proof",
+              "dailyLimit": "200000",
+              "perTxLimit": "100000",
+              "allowedDenoms": [
+                "uqor"
+              ],
+              "enabled": true,
+              "allowedEvmCalls": [],
+              "denomLimits": [
+                {
+                  "denom": "uqor",
+                  "perTxLimit": "100000",
+                  "dailyLimit": "200000"
+                }
+              ]
+            }
+          ],
+          "authenticatorRules": []
+        }
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:20:57.207Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "F-7",
+      "requirement": "F Native smart-account spending rules",
+      "scenario": "aa-after-revoke",
+      "txHash": "05FA59A36A574C9B191C7E8A3C6F8AD81A63803CAD762C1611D704A1E0E1E543",
+      "height": "0",
+      "expected": "refused: key revoked",
+      "actual": "refused, code 10: permission denied - the authenticator lacks the permission this message requires (check the permission_schema) (failed to execute message; message index: 0: linked key is unbound or revoked: authenticator not permitted for this action) (tx 05FA59A36A574C9B191C7E8A3C6F8AD81A63803CAD762C1611D704A1E0E1",
+      "denial": "on-chain",
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:21:10.864Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    },
+    {
+      "id": "C1-1",
+      "requirement": "C Value limits (native window)",
+      "scenario": "window-value",
+      "target": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+      "expected": "0.5 QOR transfer refused: maxValue 0.05 QOR covers value plus max fee",
+      "actual": "refused",
+      "denial": "before-inclusion",
+      "rpcError": "Missing or invalid parameters.\nDouble check you have provided the correct parameters.\n\nURL: https://evm-testnet.qore.host\nRequest body: {\"method\":\"eth_sendRawTransaction\",\"params\":[\"0x02f876822648198502e90edd00853b5f2f360082ea6094d995513527951c6c48c561f313f2a0e3ac5ff0df8806f05b59d3b2000080c080a0d3add88343c1526fb887087e7287ff8609b9d82150417260ef760b587f74e62ba053857b2226858ee28964f7b97388e25ed697c414c8f7e5e7062e2d6b17ec748e\"]}\n \nRequest Arguments:\n  from:   0xd995513527951C6C48C561F313f2a0E3AC5Ff",
+      "classified": "exhausted",
+      "before": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10264767",
+        "expiryHeight": "10264827",
+        "maxTxs": "3",
+        "usedTxs": "0",
+        "maxValue": "50000",
+        "usedValue": "0",
+        "remainingBlocks": "59",
+        "remainingTxs": "3",
+        "remainingValue": "50000",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "after": {
+        "found": true,
+        "live": true,
+        "openedHeight": "10264767",
+        "expiryHeight": "10264827",
+        "maxTxs": "3",
+        "usedTxs": "0",
+        "maxValue": "50000",
+        "usedValue": "0",
+        "remainingBlocks": "58",
+        "remainingTxs": "3",
+        "remainingValue": "50000",
+        "nativeOnly": false,
+        "allowedTargets": []
+      },
+      "account": "qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv",
+      "verifiedAt": "2026-11-17T16:21:24.444Z",
+      "source": "packages/qorechain/scripts/category-proofs.ts"
+    }
+  ]
 }

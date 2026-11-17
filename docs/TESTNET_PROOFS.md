@@ -35,7 +35,9 @@ None. (Addresses will be listed here with deployment tx hashes.)
 
 `packages/qorechain/scripts/category-proofs.ts` proves the window and native smart-account limits on a **dedicated throwaway account**. It refuses to run as the owner, agent or approver. It is a dry run by default. With `--broadcast`, it appends exactly what the chain returned to `deployments/category-proofs.json`, which Live Proof and the Quantum Simulator read.
 
-**Status: written and type-checked, not yet broadcast.** No results are recorded yet, and Live Proof shows these checks as "not yet verified". Refusals of window limits happen before block inclusion, so their evidence is the RPC error plus the window read back before and after, not a transaction hash.
+**Status: run on 2026-11-17, all passed.** The dedicated account was `qor1mx24zdf8j5wxcjx9v8e38u4quwk9luxltk5dpv` (fresh, funded from the faucet, ML-DSA-87 key registered with proof of possession in `C6C68E97…A00A`). The results are in `deployments/category-proofs.json`, and Live Proof shows B, C1, D, E and F as verified on chain. Refusals of window limits happen before block inclusion, so their evidence is the RPC error plus the window read back before and after, not a transaction hash.
+
+A first attempt at the delegated-key payments sent them to the account itself, which the chain refuses ("recipient must differ from the account"). Those refusals proved nothing about the limits and were not recorded. The script now pays the `0x…dEaD` burn address, records refusals with their reason, and links a fresh key on every `aa-link`; the F sequence was then run again from a new key. The earlier link and revoke of the first key remain in the file as history; Live Proof uses the latest run of each check.
 
 | Scenario | Proves |
 |---|---|

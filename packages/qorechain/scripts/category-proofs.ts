@@ -30,7 +30,7 @@ import { resolve } from "node:path";
 import { StargateClient } from "@cosmjs/stargate";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import {
-  EthNativeSigner, classifyEvmWindowRejection, closeEvmWindowMsg, cosmosAuthSignBytes, decodeAuthenticatorExecutions, executeCosmosMsg,
+  EthNativeSigner, classifyEvmWindowRejection, evmToQor, closeEvmWindowMsg, cosmosAuthSignBytes, decodeAuthenticatorExecutions, executeCosmosMsg,
   fetchAuthNonce, fetchAuthenticators, fetchEvmWindow, fetchSpendingRules, linkAuthenticatorMsgs, openEvmWindowMsg, revokeAuthenticatorMsg,
   signAuthenticatorLinkEd25519, unifiedAccountFromSeed, type UnifiedAccount,
 } from "@qorechain/sdk";
@@ -55,8 +55,15 @@ if (!existsSync(ACCOUNT_FILE)) { console.error(`No account file at ${ACCOUNT_FIL
 const f = JSON.parse(readFileSync(ACCOUNT_FILE, "utf8")) as { qorAddress: string; evmAddress: string; secp256k1PrivateKey: string; mlDsa87PublicKey: string; mlDsa87SecretKey: string; delegatedEd25519Seed?: string };
 
 // Guard rails: never run against the accounts that operate the real vault.
-const PROTECTED = [process.env.LIVE_AGENT_ADDRESS, process.env.LIVE_APPROVER_ADDRESS, "0x5B108321e824faf53AA198fcD1682A07a68970F2"].filter(Boolean).map((a) => a!.toLowerCase());
-if (PROTECTED.includes(f.evmAddress.toLowerCase())) { console.error("This is an operating account (owner, agent or approver). Use a dedicated throwaway account."); process.exit(2); }
+const PROTECTED = [
+  process.env.LIVE_AGENT_ADDRESS, process.env.LIVE_APPROVER_ADDRESS,
+  "0x5B108321e824faf53AA198fcD1682A07a68970F2", // vault owner
+  "0x7615DAb4651b47f69F80305f89F39B211F829dd7", // payment agent
+  "0x0Db385bBa0D24d47F1a73EDE8df84FAce785f91A", // approver
+  "0x423Fdb77F097c81767C8f73C819869D6E3D04556", // Q-Day drill account
+  "0x764518B50E93e795a0d7B43F310D5d03f9e39cFc", // Q-Day drill admin
+].filter(Boolean).map((a) => a!.toLowerCase());
+if (PROTECTED.includes(f.evmAddress.toLowerCase())) { console.error("This is an operating or drill account. Use a dedicated throwaway account."); process.exit(2); }
 
 const base = unifiedAccountFromSeed(unhex(f.secp256k1PrivateKey), { pqcSecret: crypto.getRandomValues(new Uint8Array(32)) });
 const account: UnifiedAccount = { ...base, pqc: { publicKey: unhex(f.mlDsa87PublicKey), secretKey: unhex(f.mlDsa87SecretKey) } };
@@ -126,15 +133,27 @@ function delegatedKey(): { seed: Uint8Array; pubkey: Uint8Array } {
   const seed = unhex(f.delegatedEd25519Seed);
   return { seed, pubkey: ed25519.getPublicKey(seed) };
 }
+// The chain refuses a delegated transfer to the account itself ("recipient must differ from the account"), so delegated
+// payments go to the 0x…dEaD burn address. Amounts are a few hundredths of a test QOR.
+const SINK = evmToQor(DEAD);
+/** signAndBroadcast throws on a non-zero code; turn that into a result so a refusal is recorded, with its tx hash. */
+async function nativeOrRefusal(messages: Parameters<EthNativeSigner["sign"]>[0]["messages"], gas: number, label: string) {
+  try { return await native(messages, gas, label); }
+  catch (e) {
+    const m = e instanceof Error ? e.message : String(e);
+    const code = Number((e as { code?: number }).code ?? /code (\d+)/.exec(m)?.[1] ?? -1);
+    return { code: code || -1, transactionHash: /\(tx ([0-9A-Fa-f]{64})\)/.exec(m)?.[1] ?? "", height: 0, rawLog: m, events: [] } as unknown as Awaited<ReturnType<typeof native>>;
+  }
+}
 async function delegatedSend(uqor: bigint, denom = "uqor", label = "") {
   const k = delegatedKey();
   const { nonce } = await fetchAuthNonce({ rest, address: account.cosmos, pubkey: k.pubkey });
-  const to = account.cosmos; // self-transfer: proves the rule without sending funds anywhere else
+  const to = SINK;
   const amount = `${uqor}${denom}`;
   const digest = cosmosAuthSignBytes({ chainId: CHAIN_ID, account: account.cosmos, pubkey: k.pubkey, to, amount, nonce });
   const signature = ed25519.sign(digest, k.seed);
   const m = executeCosmosMsg({ relayer: account.cosmos, account: account.cosmos, scheme: "ed25519", pubkey: k.pubkey, signature, to, amount, nonce });
-  const res = await native([m], 400_000, `MsgExecuteCosmos ${amount} by delegated key (nonce ${nonce}) ${label}`);
+  const res = await nativeOrRefusal([m], 400_000, `MsgExecuteCosmos ${amount} to ${to} by delegated key (nonce ${nonce}) ${label}`);
   if (!res) return { res: null, exec: null, m };
   const exec = res.code === 0 ? decodeAuthenticatorExecutions(res as never, [m]) : [];
   return { res, exec, m };
@@ -196,6 +215,8 @@ switch (scenario) {
     break;
   }
   case "aa-link": {
+    // Always link a FRESH key: a key that was linked and revoked before is not reused.
+    if (BROADCAST) { f.delegatedEd25519Seed = hex(ed25519.utils.randomSecretKey()); writeFileSync(ACCOUNT_FILE, JSON.stringify(f, null, 2), { mode: 0o600 }); }
     const k = delegatedKey();
     const proof = signAuthenticatorLinkEd25519({ chainId: CHAIN_ID, account: account.cosmos, privateKey: k.seed });
     const msgs = linkAuthenticatorMsgs({
@@ -240,10 +261,10 @@ switch (scenario) {
     const k = delegatedKey();
     const { nonce } = await fetchAuthNonce({ rest, address: account.cosmos, pubkey: k.pubkey });
     if (nonce === 0n) { console.log("Run aa-within first."); break; }
-    const to = account.cosmos, amount = "1000uqor", stale = nonce - 1n;
+    const to = SINK, amount = "1000uqor", stale = nonce - 1n;
     const signature = ed25519.sign(cosmosAuthSignBytes({ chainId: CHAIN_ID, account: account.cosmos, pubkey: k.pubkey, to, amount, nonce: stale }), k.seed);
     const m = executeCosmosMsg({ relayer: account.cosmos, account: account.cosmos, scheme: "ed25519", pubkey: k.pubkey, signature, to, amount, nonce: stale });
-    const res = await native([m], 400_000, `MsgExecuteCosmos with a used nonce ${stale}`);
+    const res = await nativeOrRefusal([m], 400_000, `MsgExecuteCosmos with a used nonce ${stale}`);
     if (!res) break;
     save({ id: "F-8", requirement: "F Native smart-account spending rules (replay)", scenario, txHash: res.transactionHash, height: String(res.height), expected: "refused: nonce already used", actual: res.code !== 0 ? `refused, code ${res.code}` : "ACCEPTED (unexpected)", denial: res.code !== 0 ? "on-chain" : null });
     break;
