@@ -17,6 +17,7 @@ export const TOOLS = [
   "security.pause.request", // asks for a pause; a human or guardian key executes it
   "notify.send",
   "market.read",
+  "web.read.public", // bounded, read-only research of applicant-supplied public links (GitHub API, QoreChain RPC, SSRF-guarded pages)
 ] as const;
 export type Tool = (typeof TOOLS)[number];
 
@@ -58,6 +59,30 @@ export const AGENTS: Record<AgentId, AgentSpec> = {
     responsibilities: "Runs tenders, evaluates decrypted bids, writes recommendation reports. Humans approve awards.",
     tools: [...base, "ai.analyze", "docs.read.ciphertext", "docs.decrypt.authorised", "payments.propose"],
     mayMessage: ["DocumentAgent", "SecurityAgent", "PolicyAgent", "TreasuryAgent", "MilestoneAgent"],
+  },
+  GrantCoordinator: {
+    id: "GrantCoordinator", module: "Grant Intelligence", usesAi: true, canMoveFunds: false,
+    responsibilities: "Plans a grant investigation, assigns specialist agents, combines their findings into one review package and drafts clarification questions. Never approves, awards or pays.",
+    tools: [...base, "ai.analyze"],
+    mayMessage: ["GrantAgent", "ProjectResearchAgent", "TechnicalEvaluationAgent", "GrantRiskAgent", "TreasuryAgent", "MilestoneAgent"],
+  },
+  ProjectResearchAgent: {
+    id: "ProjectResearchAgent", module: "Grant Intelligence", usesAi: false, canMoveFunds: false,
+    responsibilities: "Reads applicant-supplied public evidence: GitHub through its API, QoreChain contracts and receipts, project websites through an SSRF-guarded fetcher. Records unavailable sources as unavailable.",
+    tools: ["db.read", "db.write.drafts", "chain.read", "web.read.public"],
+    mayMessage: ["TechnicalEvaluationAgent", "GrantRiskAgent"],
+  },
+  TechnicalEvaluationAgent: {
+    id: "TechnicalEvaluationAgent", module: "Grant Intelligence", usesAi: true, canMoveFunds: false,
+    responsibilities: "Assesses whether a technical project appears to exist and how far it is, from collected evidence only. Never runs applicant code.",
+    tools: ["db.read", "db.write.drafts", "ai.analyze"],
+    mayMessage: ["GrantRiskAgent"],
+  },
+  GrantRiskAgent: {
+    id: "GrantRiskAgent", module: "Grant Intelligence", usesAi: false, canMoveFunds: false,
+    responsibilities: "Flags similar or repeated submissions, reused links and payout addresses, recipient changes and contradicted claims, with evidence. A flag is not proof of fraud.",
+    tools: ["db.read", "db.write.drafts"],
+    mayMessage: ["SecurityAgent"],
   },
   GrantAgent: {
     id: "GrantAgent", module: "Grants", usesAi: true, canMoveFunds: false,

@@ -140,3 +140,50 @@ export async function awardApplication(formData: FormData) {
   if (error) back("error", error.message, `/grants/applications/${id}`);
   back("msg", `Awarded with ${ms.length} milestone${ms.length === 1 ? "" : "s"}${plan.length ? " from the applicant's plan" : ", split evenly"}. No QOR has been sent: funding needs the treasury's approval path.`, `/grants/applications/${id}`);
 }
+
+// ------------------------------------------------------------------ review decisions (all recorded with a reason)
+const appPath = (f: FormData) => `/grants/applications/${str(f, "app")}`;
+
+export async function decideFlag(f: FormData) {
+  const { sb } = await ctx();
+  const { error } = await sb.rpc("decide_grant_flag", { p_flag: str(f, "flag"), p_decision: str(f, "decision"), p_reason: str(f, "reason") });
+  if (error) back("error", error.message, appPath(f));
+  back("msg", str(f, "decision") === "dismissed" ? "Flag dismissed with your reason." : "Flag confirmed with your reason.", appPath(f));
+}
+
+/** Sends a clarification draft after the reviewer edits it: one question per line. */
+export async function sendClarification(f: FormData) {
+  const { sb } = await ctx();
+  const questions = str(f, "questions").split(/\r?\n/).map((q) => q.trim()).filter(Boolean).map((question) => ({ question, about: "reviewer" }));
+  const { error } = await sb.rpc("send_grant_clarification", { p_clar: str(f, "clar"), p_questions: questions });
+  if (error) back("error", error.message, appPath(f));
+  back("msg", `Sent ${questions.length} question(s). The applicant can now answer and amend their application once.`, appPath(f));
+}
+
+export async function discardClarification(f: FormData) {
+  const { sb } = await ctx();
+  const { error } = await sb.rpc("cancel_grant_clarification", { p_clar: str(f, "clar") });
+  if (error) back("error", error.message, appPath(f));
+  back("msg", "Draft discarded.", appPath(f));
+}
+
+export async function answerClarification(f: FormData) {
+  const { sb } = await ctx();
+  const { error } = await sb.rpc("answer_grant_clarification", { p_clar: str(f, "clar"), p_response: str(f, "response") });
+  if (error) back("error", error.message, appPath(f));
+  back("msg", "Answer sent. If your answer changes the application, amend it and resubmit; reviewers see every version.", appPath(f));
+}
+
+export async function declareConflict(f: FormData) {
+  const { sb } = await ctx();
+  const { error } = await sb.rpc("declare_grant_conflict", { p_app: str(f, "app"), p_note: str(f, "note") });
+  if (error) back("error", error.message, appPath(f));
+  back("msg", "Conflict recorded. You can no longer decide, override scores or settle flags on this application.", appPath(f));
+}
+
+export async function overrideScore(f: FormData) {
+  const { sb } = await ctx();
+  const { error } = await sb.rpc("override_grant_score", { p_review: str(f, "review"), p_criterion: str(f, "criterion"), p_score: Number(str(f, "score")), p_reason: str(f, "reason") });
+  if (error) back("error", error.message, appPath(f));
+  back("msg", "Override recorded next to the AI and rule scores. The original report is unchanged.", appPath(f));
+}

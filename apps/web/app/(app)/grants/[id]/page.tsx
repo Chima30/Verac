@@ -57,7 +57,8 @@ export default async function Round({ params, searchParams }: { params: Promise<
         badge={<Badge tone={open ? "info" : "neutral"}>{open ? "OPEN" : round.status === "open" ? "DEADLINE PASSED" : round.status.toUpperCase()}</Badge>}
         actions={<><Link href="/grants" className={btnSecondaryCls}>All rounds</Link>
           {applicant && open && !mine && <Link href={`/grants/${id}/apply`} className={btnCls}>Start an application</Link>}
-          {applicant && mine && <Link href={mine.status === "draft" || mine.amendment_open ? `/grants/${id}/apply` : `/grants/applications/${mine.id}`} className={btnCls}>{mine.status === "draft" ? "Continue your draft" : mine.amendment_open ? "Amend your application" : "Your application"}</Link>}</>} />
+          {applicant && mine && <Link href={mine.status === "draft" || mine.amendment_open ? `/grants/${id}/apply` : `/grants/applications/${mine.id}`} className={btnCls}>{mine.status === "draft" ? "Continue your draft" : mine.amendment_open ? "Amend your application" : "Your application"}</Link>}
+          {(admin || s.org.role === "security_reviewer") && <Link href={`/grants/${id}/intelligence`} className={btnCls}>Investigate with agents</Link>}</>} />
       <FlashMessages msg={sp.msg} error={sp.error} />
 
       <section aria-label="Round figures" className="mb-6 rounded-lg border border-line bg-surface p-5 shadow-card">

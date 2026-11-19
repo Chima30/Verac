@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import { redirect } from "next/navigation";
 import { checkApplication } from "@qoreops/policy-engine";
 import { ReviewButton } from "@/components/grants/review-button";
+import { ApplicantClarifications, ReviewerPanels, type ClarRow, type EvidenceRow, type FlagRow, type OverrideRow, type ReviewRow } from "@/components/grants/review-panels";
 import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, Source, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { CATEGORY_LABEL, STATUS_TEXT, STATUS_TONE, diffVersions, nextAction, sumWei, wei, type AppRow, type RoundRow, type VersionRow } from "@/lib/grants";
@@ -48,6 +49,25 @@ export default async function Application({ params, searchParams }: { params: Pr
     const awarded = sumWei((others ?? []).filter((o) => o.status === "awarded").map((o) => o.requested_amount));
     flags = checkApplication({ requested: wei(a.requested_amount), pitch: a.pitch ?? "", name: a.applicant_name }, { budget: wei(round.budget), awarded: awarded.toString(), otherPitches: (others ?? []).filter((o) => o.id !== a.id).map((o) => o.pitch ?? "") });
   }
+  const reviewer = admin || s.org.role === "security_reviewer";
+  // Reviewer data (RLS: owners, administrators and security reviewers only). Applicants see only clarifications sent to them.
+  let review: ReviewRow | null = null, evidence: EvidenceRow[] = [], overrides: OverrideRow[] = [], riskFlags: FlagRow[] = [], conflicted = false;
+  if (reviewer) {
+    const { data: rv } = await sb.from("grant_reviews").select("id,task_id,created_at,rubric_version,application_version,scores,scored_points,scored_max,applicable_max,recommendation,model,report").eq("application_id", appId).order("created_at", { ascending: false }).limit(1);
+    review = ((rv ?? [])[0] as unknown as ReviewRow | undefined) ?? null;
+    let eq = sb.from("grant_evidence").select("id,source,subject,claim,status,reason,url,retrieved_at,task_id,observed").eq("application_id", appId).order("id");
+    if (review?.task_id) eq = eq.eq("task_id", review.task_id);
+    const { data: ev } = await eq;
+    evidence = (ev ?? []) as unknown as EvidenceRow[];
+    if (!review?.task_id && evidence.length) { const last = evidence[evidence.length - 1]!.task_id; evidence = evidence.filter((e) => e.task_id === last); }
+    if (review) { const { data: ov } = await sb.from("grant_overrides").select("criterion,new_score,reason,by_user,created_at").eq("review_id", review.id).order("created_at"); overrides = (ov ?? []) as unknown as OverrideRow[]; }
+    const { data: fl } = await sb.from("grant_risk_flags").select("id,code,severity,message,status,decided_reason,evidence").eq("application_id", appId).order("created_at", { ascending: false });
+    riskFlags = ((fl ?? []) as unknown as FlagRow[]).sort((x, y) => (x.status === "open" ? 0 : 1) - (y.status === "open" ? 0 : 1));
+    const { data: cf } = await sb.from("grant_conflicts").select("user_id").eq("application_id", appId).eq("user_id", s.user.id);
+    conflicted = !!cf?.length;
+  }
+  const { data: cl } = await sb.from("grant_clarifications").select("id,questions,status,drafted_by,sent_at,response,responded_at,created_at").eq("application_id", appId).neq("status", "cancelled").order("created_at", { ascending: false });
+  const clars = (cl ?? []) as unknown as ClarRow[];
   const c = a.content ?? {};
   const isOpen = ["submitted", "under_review"].includes(a.status);
   const from = versions.find((v) => v.version === Number(sp.from)) ?? versions[versions.length - 2];
@@ -81,6 +101,9 @@ export default async function Application({ params, searchParams }: { params: Pr
               )}
             </div>
           </Card>
+
+          {mine && <ApplicantClarifications appId={a.id} clars={clars} amendmentOpen={a.amendment_open} grantId={a.grant_id} />}
+          {reviewer && !mine && <ReviewerPanels appId={a.id} evidence={evidence} review={review} overrides={overrides} flags={riskFlags} clars={clars} conflicted={conflicted} admin={admin} />}
 
           {(c.links || c.contracts?.length || c.transactions?.length) && (
             <Card title="7. Links and on-chain references" description="As submitted. Verac never runs applicant code.">
@@ -159,7 +182,8 @@ export default async function Application({ params, searchParams }: { params: Pr
             </Card>
           )}
 
-          {admin && (isOpen || a.status === "recommended") && (
+          {admin && conflicted && (isOpen || a.status === "recommended") && <Notice tone="warn">You declared a conflict on this application, so the decision controls are hidden.</Notice>}
+          {admin && !conflicted && (isOpen || a.status === "recommended") && (
             <Card title="Decide">
               {flags?.aiEligible !== false && (isOpen || a.status === "recommended") && <div className="mb-4"><ReviewButton id={a.id} again={!!a.review?.ai} /></div>}
               {isOpen && (

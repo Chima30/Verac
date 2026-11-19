@@ -68,6 +68,11 @@ export const AGENT_IDS = [
   "StrategyAgent",
   "ArbitrageAgent",
   "DisputeAgent",
+  // Grant intelligence (advisory; none of them can move funds)
+  "GrantCoordinator",
+  "ProjectResearchAgent",
+  "TechnicalEvaluationAgent",
+  "GrantRiskAgent",
 ] as const;
 export const AgentIdSchema = z.enum(AGENT_IDS);
 export type AgentId = z.infer<typeof AgentIdSchema>;
