@@ -1,0 +1,61 @@
+{
+  "network": "qorechain-diana",
+  "evmChainId": 9800,
+  "txs": {
+    "fund admin-1": "49AA8551EA1C6566CF702C6A7E88D215EDEA98A1F82088C6F89F3EBF6EEB67C7",
+    "fund admin-2": "592E3E92DAE015F82D0C92AFF873F1B84FFAFF57D1E3A9BE313F0115F2F8F3D7",
+    "fund admin-3": "1053E0F0B309AD3AA94CDC3803F147E8082159E97F0A0E79C5182C6C78276932",
+    "fund agent": "B5B3EDA1B38DA52B9D88DB478B25771B2F96F601CCF4EAFE28BCB8FC7E37BCE8",
+    "fund relayer": "1BBDD4655669F0007EA87B8CB92CE356EE19E9842EE7D36A9D4D5770CFC1BCA3",
+    "register pqc admin-1": "95C3505B0ED8C8275C15E776337EE9B86A2776440A1CA24A9C8652BA5740D17D",
+    "register pqc admin-2": "572AEB320217EB5EEECDA86C5F0ADF6CA538E5E4C79752BFE9037D56EC1A2161",
+    "register pqc admin-3": "E885826FB82ED33BAECDA2E615BB22A096DA526E7F6945B4BF1D548C73636BC4",
+    "register pqc agent": "7A2157449533CC238E989C47A6388DF17E498B9A279483B7A22D704171D4D98A",
+    "register pqc relayer": "D5E0A3959B5F72824BE93C33710E78E752E4B0CF7FF80A93AD70DCCB446ACFD3",
+    "relayer window open": "DA4542CF1830E02919071E6244FDC94EF6688A5F16EA241383D35EAEA321360B",
+    "deploy TreasuryVaultV2": "0xc9eb76289acc2c5ee73b0eeb5a7fbe30312e880bece54b9729c009159a7f3286",
+    "admin: approve recipient (2 of 3 signed)": "0xdd20af94dabe92ddc0ed7151256a6e3121563063740a435c0c7b64abe8f172b1",
+    "admin: agent limits 1 QOR/payment, 2 QOR/day (2 of 3 signed)": "0x7db347d2d9a78e226e25b1f05e73766d00ee47430bcd73b78c1823b68372ca76",
+    "admin: guardian = relayer (2 of 3 signed)": "0xf25f2bddd7af5a4058c948b3e5fcc4762e0ffa241caecb48b7f08d8856f8e62f",
+    "fund vault 5 QOR": "0x1324fa7d59058bf175cc80baac973d7fc0b6d83167a6f83665b32d4a5c566173",
+    "relayer window close": "1CEADB72E9A1BD6D156894665E685A08496632EBEE3DBF47D2FD1FE912FE80BA"
+  },
+  "accounts": {
+    "admin-1": {
+      "evm": "0xd42C50139486a6ba177d0D37fd20135AE1F5C336",
+      "qor": "qor16sk9qyu5s6nt59map5ml6gqnttsltsekmr99fd"
+    },
+    "admin-2": {
+      "evm": "0x0Bc2c79BEc67e686Eff84628F7A94661882Ded33",
+      "qor": "qor1p0pv0xlvvlngdmlcgc50022xvxyzmmfnztfd89"
+    },
+    "admin-3": {
+      "evm": "0x6A7354c2b61Be31abF7C8CB02feB235054df815d",
+      "qor": "qor1dfe4fs4kr03340mu3jczl6er2p2dlq2atkmpzv"
+    },
+    "agent": {
+      "evm": "0x64D9B87fFeBee2723EeE437a2d5365c479A26FE9",
+      "qor": "qor1vnvmsll7hm38y0hwgdaz65m9c3u6ymlfmaz5e3"
+    },
+    "relayer": {
+      "evm": "0x484b045261Ca8400615f80B8f078B5Da72E7C6Df",
+      "qor": "qor1fp9sg5npe2zqqc2lszu0q794mfew03kl7axptu"
+    }
+  },
+  "vendor": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+  "TreasuryVaultV2": "0xAbd8CB36dd17b7aC35432c4A04f44f2d197504E2",
+  "artifactSourceSha256": "47d21b393bcd4d5eb9c07e7aca5d721c92a67d5c03fcea11166c3647e5d4be86",
+  "admins": [
+    "0x0Bc2c79BEc67e686Eff84628F7A94661882Ded33",
+    "0x6A7354c2b61Be31abF7C8CB02feB235054df815d",
+    "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
+  ],
+  "threshold": 2,
+  "policyHash": "0xfe57ab8a616d0eaca1210ed097a22631b4efdb496e77440a568f058963560661",
+  "agentLimits": {
+    "perTxCap": "1",
+    "dailyCap": "2",
+    "validUntil": "2026-12-03T20:18:40.000Z"
+  },
+  "configuredAt": "2026-11-19T20:19:13.116Z"
+}
