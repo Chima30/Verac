@@ -25,6 +25,7 @@
     "v2:admin": "tsx packages/qorechain/scripts/v2-admin.ts",
     "v2:setup": "tsx packages/qorechain/scripts/v2-setup.ts",
     "v2:live": "tsx packages/qorechain/scripts/v2-live.ts",
+    "v2:admin-action": "tsx packages/qorechain/scripts/v2-admin-action.ts",
     "ai:probe": "tsx --env-file=apps/web/.env.local packages/ai-provider/scripts/probe.ts"
   },
   "devDependencies": {

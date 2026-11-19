@@ -57,5 +57,22 @@
     "dailyCap": "2",
     "validUntil": "2026-12-03T20:18:40.000Z"
   },
-  "configuredAt": "2026-11-19T20:19:13.116Z"
+  "configuredAt": "2026-11-19T20:19:13.116Z",
+  "adminActions": [
+    {
+      "action": "approve recipient 0x200caD3c9De63D3613A33fc20b1ef31CB4dbF5AF",
+      "at": "2026-11-19T21:20:03.705Z",
+      "adminNonce": "5",
+      "signers": [
+        "0x0Bc2c79BEc67e686Eff84628F7A94661882Ded33",
+        "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
+      ],
+      "windowOpen": "D2F1A7CB83C8183ECF79D86DB601179E3EFD046350185B9A58AD9364FC62DE3C",
+      "tx": "0x03c0051338ad36bcc3226cb635f2591b3b26d17a8623d3f75e5809defb12bba7",
+      "block": "10394701",
+      "status": "success",
+      "windowClose": "B7F22521505DA63DDF3BDCA5FA0E0A85103C16880AC0671957B33690DE33F7F8",
+      "approvedRecipientAfter": true
+    }
+  ]
 }
