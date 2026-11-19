@@ -75,7 +75,7 @@ export default async function Treasury() {
         <div className="min-w-0 space-y-6">
           <Card id="pay" title="Live payments" description="Request, approve and execute real testnet payments. Every confirmed row links to its transaction." right={<Badge tone="live" />}>
             {live.signedIn ? (
-              <LivePayments ops={live.ops} canRequest={canRequest} canDecide={["owner", "administrator"].includes(live.role ?? "")} explorer={EXPLORER} status={live.status} />
+              <LivePayments ops={live.ops} canRequest={canRequest} canDecide={["owner", "administrator"].includes(live.role ?? "")} explorer={EXPLORER} status={live.status} v2={live.v2} />
             ) : <EmptyState title="Sign in to make a payment" action={<Link href="/login?next=/treasury" className={btnCls}>Sign in</Link>}>Payment requests belong to your organisation. Nothing on this card is simulated.</EmptyState>}
           </Card>
 

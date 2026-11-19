@@ -88,6 +88,7 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
             canDecide={["owner", "administrator"].includes(s.org.role)}
             explorer="https://explore.qore.network"
             status={live.status}
+            v2={live.v2}
           />
         </Card>
       </div>

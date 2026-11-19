@@ -83,3 +83,20 @@ Live execution lets the website send real **testnet** payments through the Treas
 2. Set `AGENT_MESSAGE_ROOT_SECRET` (`openssl rand -hex 32`) as a Sensitive variable. Without it, workflows stop at the first agent step with a clear error.
 3. Optional: set `CRON_SECRET`, and schedule `GET /api/agent/workflows/tick` with `Authorization: Bearer <CRON_SECRET>` to resume unattended workflows. Optional: `LIVE_APPROVER_ADDRESS` (public address, shown on Live Proof) and `DEMO_APPROVED_RECIPIENT`.
 4. Deploy. No contract changes are needed.
+
+## Turning on TreasuryVault V2 (administrators approve with their own post-quantum keys)
+
+V2 is deployed on Diana at `0xAbd8CB36dd17b7aC35432c4A04f44f2d197504E2` (see docs/V2_LIVE_2026-11-19.md). With V2 on, a
+payment is approved only by two administrators' ML-DSA-87 signatures made on their own computers; the website's server
+holds no administrator key and cannot approve. The original vault and its password approval keep working alongside.
+
+1. Apply `supabase/migrations/0018_v2_signed_approvals.sql` in the Supabase SQL editor ("Success. No rows returned").
+2. Run `npx tsx packages/qorechain/scripts/v2-env.ts`. It writes `.secrets/v2/website-env.txt` (private, not printed).
+   Add its four lines to Vercel as Sensitive variables: `V2_VAULT_ADDRESS`, `V2_AGENT_EVM_PRIVATE_KEY`,
+   `V2_AGENT_MLDSA_PUBLIC_KEY`, `V2_AGENT_MLDSA_SECRET_KEY`. They hold only the capped V2 agent's testnet key.
+   `LIVE_EXECUTION_ENABLED=true` and `SUPABASE_SERVICE_ROLE_KEY` must already be set.
+3. Redeploy. Approvals then offers "Administrators sign with their own post-quantum keys (TreasuryVault V2)", and the
+   agent workflow prepares eligible invoices as V2 payments.
+4. Each administrator signs on their own computer: download the signing request from Approvals, run
+   `pnpm v2:admin sign <their key folder> <request file>`, check the payment it shows, type yes, and upload the signature file.
+5. A recipient must be approved on V2 by two administrators before it can be paid (the website cannot add one).

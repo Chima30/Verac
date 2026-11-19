@@ -1,0 +1,25 @@
+{
+  "format": "verac-v2-signing-request/1",
+  "network": "qorechain-diana",
+  "chainId": 9800,
+  "vault": "0xAbd8CB36dd17b7aC35432c4A04f44f2d197504E2",
+  "agent": "0x64D9B87fFeBee2723EeE437a2d5365c479A26FE9",
+  "transactionId": "e2e-1795121350072",
+  "digest": "0xb8b2f1e877b9061c32010aefab756ac332f9ccc30cdaa9c397f873619fba3058",
+  "requiredSignatures": 2,
+  "payment": {
+    "token": "0x0000000000000000000000000000000000000000",
+    "to": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+    "amount": "900000000000000000",
+    "purposeHash": "0xecebfd87c6bb0f2b39a579efa2137b3d8db2077e549e1a3829a65673dee49b31",
+    "policyVersion": "1",
+    "expiry": "1795124949",
+    "nonce": "73158228566124973800955225491"
+  },
+  "readable": {
+    "amountQor": 0.25,
+    "recipient": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+    "purpose": "E2E: invoice payment through the website's V2 code path",
+    "expiresAt": "2026-11-19T21:49:09.000Z"
+  }
+}

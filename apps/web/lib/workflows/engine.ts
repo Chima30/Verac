@@ -19,6 +19,7 @@ import {
 import { buildProposalWei } from "@/lib/approvals";
 import { liveStatusFlags } from "@/lib/live/config";
 import { proposeLivePayment, serviceClient, type RpcClient } from "@/lib/live/service";
+import { proposeLivePaymentV2, v2Flags } from "@/lib/live/v2";
 import { loadSnapshot } from "./loader";
 
 export type StepKey = "intent" | "load" | (typeof WORKFLOW_AGENTS)[number] | "report";
@@ -29,7 +30,8 @@ export const STEP_LABEL: Record<StepKey, string> = {
 };
 
 export interface StepRecord { key: StepKey; status: "done" | "failed" | "waiting"; startedAt: string; finishedAt: string; summary: string; childTaskId?: string; messages?: number }
-export interface Prepared { invoiceId: string; mode: "LIVE_TESTNET" | "SIMULATION" | "NOT_PREPARED"; transactionId?: string; paymentHash?: string; error?: string }
+/** vault "v2": a TreasuryVault V2 request, approved only by administrators' own ML-DSA-87 signatures. */
+export interface Prepared { invoiceId: string; mode: "LIVE_TESTNET" | "SIMULATION" | "NOT_PREPARED"; transactionId?: string; paymentHash?: string; error?: string; vault?: "v1" | "v2" }
 export interface WorkflowResult {
   intent?: Intent & { parsedBy: "gemini" | "rules"; model?: string };
   snapshot?: Snapshot; scope?: string[];
@@ -147,7 +149,7 @@ export async function advanceWorkflow(taskId: string, actor: { userId: string; c
         rep = {
           agent: "PaymentAgent", taskId, startedAt, finishedAt: now(), evidence: made.map((p) => `transaction:${p.transactionId}`),
           actions: eligible.length && result.intent?.preparePayments ? ["Built the exact payment for each eligible invoice", "Checked it against the live vault before recording it", "Recorded it as awaiting administrator approval"] : ["Nothing to prepare"],
-          findings: (result.prepared ?? []).map((p) => ({ invoiceId: p.invoiceId, code: `PREPARED_${p.mode}`, severity: p.mode === "NOT_PREPARED" ? "medium" : "info", message: p.mode === "NOT_PREPARED" ? `Not prepared: ${p.error}` : `Payment request ${p.transactionId?.slice(0, 8)} awaits approval (${p.mode === "LIVE_TESTNET" ? "live testnet" : "simulation"}).`, evidence: [`invoice:${p.invoiceId}`] })),
+          findings: (result.prepared ?? []).map((p) => ({ invoiceId: p.invoiceId, code: `PREPARED_${p.mode}`, severity: p.mode === "NOT_PREPARED" ? "medium" : "info", message: p.mode === "NOT_PREPARED" ? `Not prepared: ${p.error}` : `Payment request ${p.transactionId?.slice(0, 8)} awaits approval (${p.mode === "LIVE_TESTNET" ? (p.vault === "v2" ? "live testnet, TreasuryVault V2: two administrators must sign with their own ML-DSA-87 keys" : "live testnet") : "simulation"}).`, evidence: [`invoice:${p.invoiceId}`] })),
           risks: [], recommendation: made.length ? `${made.length} payment request${made.length === 1 ? "" : "s"} prepared. Nothing is executed until a different administrator approves.` : eligible.length ? "Eligible invoices found, but the instruction did not ask for payments to be prepared." : "No eligible invoice; nothing prepared.",
           uncertainty: null, errors: (result.prepared ?? []).filter((p) => p.error).map((p) => p.error!), next: "Report",
         };
@@ -197,7 +199,13 @@ async function prepare(client: RpcClient, org: string, taskId: string, eligible:
     const purpose = `Invoice ${d.invoiceNumber}`.slice(0, 120);
     const context = { workflow_task_id: taskId, invoice_id: d.invoiceId, invoice_number: d.invoiceNumber, milestone_id: d.milestoneId, prepared_by_agent: "PaymentAgent" };
     let p: Prepared;
-    if (flags.switchOn && flags.ready && !flags.emergencyStop) {
+    const v2 = v2Flags();
+    if (v2.ready && v2.switchOn) {
+      // The secured path: the payment waits for two administrators to sign it with their own keys (TreasuryVault V2).
+      const amountQor = (Number(BigInt(d.amountWei) / 10n ** 12n) / 1e6).toString();
+      const r = await proposeLivePaymentV2(client, org, { recipient: d.recipient, amountQor, purpose, idempotencyKey: idem }, context);
+      p = r.ok ? { invoiceId: d.invoiceId, mode: "LIVE_TESTNET", vault: "v2", transactionId: r.id, paymentHash: r.digest } : { invoiceId: d.invoiceId, mode: "NOT_PREPARED", vault: "v2", error: r.error };
+    } else if (flags.switchOn && flags.ready && !flags.emergencyStop) {
       const amountQor = (Number(BigInt(d.amountWei) / 10n ** 12n) / 1e6).toString();
       const r = await proposeLivePayment(client, org, { recipient: d.recipient, amountQor, purpose, idempotencyKey: idem }, context);
       p = r.ok ? { invoiceId: d.invoiceId, mode: "LIVE_TESTNET", transactionId: r.id, paymentHash: r.paymentHash } : { invoiceId: d.invoiceId, mode: "NOT_PREPARED", error: r.error };

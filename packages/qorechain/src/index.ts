@@ -102,3 +102,5 @@ export * from "./window";
 export * from "./live-executor";
 export type { Hex } from "viem";
 export * from "./v2";
+export * from "./v2-executor";
+export * from "./v2-adapters";

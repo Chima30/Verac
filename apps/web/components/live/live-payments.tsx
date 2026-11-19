@@ -7,7 +7,10 @@ import { CopyButton } from "@/components/ui-client";
 export interface LiveOp {
   id: string; state: string; recipient: string; amount: string; required: number; approvals: number; requestedByMe: boolean;
   paymentHash: string; txHash: string | null; approvalTx: string | null; block: number | null; failure: string | null; purpose: string | null; expiresAt: string;
+  /** 2 = TreasuryVault V2: approved only by administrators' own ML-DSA-87 signatures (signers lists their addresses). */
+  vaultVersion?: 1 | 2; signers?: string[];
 }
+export interface V2Status { ready: boolean; switchOn: boolean; vault: string | null }
 
 // The states a reader sees. READY means the server has claimed the operation and is sending it.
 const LABEL: Record<string, { text: string; tone: Tone }> = {
@@ -53,9 +56,10 @@ function Progress({ state, approvals, required }: { state: string; approvals: nu
   );
 }
 
-export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
+export function LivePayments({ ops, canRequest, canDecide, explorer, status, v2 }: {
   ops: LiveOp[]; canRequest: boolean; canDecide: boolean; explorer: string;
   status: { switchOn: boolean; ready: boolean; missing: string[] };
+  v2?: V2Status;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -64,6 +68,9 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
   const [form, setForm] = useState({ recipient: "", amountQor: "", purpose: "" });
   const [ask, setAsk] = useState("");
   const [drafted, setDrafted] = useState<string | null>(null);
+  const v2Ready = !!(v2?.ready && v2.switchOn);
+  const [method, setMethod] = useState<"v2" | "v1">(v2Ready ? "v2" : "v1");
+  const [sigText, setSigText] = useState<Record<string, string>>({});
 
   async function draft() {
     setBusy("ask"); setMsg(null); setDrafted(null);
@@ -117,10 +124,21 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
           className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_9rem]"
           onSubmit={async (e) => {
             e.preventDefault();
-            const ok = await call("/api/live/propose", { ...form, idempotencyKey: crypto.randomUUID() }, "propose", () => "Request created. It is waiting for an administrator to approve it.");
+            const ok = method === "v2"
+              ? await call("/api/live/v2/propose", { ...form, idempotencyKey: crypto.randomUUID() }, "propose", (j) => `Request created on TreasuryVault V2. It needs ${String(j.required ?? 2)} administrators to sign it with their own keys.`)
+              : await call("/api/live/propose", { ...form, idempotencyKey: crypto.randomUUID() }, "propose", () => "Request created. It is waiting for an administrator to approve it.");
             if (ok) setForm({ recipient: "", amountQor: "", purpose: "" });
           }}
         >
+          {v2Ready && (
+            <fieldset className="sm:col-span-2">
+              <legend className={labelCls}>How this payment is approved</legend>
+              <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-[13.5px]">
+                <label className="flex items-center gap-2"><input type="radio" name="lp-method" checked={method === "v2"} onChange={() => setMethod("v2")} /> Administrators sign with their own post-quantum keys (TreasuryVault V2)</label>
+                <label className="flex items-center gap-2"><input type="radio" name="lp-method" checked={method === "v1"} onChange={() => setMethod("v1")} /> Password approval, relayed by the server (original vault)</label>
+              </div>
+            </fieldset>
+          )}
           <div>
             <label htmlFor="lp-to" className={labelCls}>Recipient (must already be approved on the vault)</label>
             <input id="lp-to" className={`${inputCls} font-mono`} spellCheck={false} autoComplete="off" required pattern="0x[0-9a-fA-F]{40}" placeholder="0x…" value={form.recipient} onChange={(e) => setForm({ ...form, recipient: e.target.value })} />
@@ -150,21 +168,51 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
               <li key={o.id} className="rounded-lg border border-line bg-surface p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="flex flex-wrap items-center gap-x-1.5 text-[15px] font-semibold tabular-nums">{qor(o.amount)} QOR <span className="text-[13px] font-normal text-muted">to</span> <a href={`${explorer.replace(/\/$/, "")}/address/${o.recipient}`} target="_blank" rel="noreferrer" title={`${o.recipient} (open in the QoreChain explorer)`} className="font-mono text-[13px] font-normal underline decoration-line-strong underline-offset-[3px] hover:decoration-current">{short(o.recipient)}</a><CopyButton value={o.recipient} label="Copy recipient address" /></p>
-                  <Badge tone={l.tone}>{l.text}</Badge>
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    {o.vaultVersion === 2 && <Badge tone="live">V2 · ML-DSA-87 APPROVAL</Badge>}
+                    <Badge tone={l.tone}>{l.text}</Badge>
+                  </span>
                 </div>
                 {o.purpose && <p className="mt-1 text-[13.5px] text-muted">{o.purpose}</p>}
                 <Progress state={o.state} approvals={o.approvals} required={o.required} />
                 <dl className="mt-3 grid grid-cols-1 gap-x-3 gap-y-1 text-[12.5px] sm:grid-cols-[8rem_1fr]">
                   <dt className="text-muted">Recipient</dt><dd className="flex items-start gap-1"><span className="break-all font-mono">{o.recipient}</span><CopyButton value={o.recipient} label="Copy recipient address" className="-mt-1" /></dd>
                   <dt className="text-muted">Payment hash</dt><dd className="flex items-start gap-1"><span className="break-all font-mono">{o.paymentHash}</span><CopyButton value={o.paymentHash} label="Copy payment hash" className="-mt-1" /></dd>
-                  <dt className="text-muted">Approvals</dt><dd>{o.approvals} of {o.required} administrator{o.required === 1 ? "" : "s"}</dd>
+                  {o.vaultVersion === 2 ? (
+                    <><dt className="text-muted">Signatures</dt><dd>{(o.signers ?? []).length} of {o.required} administrators, each checked against the key registered on QoreChain{(o.signers ?? []).length > 0 && <span className="mt-0.5 block break-all font-mono text-[12px] text-muted">{(o.signers ?? []).join(", ")}</span>}</dd></>
+                  ) : (
+                    <><dt className="text-muted">Approvals</dt><dd>{o.approvals} of {o.required} administrator{o.required === 1 ? "" : "s"}</dd></>
+                  )}
                   <dt className="text-muted">Expires</dt><dd>{new Date(o.expiresAt).toLocaleString()}</dd>
                   {o.approvalTx && (<><dt className="text-muted">Approval tx</dt><dd className="break-all font-mono"><a className="underline" href={txUrl(o.approvalTx)} target="_blank" rel="noreferrer">{o.approvalTx}</a> (submitted by the Verac server on the administrators&apos; behalf)</dd></>)}
                   {o.txHash && (<><dt className="text-muted">Transaction</dt><dd className="break-all font-mono"><a className="underline" href={txUrl(o.txHash)} target="_blank" rel="noreferrer">{o.txHash}</a>{o.block ? ` · block ${o.block}` : ""}</dd></>)}
                   {o.failure && (<><dt className="text-muted">Why it did not pay</dt><dd>{o.failure}</dd></>)}
                 </dl>
 
-                {o.state === "AWAITING_APPROVAL" && canDecide && (
+                {o.state === "AWAITING_APPROVAL" && o.vaultVersion === 2 && (canDecide || canRequest) && (
+                  <div className="mt-4 space-y-3 border-t border-line pt-4 text-[13px]">
+                    <p className="text-muted">
+                      Two administrators approve this payment on their own computers. The Verac server holds no administrator key and cannot sign for them.
+                    </p>
+                    <ol className="list-decimal space-y-1 pl-5 text-muted">
+                      <li><a className="underline" href={`/api/live/v2/request?id=${o.id}`}>Download the signing request</a> (public payment fields only).</li>
+                      <li>Run <code className="rounded bg-surface-2 px-1 font-mono text-[12px]">pnpm v2:admin sign &lt;your key folder&gt; &lt;signing request file&gt;</code>. It shows the payment and signs only after you type yes.</li>
+                      <li>Upload or paste the signature file it writes:</li>
+                    </ol>
+                    <div className="flex flex-wrap items-end gap-2">
+                      <input type="file" accept="application/json,.json" aria-label="Signature file" className="text-[12.5px]" onChange={async (e) => { const f = e.target.files?.[0]; if (f) setSigText({ ...sigText, [o.id]: await f.text() }); }} />
+                      <textarea aria-label="Signature file contents" rows={2} className={`${inputCls} min-w-0 flex-1 font-mono text-[11.5px]`} placeholder="Signature file contents (JSON)" value={sigText[o.id] ?? ""} onChange={(e) => setSigText({ ...sigText, [o.id]: e.target.value })} />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button className={btnCls} disabled={busy !== null || !(sigText[o.id] ?? "").trim()} onClick={() => call("/api/live/v2/signature", { id: o.id, signature: sigText[o.id] }, `sig-${o.id}`, (j) => `Signature verified and recorded (${String(j.signatures)} of ${String(j.required)}).${j.state === "APPROVED" ? " The payment is approved and can be executed." : ""}`).then((ok) => { if (ok) setSigText({ ...sigText, [o.id]: "" }); })}>
+                        {busy === `sig-${o.id}` ? "Checking the signature against QoreChain…" : "Submit signature"}
+                      </button>
+                      {canDecide && <button className={btnSecondaryCls} disabled={busy !== null} onClick={() => call("/api/live/decide", { id: o.id, decision: "reject" }, `reject-${o.id}`, () => "Rejected.")}>Reject</button>}
+                    </div>
+                  </div>
+                )}
+
+                {o.state === "AWAITING_APPROVAL" && o.vaultVersion !== 2 && canDecide && (
                   o.requestedByMe ? <p className="mt-3 text-[12.5px] text-muted">You made this request, so someone else must decide it.</p> : (
                     <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-line pt-4">
                       <div>
@@ -179,7 +227,7 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status }: {
 
                 {o.state === "APPROVED" && canRequest && (
                   <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4">
-                    <button className={btnCls} disabled={busy !== null || !status.switchOn || !status.ready} onClick={() => call("/api/live/execute", { id: o.id }, `execute-${o.id}`, (j) => `Confirmed on Diana testnet: ${(j.result as { txHash?: string } | undefined)?.txHash ?? ""}`)}>
+                    <button className={btnCls} disabled={busy !== null || (o.vaultVersion === 2 ? !v2Ready : !status.switchOn || !status.ready)} onClick={() => call("/api/live/execute", { id: o.id }, `execute-${o.id}`, (j) => `Confirmed on Diana testnet: ${(j.result as { txHash?: string } | undefined)?.txHash ?? ""}`)}>
                       {busy === `execute-${o.id}` ? "Sending and waiting for the chain…" : "Execute on Diana testnet"}
                     </button>
                     <span className="text-[12.5px] text-muted">Sends {qor(o.amount)} test QOR from the vault. The result shown is read back from the chain.</span>

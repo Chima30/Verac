@@ -1,0 +1,69 @@
+{
+  "ranAt": "2026-11-19T20:50:39.271Z",
+  "vault": "0xAbd8CB36dd17b7aC35432c4A04f44f2d197504E2",
+  "digest": "0xb8b2f1e877b9061c32010aefab756ac332f9ccc30cdaa9c397f873619fba3058",
+  "payment": {
+    "to": "0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df",
+    "amountQor": "0.25"
+  },
+  "result": {
+    "state": "CONFIRMED",
+    "txHash": "0x50dbd924b2a36bc5f77a5e55812bb83d9856120c218d1c5448af7c0789f63afd",
+    "block": "10393451",
+    "signers": [
+      "0x6A7354c2b61Be31abF7C8CB02feB235054df815d",
+      "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
+    ]
+  },
+  "log": [
+    "submitted 0x50dbd924b2a36bc5f77a5e55812bb83d9856120c218d1c5448af7c0789f63afd",
+    "outcome true block 10393451 "
+  ],
+  "steps": [
+    {
+      "step": "propose",
+      "ok": true,
+      "detail": "0.25 QOR to 0xd995513527951C6C48C561F313f2a0E3AC5Ff0Df, digest 0xb8b2f1e877b9061c32010aefab756ac332f9ccc30cdaa9c397f873619fba3058 (matches the vault: true), 2 signatures required"
+    },
+    {
+      "step": "signing request",
+      "ok": true,
+      "detail": "written to deployments/v2-e2e/e2e-1795121350072.request.json"
+    },
+    {
+      "step": "tampered request refused by signing tool",
+      "ok": true,
+      "detail": "REFUSED: the digest in the request does not match its payment fields"
+    },
+    {
+      "step": "admin-1 signs with the tool, website check",
+      "ok": true,
+      "detail": "signer 0xd42C50139486a6ba177d0D37fd20135AE1F5C336, verified against its registered ML-DSA-87 key"
+    },
+    {
+      "step": "admin-3 signs with the tool, website check",
+      "ok": true,
+      "detail": "signer 0x6A7354c2b61Be31abF7C8CB02feB235054df815d, verified against its registered ML-DSA-87 key"
+    },
+    {
+      "step": "signature for another payment refused at upload",
+      "ok": true,
+      "detail": "This signature is for a different payment."
+    },
+    {
+      "step": "execute",
+      "ok": true,
+      "detail": "{\"state\":\"CONFIRMED\",\"txHash\":\"0x50dbd924b2a36bc5f77a5e55812bb83d9856120c218d1c5448af7c0789f63afd\",\"block\":\"10393451\",\"signers\":[\"0x6A7354c2b61Be31abF7C8CB02feB235054df815d\",\"0xd42C50139486a6ba177d0D37fd20135AE1F5C336\"]}"
+    },
+    {
+      "step": "vault balance",
+      "ok": true,
+      "detail": "3.7 -> 3.45 QOR"
+    },
+    {
+      "step": "agent window closed afterwards",
+      "ok": true,
+      "detail": "closed"
+    }
+  ]
+}

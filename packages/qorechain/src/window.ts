@@ -37,13 +37,16 @@ export class WindowManager {
   readonly #account: UnifiedAccount;
   readonly #reader: QoreReader;
   readonly #kill: KillSwitch;
+  readonly #target: `0x${string}`;
 
-  constructor(keys: WindowKeys, kill: KillSwitch, reader: QoreReader = new QoreReader()) {
+  /** `target` is the one contract the window admits: the V1 TreasuryVault unless another vault (V2) is given. */
+  constructor(keys: WindowKeys, kill: KillSwitch, reader: QoreReader = new QoreReader(), target: `0x${string}` = DEPLOYED.TreasuryVault) {
     const pqc = { publicKey: unhex(keys.mlDsa87PublicKey), secretKey: unhex(keys.mlDsa87SecretKey) };
     const base = unifiedAccountFromSeed(unhex(keys.secp256k1PrivateKey), { pqcSecret: crypto.getRandomValues(new Uint8Array(32)) });
     this.#account = { ...base, pqc };
     this.#kill = kill;
     this.#reader = reader;
+    this.#target = target;
   }
 
   get nativeAddress(): string { return this.#account.cosmos; }
@@ -56,9 +59,9 @@ export class WindowManager {
   /** Opens a window only if the current one is missing or too small. Returns the open transaction hash, or null if none was needed. */
   async ensureOpen(needTxs = 1): Promise<string | null> {
     this.#guard();
-    if (windowIsSufficient(await this.status(), needTxs)) return null;
+    if (windowIsSufficient(await this.status(), needTxs, this.#target)) return null;
     return this.#broadcast(
-      [openEvmWindowMsg({ sender: this.#account.cosmos, blocks: SIGNER_LIMITS.windowBlocks, maxTxs: SIGNER_LIMITS.windowMaxTxs, maxValue: String(SIGNER_LIMITS.windowMaxUqor), allowedTargets: [DEPLOYED.TreasuryVault] })],
+      [openEvmWindowMsg({ sender: this.#account.cosmos, blocks: SIGNER_LIMITS.windowBlocks, maxTxs: SIGNER_LIMITS.windowMaxTxs, maxValue: String(SIGNER_LIMITS.windowMaxUqor), allowedTargets: [this.#target] })],
       500_000,
     );
   }
