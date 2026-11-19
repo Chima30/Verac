@@ -59,6 +59,11 @@ abstract contract V2Base is Test {
         return abi.encodePacked(keccak256(abi.encodePacked(_pub(a), vault.signingBytes(digest))));
     }
 
+    /// The signer the vault checks first (signers are verified in increasing address order).
+    function _lo(address x, address y) internal pure returns (address) {
+        return x < y ? x : y;
+    }
+
     function _sorted(address x, address y) internal pure returns (address, address) {
         return x < y ? (x, y) : (y, x);
     }
@@ -132,8 +137,10 @@ contract TreasuryVaultV2PaymentsTest is V2Base {
         TreasuryVaultV2.Payment memory p = _pay(vendor, 1 ether, 1);
         bytes32 d = vault.paymentDigest(agent, p);
         uint256 before = vendor.balance;
+        // Build the signatures BEFORE vm.prank: building them calls the vault, which would use up the prank.
+        TreasuryVaultV2.AdminSig[] memory s = _sigs2(d, a1, a3);
         vm.prank(agent);
-        bytes32 got = vault.executePayment(p, _sigs2(d, a1, a3));
+        bytes32 got = vault.executePayment(p, s);
         assertEq(got, d);
         assertEq(vendor.balance - before, 1 ether);
         assertTrue(vault.executed(d));
@@ -204,17 +211,16 @@ contract TreasuryVaultV2PaymentsTest is V2Base {
         TreasuryVaultV2.Payment memory approved = _pay(vendor, 1 ether, 8);
         TreasuryVaultV2.AdminSig[] memory s = _sigs2(vault.paymentDigest(agent, approved), a1, a2);
 
-        TreasuryVaultV2.Payment memory bigger = approved;
-        bigger.amount = 4 ether;
+        // Same nonce, purpose and expiry; only the amount differs (within the cap, so only the signature can stop it).
+        TreasuryVaultV2.Payment memory bigger = _pay(vendor, 4 ether, 8);
         vm.prank(agent);
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(TreasuryVaultV2.BadSignature.selector, _lo(a1, a2)));
         vault.executePayment(bigger, s);
 
         _admin(TreasuryVaultV2.AdminOp.SetRecipient, abi.encode(attacker, true), a1, a2); // even an approved attacker address
-        TreasuryVaultV2.Payment memory redirected = approved;
-        redirected.to = attacker;
+        TreasuryVaultV2.Payment memory redirected = _pay(attacker, 1 ether, 8);
         vm.prank(agent);
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(TreasuryVaultV2.BadSignature.selector, _lo(a1, a2)));
         vault.executePayment(redirected, s);
     }
 
@@ -224,7 +230,7 @@ contract TreasuryVaultV2PaymentsTest is V2Base {
         TreasuryVaultV2.Payment memory p = _pay(vendor, 1 ether, 9);
         TreasuryVaultV2.AdminSig[] memory s = _sigs2(vault.paymentDigest(agent, p), a1, a2);
         vm.prank(agent2);
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(TreasuryVaultV2.BadSignature.selector, _lo(a1, a2)));
         vault.executePayment(p, s);
     }
 
@@ -243,7 +249,7 @@ contract TreasuryVaultV2PaymentsTest is V2Base {
         TreasuryVaultV2.AdminSig[] memory s = _sigs2(vault.paymentDigest(agent, p), a1, a2);
         vm.chainId(9801); // mainnet's EVM chain id
         vm.prank(agent);
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(TreasuryVaultV2.BadSignature.selector, _lo(a1, a2)));
         vault.executePayment(p, s);
     }
 
@@ -265,8 +271,9 @@ contract TreasuryVaultV2PaymentsTest is V2Base {
         vault.executePayment(p, s);
 
         TreasuryVaultV2.Payment memory p1 = _pay(vendor, 5 ether, 14);
+        TreasuryVaultV2.AdminSig[] memory s1 = _sigs2(vault.paymentDigest(agent, p1), a1, a2);
         vm.prank(agent);
-        vault.executePayment(p1, _sigs2(vault.paymentDigest(agent, p1), a1, a2));
+        vault.executePayment(p1, s1);
         TreasuryVaultV2.Payment memory p2 = _pay(vendor, 4 ether, 15);
         TreasuryVaultV2.AdminSig[] memory s2 = _sigs2(vault.paymentDigest(agent, p2), a1, a2);
         vm.prank(agent);
@@ -377,7 +384,7 @@ contract TreasuryVaultV2AdminTest is V2Base {
         TreasuryVaultV2.AdminSig[] memory s = _sigs2(d, a1, a2);
         // Same signatures, different operation: raising the agent's caps.
         bytes memory raise = abi.encode(agent, address(0), uint128(100 ether), uint128(100 ether), uint64(block.timestamp + 7 days));
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(TreasuryVaultV2.BadSignature.selector, _lo(a1, a2)));
         vault.executeAdminAction(TreasuryVaultV2.AdminOp.SetAgentLimits, raise, n, exp, s);
     }
 
@@ -388,11 +395,11 @@ contract TreasuryVaultV2AdminTest is V2Base {
         uint64 exp = uint64(block.timestamp + 1 hours);
         bytes32 d = vault.adminDigest(TreasuryVaultV2.AdminOp.AddAdmin, data, n, exp);
         TreasuryVaultV2.AdminSig[] memory s = _sigs2(d, attacker, agent); // the keys an attacker might hold
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSelector(TreasuryVaultV2.NotAdmin.selector, _lo(attacker, agent)));
         vault.executeAdminAction(TreasuryVaultV2.AdminOp.AddAdmin, data, n, exp, s);
 
         // Admins cannot make an administrator an agent either (requester and approver stay separate on chain).
-        vm.expectRevert();
+        vm.expectRevert(TreasuryVaultV2.AgentCannotBeAdmin.selector);
         this.callAdmin(TreasuryVaultV2.AdminOp.SetAgentLimits, abi.encode(a3, address(0), uint128(1 ether), uint128(1 ether), uint64(block.timestamp + 1 days)));
     }
 
@@ -403,9 +410,9 @@ contract TreasuryVaultV2AdminTest is V2Base {
     function test_threshold_and_admin_set_changes() public {
         _admin(TreasuryVaultV2.AdminOp.SetThreshold, abi.encode(uint8(3)), a1, a2);
         assertEq(vault.threshold(), 3);
-        vm.expectRevert(); // removing an admin would leave fewer admins than the threshold
+        vm.expectRevert(TreasuryVaultV2.BadConfig.selector); // removing an admin would leave fewer admins than the threshold
         this.callAdmin3(TreasuryVaultV2.AdminOp.RemoveAdmin, abi.encode(a3));
-        vm.expectRevert(); // below the minimum of 2
+        vm.expectRevert(TreasuryVaultV2.BadConfig.selector); // below the minimum of 2
         this.callAdmin3(TreasuryVaultV2.AdminOp.SetThreshold, abi.encode(uint8(1)));
     }
 
