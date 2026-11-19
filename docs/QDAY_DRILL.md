@@ -15,7 +15,30 @@ rights at all (the vault is also frozen for the day).
 Each folder holds `ecdsa-private-key.txt` and `pqc-recovery-code.txt` in separate files (as the QoreChain key-binding
 guide advises) plus a public `account.json`. Only the drill account's `ecdsa-private-key.txt` goes into the drill form.
 
-## On-chain setup (2026-11-17)
+## Result (drill day, 18 November 2026, 00:00 to 23:59 UTC)
+
+**Proof accepted:** `268BD3F41560BD4408D9528E6BB7F71263797E7CE7D015196071B8FE3F26807E`, block 10284265 at 00:05:39 UTC,
+code 0, `pqc_hybrid_verify` = verified for the drill account. Shown as "Proof accepted" on the project page.
+
+**Nothing was taken.** Read from the chain on 19 November:
+
+| What | Before the drill | After the drill | Explanation |
+|---|---|---|---|
+| Drill account QOR | 79.730000 | 78.685000 | Our own proof transfer: 1 QOR to the drill admin plus a 0.045 QOR fee |
+| Drill account fUSD / fETH / fBTC | 1000 / 0.5 / 0.02 | 1000 / 0.5 / 0.02 | Unchanged |
+| Transactions ever sent from the drill account | 2 | 3 | The third is the proof. No other transaction from this account exists on chain |
+| Drill account EVM nonce | | 3 | Equal to the native sequence: no EVM transaction was ever included |
+| Drill account EVM window | none | none | Never opened |
+| Drill vault | 5 QOR, paused, agent revoked | 5 QOR, paused, agent revoked | Unchanged |
+
+The watch took 1,973 readings during the drill (00:04 to 23:59 UTC) with no alerts and no automatic action; its only
+recorded change was the proof transaction. It was stopped from 03:01 to 09:32 UTC; the chain history above covers that
+gap. Two readings failed on a network error and were retried. Every reading is in `deployments/qday-watch.jsonl`.
+
+What this does not show: attempts refused before block inclusion leave no trace on chain, so this record cannot say what
+the bot tried, only that none of it succeeded. The organisers' results list the attempts.
+
+## On-chain setup (from 16 November 23:44 UTC, which was 17 November in West Africa Time)
 
 | Step | Result | Transaction |
 |---|---|---|
