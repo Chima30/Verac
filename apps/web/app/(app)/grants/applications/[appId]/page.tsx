@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import { redirect } from "next/navigation";
 import { checkApplication } from "@qoreops/policy-engine";
 import { ReviewButton } from "@/components/grants/review-button";
+import { MilestonesPanel, type FundRow, type MsEvidence, type MsRow, type SubRow } from "@/components/grants/milestones-panel";
 import { ApplicantClarifications, ReviewerPanels, type ClarRow, type EvidenceRow, type FlagRow, type OverrideRow, type ReviewRow } from "@/components/grants/review-panels";
 import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, Source, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
@@ -40,8 +41,17 @@ export default async function Application({ params, searchParams }: { params: Pr
   const round = gd as unknown as RoundRow;
   const { data: vd } = await sb.from("grant_application_versions").select("version,requested_amount,category,recipient_address,content,reason,created_at,changed_by").eq("application_id", appId).order("version");
   const versions = (vd ?? []) as unknown as VersionRow[];
-  const { data: md } = await sb.from("milestones").select("id,idx,title,amount,status,release_tx_hash").eq("parent_type", "grant").eq("parent_id", appId).order("idx");
-  const milestones = (md ?? []) as Array<{ id: string; idx: number; title: string; amount: string; status: string; release_tx_hash: string | null }>;
+  const { data: md } = await sb.from("milestones").select("id,idx,title,amount,status,release_tx_hash,review").eq("parent_type", "grant").eq("parent_id", appId).order("idx");
+  const milestones = (md ?? []) as unknown as MsRow[];
+  // Phase 6 records (migration 0021). RLS limits them to reviewers, finance and the recipient.
+  const msIds = milestones.map((m) => m.id);
+  const [{ data: sd }, { data: fd }] = await Promise.all([
+    msIds.length ? sb.from("grant_milestone_submissions").select("milestone_id,attempt,description,links,transactions,created_at").in("milestone_id", msIds) : Promise.resolve({ data: [] }),
+    msIds.length ? sb.from("grant_funding_records").select("milestone_id,status,route,reasons,tx_hash,block_number,created_at,transaction_id").in("milestone_id", msIds).order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
+  ]);
+  const { data: med } = msIds.length && ["owner", "administrator", "security_reviewer"].includes(s.org.role)
+    ? await sb.from("grant_evidence").select("milestone_id,claim,status,reason,url,retrieved_at").in("milestone_id", msIds).order("id")
+    : { data: [] };
 
   let flags: ReturnType<typeof checkApplication> | null = null;
   if (admin && round) {
@@ -135,11 +145,9 @@ export default async function Application({ params, searchParams }: { params: Pr
           </Card>
 
           {milestones.length > 0 && (
-            <Card title="Awarded milestones" description="Created at the award. No QOR has moved unless a transaction is shown.">
-              <ul className="divide-y divide-line text-[13.5px]">
-                {milestones.map((m) => <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 py-2"><span>{m.idx}. {m.title}</span><span className="flex items-center gap-2"><span className="tabular-nums">{formatQor(wei(m.amount))} QOR</span><Badge tone={m.status === "released" ? "live" : m.status === "approved" ? "approval" : "neutral"}>{m.status.toUpperCase()}</Badge></span></li>)}
-              </ul>
-            </Card>
+            <MilestonesPanel appId={a.id} milestones={milestones} plan={(c.milestones ?? []).map((m) => ({ title: m.title, deliverable: m.deliverable, verification: m.verification, due: m.due }))}
+              subs={(sd ?? []) as unknown as SubRow[]} evidence={(med ?? []) as unknown as MsEvidence[]} funding={(fd ?? []) as unknown as FundRow[]}
+              role={s.org.role} applicant={mine} conflicted={conflicted} />
           )}
 
           {versions.length > 0 && (

@@ -115,3 +115,22 @@ describe("SSRF guard", () => {
     expect(e.reason).toMatch(/Internal addresses are never fetched/);
   });
 });
+
+describe("githubLinkEvidence (milestone links)", () => {
+  const API = "https://api.github.com/repos/alpha-labs/indexer";
+  it("verifies a release, a merged pull request and a commit; contradicts a missing one; ignores other links", async () => {
+    const { githubLinkEvidence } = await import("./evidence");
+    const gh = fakeGitHub({
+      [`${API}/releases/tags/v0.1.0`]: ok({ tag_name: "v0.1.0", name: "MVP", published_at: "2026-11-01T00:00:00Z", assets: [] }),
+      [`${API}/pulls/12`]: ok({ state: "closed", merged_at: "2026-11-02T00:00:00Z", title: "Add indexer endpoints" }),
+      [`${API}/pulls/13`]: ok({ state: "open", merged_at: null, title: "WIP" }),
+      [`${API}/commits/abc1234`]: ok({ commit: { author: { date: "2026-11-03T00:00:00Z" }, message: "Add docs\n\nlong body" } }),
+    });
+    expect(await githubLinkEvidence("https://github.com/alpha-labs/indexer/releases/tag/v0.1.0", gh)).toMatchObject({ status: "VERIFIED", claim: "Release v0.1.0 exists" });
+    expect(await githubLinkEvidence("https://github.com/alpha-labs/indexer/pull/12", gh)).toMatchObject({ status: "VERIFIED", claim: "Pull request #12 is merged" });
+    expect(await githubLinkEvidence("https://github.com/alpha-labs/indexer/pull/13", gh)).toMatchObject({ status: "PARTIALLY_VERIFIED" });
+    expect((await githubLinkEvidence("https://github.com/alpha-labs/indexer/commit/abc1234", gh))!.reason).toContain("Add docs");
+    expect(await githubLinkEvidence("https://github.com/alpha-labs/indexer/releases/tag/v9", gh)).toMatchObject({ status: "CONTRADICTED" });
+    expect(await githubLinkEvidence("https://alpha.example.org/api", gh)).toBeNull();
+  });
+});

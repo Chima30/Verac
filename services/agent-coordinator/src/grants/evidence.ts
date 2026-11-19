@@ -203,3 +203,29 @@ export async function webEvidence(url: string, fetchPage: (u: string) => Promise
     return { source: "web", subject: url, claim: "The project website is online", status: "UNAVAILABLE", reason: `Not fetched: ${(e as Error).message.slice(0, 160)}`, observed: { code: (e as { code?: string }).code ?? null }, url, retrievedAt: now() };
   }
 }
+
+/**
+ * Milestone evidence: a GitHub link to a release, pull request or commit, checked through the API.
+ * Returns null when the URL is not one of those (the caller then treats it as a web page).
+ */
+export async function githubLinkEvidence(url: string, get: GetJson): Promise<Evidence | null> {
+  const m = /^https:\/\/github\.com\/([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))\/([A-Za-z0-9._-]{1,100})\/(releases\/tag|pull|commit)\/([A-Za-z0-9._\-/]{1,200}?)\/?$/.exec(url.trim());
+  if (!m) return null;
+  const [, owner, repo, kind, ref] = m as unknown as [string, string, string, string, string];
+  const api = kind === "releases/tag" ? `${API}/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(ref)}` : kind === "pull" ? `${API}/repos/${owner}/${repo}/pulls/${encodeURIComponent(ref)}` : `${API}/repos/${owner}/${repo}/commits/${encodeURIComponent(ref)}`;
+  const claim = kind === "releases/tag" ? `Release ${ref} exists` : kind === "pull" ? `Pull request #${ref} exists` : `Commit ${ref.slice(0, 12)} exists`;
+  let r: HttpJson;
+  try { r = await get(api); } catch (e) { return { source: "github", subject: url, claim, status: "UNAVAILABLE", reason: `GitHub could not be reached: ${(e as Error).message.slice(0, 120)}`, observed: {}, url: api, retrievedAt: now() }; }
+  const limited = rateLimited(r);
+  if (limited) return { source: "github", subject: url, claim, status: "UNAVAILABLE", reason: limited, observed: {}, url: api, retrievedAt: now() };
+  if (r.status === 404) return { source: "github", subject: url, claim, status: "CONTRADICTED", reason: "GitHub answered 404: it does not exist in this repository, or the repository is private.", observed: { httpStatus: 404 }, url: api, retrievedAt: now() };
+  if (r.status !== 200 || !r.json) return { source: "github", subject: url, claim, status: "UNAVAILABLE", reason: `GitHub answered HTTP ${r.status}.`, observed: { httpStatus: r.status }, url: api, retrievedAt: now() };
+  const j = r.json as Record<string, unknown>;
+  if (kind === "releases/tag") return { source: "github", subject: url, claim, status: "VERIFIED", reason: `Release "${String(j.name ?? ref)}" published ${String(j.published_at ?? "at an unknown time")}${j.draft ? " (draft)" : ""}${j.prerelease ? " (pre-release)" : ""}.`, observed: { tag: j.tag_name, publishedAt: j.published_at, draft: j.draft, prerelease: j.prerelease, assets: Array.isArray(j.assets) ? j.assets.length : 0 }, url: api, retrievedAt: now() };
+  if (kind === "pull") {
+    const merged = !!j.merged_at;
+    return { source: "github", subject: url, claim: `Pull request #${ref} is merged`, status: merged ? "VERIFIED" : "PARTIALLY_VERIFIED", reason: merged ? `Merged ${String(j.merged_at)}: "${String(j.title ?? "").slice(0, 120)}".` : `The pull request exists ("${String(j.title ?? "").slice(0, 120)}") but is ${String(j.state)} and not merged.`, observed: { state: j.state, mergedAt: j.merged_at ?? null, additions: j.additions, deletions: j.deletions, changedFiles: j.changed_files }, url: api, retrievedAt: now() };
+  }
+  const c = j.commit as { author?: { date?: string }; message?: string } | undefined;
+  return { source: "github", subject: url, claim, status: "VERIFIED", reason: `Committed ${c?.author?.date ?? "at an unknown time"}: "${String(c?.message ?? "").split("\n")[0]!.slice(0, 120)}".`, observed: { date: c?.author?.date ?? null, files: Array.isArray(j.files) ? j.files.length : null }, url: api, retrievedAt: now() };
+}
