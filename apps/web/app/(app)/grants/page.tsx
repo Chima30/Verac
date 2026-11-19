@@ -7,6 +7,8 @@ import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 import { createRound } from "./actions";
 import { loadGrantDemo } from "./sample";
+import { PortfolioCard } from "@/components/grants/portfolio-card";
+import { alerts as buildAlerts, portfolio, type PApp } from "@/lib/grants/portfolio";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Grants" };
@@ -44,6 +46,29 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
   const toAward = live.filter((a) => a.status === "recommended").length;
   const myApps = apps.filter((a) => a.applicant_user_id === s.user!.id);
 
+  // Portfolio and alerts (administrators; needs migrations 0019 to 0021, otherwise empty).
+  let pf: ReturnType<typeof portfolio> | null = null, al: ReturnType<typeof buildAlerts> = [];
+  if (admin && migrated) {
+    const awardedIds = live.filter((a) => a.status === "awarded").map((a) => a.id);
+    const { data: full } = await sb.from("grant_applications").select("id,applicant_name,status,requested_amount,grant_id,applicant_user_id,content").eq("organization_id", s.org.id).in("status", ["recommended", "awarded"]);
+    const pApps: PApp[] = (full ?? []).map((a) => ({ id: a.id as string, name: a.applicant_name as string, status: a.status as string, requested: String(a.requested_amount), grantId: a.grant_id as string, applicantUserId: a.applicant_user_id as string, content: a.content as PApp["content"] }));
+    const { data: msd } = awardedIds.length ? await sb.from("milestones").select("id,parent_id,idx,title,amount,status").eq("parent_type", "grant").in("parent_id", awardedIds) : { data: [] };
+    const msIds = (msd ?? []).map((m) => m.id as string);
+    const [{ data: fdd }, { data: sdd }, { data: fld }, { data: act }] = await Promise.all([
+      msIds.length ? sb.from("grant_funding_records").select("milestone_id,status,created_at").in("milestone_id", msIds) : Promise.resolve({ data: [] }),
+      msIds.length ? sb.from("grant_milestone_submissions").select("milestone_id,created_at").in("milestone_id", msIds) : Promise.resolve({ data: [] }),
+      pApps.length ? sb.from("grant_risk_flags").select("application_id,code,severity,status").in("application_id", pApps.map((a) => a.id)).eq("status", "open") : Promise.resolve({ data: [] }),
+      awardedIds.length ? sb.from("grant_evidence").select("application_id,observed,retrieved_at").in("application_id", awardedIds).like("claim", "%development activity%").order("retrieved_at", { ascending: false }) : Promise.resolve({ data: [] }),
+    ]);
+    const ms = (msd ?? []).map((m) => ({ id: m.id as string, parentId: m.parent_id as string, idx: m.idx as number, title: m.title as string, amount: String(m.amount), status: m.status as string }));
+    const fund = ((fdd ?? []) as Array<Record<string, unknown>>).map((f) => ({ milestoneId: f.milestone_id as string, status: f.status as string, createdAt: f.created_at as string }));
+    const latestAct = new Map<string, { applicationId: string; newestCommit: string | null; retrievedAt: string }>();
+    for (const e of (act ?? []) as Array<Record<string, unknown>>) if (!latestAct.has(e.application_id as string)) latestAct.set(e.application_id as string, { applicationId: e.application_id as string, newestCommit: ((e.observed as { newestCommit?: string } | null)?.newestCommit) ?? null, retrievedAt: e.retrieved_at as string });
+    pf = portfolio(pApps, ms, fund);
+    al = buildAlerts(pApps, ms, fund, ((sdd ?? []) as Array<Record<string, unknown>>).map((x) => ({ milestoneId: x.milestone_id as string, createdAt: x.created_at as string })),
+      ((fld ?? []) as Array<Record<string, unknown>>).map((f) => ({ applicationId: f.application_id as string, code: f.code as string, severity: f.severity as string, status: f.status as string })), [...latestAct.values()]);
+  }
+
   return (
     <>
       <PageHeader title="Grants" eyebrow="Operations"
@@ -64,6 +89,9 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
           {live.length > 0 && <div className="mt-5 border-t border-line pt-5"><Pipeline label="Applications by stage" stages={STAGES} counts={live.reduce<Record<string, number>>((c, a) => ({ ...c, [a.status]: (c[a.status] ?? 0) + 1 }), {})} /></div>}
         </section>
       )}
+
+      {pf && pf.awardedCount > 0 && <div className="mb-6"><PortfolioCard p={pf} alerts={al} /></div>}
+      {pf && pf.awardedCount === 0 && al.length > 0 && <div className="mb-6"><PortfolioCard p={pf} alerts={al} /></div>}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="min-w-0 space-y-6">

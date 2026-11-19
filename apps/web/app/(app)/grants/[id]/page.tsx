@@ -6,6 +6,7 @@ import { CATEGORY_LABEL, STATUS_TEXT, STATUS_TONE, criteriaFor, sumWei, wei, typ
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 import { closeGrant, saveRubric } from "../actions";
+import { setMonitoring } from "../monitoring-actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Grant round" };
@@ -24,7 +25,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
   const admin = ADMIN.includes(s.org.role);
   const applicant = s.org.role === "grant_applicant";
 
-  const { data: g, error } = await sb.from("grants").select("id,title,budget,status,description,requirements,categories,deadline,max_request,created_at").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
+  const { data: g, error } = await sb.from("grants").select("id,title,budget,status,description,requirements,categories,deadline,max_request,created_at,rules").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
   if (!g) return <EmptyState title="Round not found">{error?.message ?? "It may belong to another organisation."}</EmptyState>;
   const round = g as unknown as RoundRow;
   const { data: rd } = await sb.from("grant_rubrics").select("id,version,criteria,locked_at,created_at").eq("grant_id", id).order("version", { ascending: false });
@@ -161,6 +162,12 @@ export default async function Round({ params, searchParams }: { params: Promise<
           {admin && round.status === "open" && (
             <Card title="Round controls">
               <form action={closeGrant}><input type="hidden" name="id" value={id} /><button className={btnSecondaryCls}>Close to new applications</button></form>
+              <form action={setMonitoring} className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
+                <input type="hidden" name="id" value={id} />
+                <label htmlFor="mon" className="text-muted">Weekly repository check for funded projects</label>
+                <select id="mon" name="repo_activity" defaultValue={(round as unknown as { rules?: { monitoring?: { repo_activity?: string } } }).rules?.monitoring?.repo_activity === "off" ? "off" : "weekly"} className={`${inputCls} w-auto py-1 text-[13px]`}><option value="weekly">On</option><option value="off">Off</option></select>
+                <button className={btnSecondaryCls}>Save</button>
+              </form>
               <Source>Closing stops new applications. Reviews, clarifications and awards continue.</Source>
             </Card>
           )}

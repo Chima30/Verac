@@ -6,6 +6,7 @@ import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, Source, btn
 import { formatQor } from "@/lib/approvals";
 import { G_STEPS, G_STEP_LABEL, type GResult, type GStep } from "@/lib/grants/engine";
 import { classify } from "@/lib/grants/queries";
+import { disagreements } from "@/lib/grants/portfolio";
 import { CATEGORY_LABEL, wei } from "@/lib/grants";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -71,6 +72,14 @@ export default async function Intelligence({ params, searchParams }: { params: P
     answer = <p>See the {kind === "shortlist" ? "allocation scenarios" : "comparison"} below; they use the latest report of each application.</p>;
   } else if (sp.q) answer = <p>That question is not one Verac answers from stored results. To investigate, phrase it as an instruction to review the applications.</p>;
 
+  const reviewIds = (rv ?? []).map((r) => r.id as string);
+  const { data: ovd } = reviewIds.length ? await sb.from("grant_overrides").select("review_id,criterion,new_score,reason").in("review_id", reviewIds) : { data: [] };
+  const { data: dec } = await sb.from("audit_events").select("subject,action,detail").eq("organization_id", s.org.id).in("action", ["grant.recommend", "grant.reject"]).in("subject", (apps ?? []).map((a) => a.id as string));
+  const disagree = disagreements(
+    ((rv ?? []) as unknown as Rev[]).map((r) => ({ id: r.id, applicationId: r.application_id, recommendation: r.recommendation, scores: r.scores as unknown as Array<{ key: string; label: string; max: number; score: number | null; by: string }> })).reverse(),
+    ((ovd ?? []) as Array<Record<string, unknown>>).map((o) => ({ reviewId: o.review_id as string, criterion: o.criterion as string, newScore: Number(o.new_score), reason: o.reason as string })),
+    ((dec ?? []) as Array<Record<string, unknown>>).map((d) => ({ applicationId: d.subject as string, decision: String(d.action).replace("grant.", ""), note: ((d.detail as { reason?: string } | null)?.reason) ?? "" })),
+  );
   const criteria = [...new Set([...latest.values()].flatMap((r) => r.scores.map((x) => x.key)))];
   const pkg = task?.result?.package;
 
@@ -171,6 +180,11 @@ export default async function Intelligence({ params, searchParams }: { params: P
             </dl>
             {sim.skipped.length > 0 && <ul className="mt-2 list-disc pl-5 text-[12.5px] text-muted">{sim.skipped.map((x) => <li key={x.id}>{appName.get(x.id)}: {x.reason}</li>)}</ul>}
             <Source>Trade-off: ordering by score funds the best-rated first; ordering by request size funds more projects. Neither is objectively correct.</Source>
+          </Card>
+          <Card title="Reviewer disagreement" description="Where people scored or decided differently from the report. Each entry carries the reviewer's reason.">
+            {disagree.length === 0 ? <p className="text-[13px] text-muted">No overrides or decisions against a recommendation yet.</p> : (
+              <ul className="space-y-2 text-[13px]">{disagree.map((d, i) => <li key={i}><Link className="font-medium underline" href={`/grants/applications/${d.applicationId}`}>{appName.get(d.applicationId)}</Link>: {d.text}<span className="block text-[12px] text-muted">Reason: {d.reason || "not recorded"}</span></li>)}</ul>
+            )}
           </Card>
           {tasks.length > 1 && (
             <Card title="Earlier investigations">

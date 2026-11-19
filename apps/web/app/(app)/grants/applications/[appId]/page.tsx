@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import { redirect } from "next/navigation";
 import { checkApplication } from "@qoreops/policy-engine";
 import { ReviewButton } from "@/components/grants/review-button";
+import { history as grantHistory } from "@/lib/grants/portfolio";
 import { MilestonesPanel, type FundRow, type MsEvidence, type MsRow, type SubRow } from "@/components/grants/milestones-panel";
 import { ApplicantClarifications, ReviewerPanels, type ClarRow, type EvidenceRow, type FlagRow, type OverrideRow, type ReviewRow } from "@/components/grants/review-panels";
 import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, Source, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
@@ -75,6 +76,16 @@ export default async function Application({ params, searchParams }: { params: Pr
     riskFlags = ((fl ?? []) as unknown as FlagRow[]).sort((x, y) => (x.status === "open" ? 0 : 1) - (y.status === "open" ? 0 : 1));
     const { data: cf } = await sb.from("grant_conflicts").select("user_id").eq("application_id", appId).eq("user_id", s.user.id);
     conflicted = !!cf?.length;
+  }
+  let previous: ReturnType<typeof grantHistory> = [];
+  if (reviewer) {
+    const { data: others } = await sb.from("grant_applications").select("id,applicant_name,status,requested_amount,grant_id,applicant_user_id,content").eq("organization_id", s.org.id).eq("applicant_user_id", a.applicant_user_id).eq("status", "awarded").neq("id", a.id);
+    if (others?.length) {
+      const { data: oms } = await sb.from("milestones").select("id,parent_id,idx,title,amount,status").eq("parent_type", "grant").in("parent_id", others.map((o) => o.id as string));
+      previous = grantHistory({ id: a.id, name: a.applicant_name, status: a.status, requested: String(a.requested_amount), grantId: a.grant_id, applicantUserId: a.applicant_user_id, content: null },
+        others.map((o) => ({ id: o.id as string, name: o.applicant_name as string, status: o.status as string, requested: String(o.requested_amount), grantId: o.grant_id as string, applicantUserId: o.applicant_user_id as string, content: null })),
+        (oms ?? []).map((m) => ({ id: m.id as string, parentId: m.parent_id as string, idx: m.idx as number, title: m.title as string, amount: String(m.amount), status: m.status as string })));
+    }
   }
   const { data: cl } = await sb.from("grant_clarifications").select("id,questions,status,drafted_by,sent_at,response,responded_at,created_at").eq("application_id", appId).neq("status", "cancelled").order("created_at", { ascending: false });
   const clars = (cl ?? []) as unknown as ClarRow[];
@@ -168,6 +179,14 @@ export default async function Application({ params, searchParams }: { params: Pr
         </div>
 
         <div className="space-y-6">
+          {reviewer && (
+            <Card title="Previous grants" description="Earlier awarded applications from the same applicant. Past funding never implies approval.">
+              {previous.length === 0 ? <p className="text-[13px] text-muted">None in this organisation.</p> : (
+                <ul className="space-y-1 text-[13px]">{previous.map((p) => <li key={p.applicationId}><Link className="underline" href={`/grants/applications/${p.applicationId}`}>{p.name}</Link>: {p.released} of {p.milestones} milestones released{p.pending ? `, ${p.pending} open` : ""}</li>)}</ul>
+              )}
+            </Card>
+          )}
+          {reviewer && <a href={`/api/grants/receipt?app=${a.id}`} className={`${btnSecondaryCls} w-full justify-center`}>Download decision receipt (JSON)</a>}
           <Card title="Status">
             <dl className="grid grid-cols-[7rem_1fr] gap-y-1.5 text-[13px]">
               <dt className="text-muted">Category</dt><dd>{a.category ? CATEGORY_LABEL[a.category] : "legacy application"}</dd>
