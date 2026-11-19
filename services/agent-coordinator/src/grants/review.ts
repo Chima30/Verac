@@ -134,7 +134,18 @@ export function riskFlags(app: GrantApp, all: GrantApp[], evidence: EvidenceRef[
   for (const o of all) {
     if (o.id === app.id) continue;
     const sim = jaccard(mine, shingles(proposalText(o)));
-    if (sim >= 0.35) flags.push({ code: "SIMILAR_SUBMISSION", severity: sim >= 0.6 ? "high" : "medium", message: `${Math.round(sim * 100)}% of five-word passages are shared with "${o.name}". This can be legitimate (same template, same team, joint project); a reviewer should compare them.`, evidence: { otherApplication: o.id, similarity: Math.round(sim * 1000) / 1000, method: "Jaccard similarity of 5-word shingles over overview, problem, solution and technical sections" } });
+    if (sim >= 0.35) {
+      // When both submission times are known, the earlier application is the likely original: it gets a low note, the later one the flag.
+      const earlier = !!app.submittedAt && !!o.submittedAt && app.submittedAt < o.submittedAt;
+      const later = !!app.submittedAt && !!o.submittedAt && app.submittedAt > o.submittedAt;
+      flags.push({
+        code: "SIMILAR_SUBMISSION", severity: earlier ? "low" : sim >= 0.6 ? "high" : "medium",
+        message: earlier
+          ? `A later application, "${o.name}", shares ${Math.round(sim * 100)}% of five-word passages with this one. This application was submitted first.`
+          : `${Math.round(sim * 100)}% of five-word passages are shared with ${later ? "an earlier application, " : ""}"${o.name}". This can be legitimate (same template, same team, joint project); a reviewer should compare them.`,
+        evidence: { otherApplication: o.id, similarity: Math.round(sim * 1000) / 1000, submittedFirst: earlier ? "this application" : later ? "the other application" : "unknown", method: "Jaccard similarity of 5-word shingles over overview, problem, solution and technical sections" },
+      });
+    }
     const sharedRepos = (app.content.links?.repos ?? []).map((r) => r.toLowerCase().replace(/\/$/, "")).filter((r) => (o.content.links?.repos ?? []).map((x) => x.toLowerCase().replace(/\/$/, "")).includes(r));
     if (sharedRepos.length) flags.push({ code: "SHARED_REPOSITORY", severity: "medium", message: `The same repository is listed by "${o.name}": ${sharedRepos.join(", ")}. A link does not prove ownership; ask both applicants about their roles.`, evidence: { otherApplication: o.id, repos: sharedRepos } });
     if (app.recipient && o.recipient && app.recipient.toLowerCase() === o.recipient.toLowerCase() && app.applicantUserId !== o.applicantUserId) flags.push({ code: "SHARED_RECIPIENT", severity: "high", message: `The payout address is also given by "${o.name}", a different applicant.`, evidence: { otherApplication: o.id, recipient: app.recipient } });
@@ -199,7 +210,11 @@ export function buildScores(criteria: Criterion[], category: string | null, rule
 }
 
 export type Recommendation = "strong_candidate" | "needs_clarification" | "further_review";
-/** A category for human attention, decided by rules: never an award or rejection. */
+/**
+ * A category for human attention, decided by rules: never an award or rejection. `questions` are the RULE questions
+ * (required information found missing); optional AI-drafted questions go into the clarification draft but do not hold back
+ * an otherwise complete application.
+ */
 export function recommend(scores: Score[], flags: Flag[], questions: Question[], eligible: boolean): { recommendation: Recommendation; why: string } {
   if (!eligible) return { recommendation: "further_review", why: "It does not meet the round's eligibility rules." };
   const high = flags.filter((f) => f.severity === "high");

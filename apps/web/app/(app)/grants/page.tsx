@@ -6,6 +6,7 @@ import { CATEGORY_LABEL, STATUS_TEXT, STATUS_TONE, nextAction, sumWei, wei, type
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 import { createRound } from "./actions";
+import { loadGrantDemo } from "./sample";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Grants" };
@@ -131,6 +132,12 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                 </fieldset>
                 <button className={btnCls}>Open round</button>
               </form>
+            </Card>
+          )}
+          {admin && (
+            <Card title="Sample programme" description="Three fictional applications (Alpha, Beta, Gamma) in a 20,000 QOR round, clearly labelled SAMPLE, to try the review end to end.">
+              <form action={loadGrantDemo}><button className={btnCls}>Load the sample programme</button></form>
+              <Source>Alpha links Verac's own public repository, so its evidence is real; a link never proves ownership. No GitHub activity or transaction is invented.</Source>
             </Card>
           )}
           <Card title="How a grant is decided">

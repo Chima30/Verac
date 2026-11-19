@@ -84,6 +84,11 @@ describe("Grant Risk Agent", () => {
     expect(sim.evidence).toMatchObject({ otherApplication: "A" });
     expect(riskFlags(alpha, [alpha, beta], []).map((f) => f.code)).toEqual([]);
   });
+  it("puts the similarity flag on the later submission; the earlier one gets a low note", () => {
+    const a = { ...alpha, submittedAt: "2026-11-19T10:00:00Z" }, g = { ...gamma, submittedAt: "2026-11-19T12:00:00Z" };
+    expect(riskFlags(a, [a, g], []).find((f) => f.code === "SIMILAR_SUBMISSION")).toMatchObject({ severity: "low", evidence: { submittedFirst: "this application" } });
+    expect(riskFlags(g, [a, g], []).find((f) => f.code === "SIMILAR_SUBMISSION")).toMatchObject({ severity: "high", evidence: { submittedFirst: "the other application" } });
+  });
   it("flags a changed payout address and text aimed at an automated reviewer", () => {
     const changed = { ...beta, recipientHistory: ["0x" + "2".repeat(40), "0x" + "9".repeat(40)] };
     expect(riskFlags(changed, [changed], []).map((f) => f.code)).toEqual(["RECIPIENT_CHANGED"]);

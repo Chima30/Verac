@@ -1,0 +1,818 @@
+{
+  "ranAt": "2026-11-19T22:17:07.300Z",
+  "note": "Sample programme with fictional applicants; real GitHub, Diana and Gemini; nothing written to a database.",
+  "results": [
+    {
+      "app": "SAMPLE Project Alpha",
+      "recommendation": {
+        "recommendation": "strong_candidate",
+        "why": "Scored 92 of 100 applicable points with no open questions or high flags."
+      },
+      "evidence": [
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "The repository exists and is public",
+          "status": "VERIFIED",
+          "reason": "GitHub returned the repository Chima30/Verac.",
+          "observed": {
+            "fullName": "Chima30/Verac",
+            "description": null,
+            "defaultBranch": "feat/foundation",
+            "visibility": "public",
+            "fork": false,
+            "parent": null,
+            "archived": false,
+            "createdAt": "2026-11-14T17:31:49Z",
+            "pushedAt": "2026-11-19T21:20:43Z",
+            "updatedAt": "2026-11-16T14:50:08Z",
+            "license": "MIT",
+            "openIssues": 0,
+            "primaryLanguage": "TypeScript",
+            "sizeKb": 2908
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac",
+          "retrievedAt": "2026-11-19T22:15:56.304Z",
+          "ref": "E1"
+        },
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "There is development activity in the repository",
+          "status": "VERIFIED",
+          "reason": "30 commit(s) returned in the first page, newest 2026-11-19T19:04:55Z. Commit counts are not a measure of quality.",
+          "observed": {
+            "languages": {
+              "TypeScript": 1252898,
+              "Solidity": 1031343,
+              "JavaScript": 594432,
+              "PLpgSQL": 204055,
+              "Python": 18121,
+              "Shell": 17270,
+              "Batchfile": 15105,
+              "CSS": 13849
+            },
+            "recentCommitsReturned": 30,
+            "newestCommit": "2026-11-19T19:04:55Z",
+            "oldestCommitInPage": "2026-11-14T23:51:41Z",
+            "distinctCommitAuthorsInPage": 1,
+            "contributorsReturned": 1,
+            "pullRequestsReturned": 1,
+            "releasesReturned": 0,
+            "latestRelease": null,
+            "rootFiles": [
+              ".agents/",
+              ".env.example",
+              ".gitattributes",
+              ".github/",
+              ".gitignore",
+              ".npmrc",
+              ".vercelignore",
+              "LICENSE",
+              "README.md",
+              "apps/",
+              "contracts/",
+              "deployments/",
+              "docs/",
+              "package.json",
+              "packages/",
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "scripts/",
+              "services/",
+              "skills-lock.json",
+              "supabase/",
+              "tests/",
+              "tsconfig.base.json",
+              "vitest.config.ts",
+              "vitest.live.config.ts"
+            ],
+            "readme": true,
+            "ciWorkflows": [
+              "contracts.yml"
+            ],
+            "ciConfigAtRoot": true,
+            "testIndicators": [
+              "tests",
+              "vitest.config.ts"
+            ],
+            "notes": []
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac/commits?per_page=30",
+          "retrievedAt": "2026-11-19T22:16:13.141Z",
+          "ref": "E2"
+        },
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "Tests or continuous integration are configured",
+          "status": "VERIFIED",
+          "reason": "Found CI workflows (contracts.yml); CI configuration; test indicators (tests, vitest.config.ts) in the repository root. Configuration is not proof that tests pass.",
+          "observed": {
+            "ciWorkflows": [
+              "contracts.yml"
+            ],
+            "ciConfigAtRoot": true,
+            "testIndicators": [
+              "tests",
+              "vitest.config.ts"
+            ]
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac/contents/",
+          "retrievedAt": "2026-11-19T22:16:13.141Z",
+          "ref": "E3"
+        },
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "The README describes the project",
+          "status": "UNVERIFIED",
+          "reason": "README text retrieved for review. Its statements are the applicant's own claims.",
+          "observed": {
+            "readmeChars": 12000
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac/readme",
+          "retrievedAt": "2026-11-19T22:16:14.101Z",
+          "ref": "E4"
+        }
+      ],
+      "scores": [
+        {
+          "key": "relevance",
+          "label": "Project relevance",
+          "max": 20,
+          "evidence_refs": [
+            "section:overview",
+            "E1"
+          ],
+          "missing": [],
+          "score": 18,
+          "state": "scored",
+          "explanation": "The project builds an open-source tool for QoreChain builders and DAOs, directly aligning with developer tooling for the ecosystem.",
+          "by": "ai"
+        },
+        {
+          "key": "technical",
+          "label": "Technical implementation",
+          "max": 20,
+          "evidence_refs": [
+            "E1",
+            "E2",
+            "E3"
+          ],
+          "missing": [],
+          "score": 18,
+          "state": "scored",
+          "explanation": "The repository contains functional TypeScript and Solidity code with configured CI and test indicators.",
+          "by": "ai"
+        },
+        {
+          "key": "approach",
+          "label": "Method or approach",
+          "max": 20,
+          "evidence_refs": [],
+          "missing": [],
+          "score": null,
+          "state": "inapplicable",
+          "explanation": "Does not apply to software projects.",
+          "by": "rules"
+        },
+        {
+          "key": "feasibility",
+          "label": "Feasibility",
+          "max": 15,
+          "evidence_refs": [
+            "E1",
+            "E2",
+            "section:timeline"
+          ],
+          "missing": [],
+          "score": 13,
+          "state": "scored",
+          "explanation": "An existing public repository with active commits and established structure supports the timeline and scope.",
+          "by": "ai"
+        },
+        {
+          "key": "milestones",
+          "label": "Milestone quality",
+          "max": 15,
+          "evidence_refs": [
+            "section:milestones"
+          ],
+          "missing": [],
+          "score": 15,
+          "state": "scored",
+          "explanation": "Scored by fixed rules (15/15); see the milestone review.",
+          "by": "rules"
+        },
+        {
+          "key": "budget",
+          "label": "Budget justification",
+          "max": 10,
+          "evidence_refs": [
+            "section:budget"
+          ],
+          "missing": [],
+          "score": 10,
+          "state": "scored",
+          "explanation": "Scored by fixed rules (10/10); see the budget review.",
+          "by": "rules"
+        },
+        {
+          "key": "impact",
+          "label": "Expected impact",
+          "max": 10,
+          "evidence_refs": [
+            "section:overview",
+            "section:problem"
+          ],
+          "missing": [],
+          "score": 9,
+          "state": "scored",
+          "explanation": "The project addresses treasury management and milestone tracking use cases on QoreChain.",
+          "by": "ai"
+        },
+        {
+          "key": "capability",
+          "label": "Execution capability",
+          "max": 10,
+          "evidence_refs": [
+            "section:team",
+            "section:experience",
+            "E2"
+          ],
+          "missing": [],
+          "score": 9,
+          "state": "scored",
+          "explanation": "The team maintains an existing TypeScript SDK and has demonstrated active repository commits.",
+          "by": "ai"
+        }
+      ],
+      "flags": [
+        {
+          "code": "SIMILAR_SUBMISSION",
+          "severity": "low",
+          "message": "A later application, \"SAMPLE Project Gamma\", shares 97% of five-word passages with this one. This application was submitted first.",
+          "evidence": {
+            "otherApplication": "gamma",
+            "similarity": 0.97,
+            "submittedFirst": "this application",
+            "method": "Jaccard similarity of 5-word shingles over overview, problem, solution and technical sections"
+          }
+        },
+        {
+          "code": "SHARED_REPOSITORY",
+          "severity": "medium",
+          "message": "The same repository is listed by \"SAMPLE Project Gamma\": https://github.com/chima30/verac. A link does not prove ownership; ask both applicants about their roles.",
+          "evidence": {
+            "otherApplication": "gamma",
+            "repos": [
+              "https://github.com/chima30/verac"
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "question": "What is the timeline for completing the remaining smart-account proofs?",
+          "about": "AI-drafted (optional)"
+        }
+      ],
+      "ai": {
+        "model": "gemini-3.5-flash-lite",
+        "strengths": [
+          "Public repository with active development commits and configured CI workflows.",
+          "Clear alignment with QoreChain developer tooling and workflow needs."
+        ],
+        "concerns": [
+          "Some advanced agent proofs remain to be fully executed on-chain."
+        ]
+      }
+    },
+    {
+      "app": "SAMPLE Project Beta",
+      "recommendation": {
+        "recommendation": "needs_clarification",
+        "why": "5 question(s) should be answered before deciding."
+      },
+      "evidence": [
+        {
+          "source": "web",
+          "subject": "https://verac-web.vercel.app",
+          "claim": "The project website is online",
+          "status": "VERIFIED",
+          "reason": "Fetched (HTTP 200), title \"Dashboard · Verac\". Reachability says nothing about quality.",
+          "observed": {
+            "finalUrl": "https://verac-web.vercel.app/dashboard",
+            "redirects": [
+              "https://verac-web.vercel.app/dashboard"
+            ],
+            "title": "Dashboard · Verac",
+            "textChars": 2000
+          },
+          "url": "https://verac-web.vercel.app/dashboard",
+          "retrievedAt": "2026-11-19T22:16:46.490Z",
+          "ref": "E1"
+        }
+      ],
+      "scores": [
+        {
+          "key": "relevance",
+          "label": "Project relevance",
+          "max": 20,
+          "evidence_refs": [
+            "section:overview",
+            "section:solution"
+          ],
+          "missing": [
+            "Explanation of how the tool specifically serves QoreChain builders."
+          ],
+          "score": 10,
+          "state": "scored",
+          "explanation": "The application proposes a wallet analytics tool for tracking grant payments, which aligns with open-source developer tooling. However, specific integration details or builder focus for QoreChain are absent.",
+          "by": "ai"
+        },
+        {
+          "key": "technical",
+          "label": "Technical implementation",
+          "max": 20,
+          "evidence_refs": [],
+          "missing": [
+            "Source code repository",
+            "Technical documentation or architecture diagram"
+          ],
+          "score": null,
+          "state": "missing",
+          "explanation": "No repository, contract, or transaction was provided to inspect the Next.js and Rust architecture.",
+          "by": "ai"
+        },
+        {
+          "key": "approach",
+          "label": "Method or approach",
+          "max": 20,
+          "evidence_refs": [],
+          "missing": [],
+          "score": null,
+          "state": "inapplicable",
+          "explanation": "Does not apply to software projects.",
+          "by": "rules"
+        },
+        {
+          "key": "feasibility",
+          "label": "Feasibility",
+          "max": 15,
+          "evidence_refs": [
+            "section:timeline",
+            "section:metrics"
+          ],
+          "missing": [
+            "Explanation of the budget allocation"
+          ],
+          "score": 7,
+          "state": "scored",
+          "explanation": "A ten-week timeline is outlined with ten DAOs targeted for onboarding, but the budget allocation lacks explanation.",
+          "by": "ai"
+        },
+        {
+          "key": "milestones",
+          "label": "Milestone quality",
+          "max": 15,
+          "evidence_refs": [
+            "section:milestones"
+          ],
+          "missing": [],
+          "score": 10,
+          "state": "scored",
+          "explanation": "Scored by fixed rules (10/15); see the milestone review.",
+          "by": "rules"
+        },
+        {
+          "key": "budget",
+          "label": "Budget justification",
+          "max": 10,
+          "evidence_refs": [
+            "section:budget"
+          ],
+          "missing": [],
+          "score": 4,
+          "state": "scored",
+          "explanation": "Scored by fixed rules (4/10); see the budget review.",
+          "by": "rules"
+        },
+        {
+          "key": "impact",
+          "label": "Expected impact",
+          "max": 10,
+          "evidence_refs": [
+            "section:metrics"
+          ],
+          "missing": [
+            "Quantifiable metrics regarding developer adoption on QoreChain"
+          ],
+          "score": 5,
+          "state": "scored",
+          "explanation": "The expected impact includes onboarding ten DAOs within three months to improve treasurer visibility over grant payments.",
+          "by": "ai"
+        },
+        {
+          "key": "capability",
+          "label": "Execution capability",
+          "max": 10,
+          "evidence_refs": [
+            "section:team",
+            "section:experience"
+          ],
+          "missing": [
+            "Team member profiles or past project links"
+          ],
+          "score": 5,
+          "state": "scored",
+          "explanation": "The team is described as three developers without documented past experience or verifiable contributor profiles.",
+          "by": "ai"
+        }
+      ],
+      "flags": [],
+      "questions": [
+        {
+          "about": "experience",
+          "question": "Please describe relevant previous work a reviewer can check (links to past projects, publications or releases)."
+        },
+        {
+          "about": "budget",
+          "question": "Your proposal requests 7,000 QOR, but the budget has a single line. Please break it down: roles or items, time, and rate."
+        },
+        {
+          "about": "budget",
+          "question": "These budget lines are too general to assess: \"Development\". Please describe what each pays for."
+        },
+        {
+          "about": "milestone 1",
+          "question": "Milestone 1 (\"Phase 1\") says \"Complete the protocol.\", which does not describe a deliverable a reviewer can check. What exactly will exist when it is done, and how can it be verified?"
+        },
+        {
+          "about": "milestone 1",
+          "question": "Milestone 1 (\"Phase 1\"): how can a reviewer verify completion (a link, release, transaction, report)?"
+        },
+        {
+          "question": "Can you provide a public repository or demonstration link for the Next.js and Rust components?",
+          "about": "AI-drafted (optional)"
+        },
+        {
+          "question": "How does the budget of 7000 QOR break down across the ten-week timeline?",
+          "about": "AI-drafted (optional)"
+        },
+        {
+          "question": "What specific features target QoreChain builders versus general DAO treasuries?",
+          "about": "AI-drafted (optional)"
+        }
+      ],
+      "ai": {
+        "model": "gemini-3.5-flash-lite",
+        "strengths": [
+          "Clear problem statement addressing DAO grant payment tracking.",
+          "Concise ten-week timeline and defined milestone targets."
+        ],
+        "concerns": [
+          "No code repository or technical implementation details provided.",
+          "Budget allocation is entirely unexplained.",
+          "Team experience section is empty."
+        ]
+      }
+    },
+    {
+      "app": "SAMPLE Project Gamma",
+      "recommendation": {
+        "recommendation": "further_review",
+        "why": "1 high-severity flag(s) need a human look first."
+      },
+      "evidence": [
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "The repository exists and is public",
+          "status": "VERIFIED",
+          "reason": "GitHub returned the repository Chima30/Verac.",
+          "observed": {
+            "fullName": "Chima30/Verac",
+            "description": null,
+            "defaultBranch": "feat/foundation",
+            "visibility": "public",
+            "fork": false,
+            "parent": null,
+            "archived": false,
+            "createdAt": "2026-11-14T17:31:49Z",
+            "pushedAt": "2026-11-19T21:20:43Z",
+            "updatedAt": "2026-11-16T14:50:08Z",
+            "license": "MIT",
+            "openIssues": 0,
+            "primaryLanguage": "TypeScript",
+            "sizeKb": 2908
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac",
+          "retrievedAt": "2026-11-19T22:16:51.225Z",
+          "ref": "E1"
+        },
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "There is development activity in the repository",
+          "status": "VERIFIED",
+          "reason": "30 commit(s) returned in the first page, newest 2026-11-19T19:04:55Z. Commit counts are not a measure of quality.",
+          "observed": {
+            "languages": {
+              "TypeScript": 1252898,
+              "Solidity": 1031343,
+              "JavaScript": 594432,
+              "PLpgSQL": 204055,
+              "Python": 18121,
+              "Shell": 17270,
+              "Batchfile": 15105,
+              "CSS": 13849
+            },
+            "recentCommitsReturned": 30,
+            "newestCommit": "2026-11-19T19:04:55Z",
+            "oldestCommitInPage": "2026-11-14T23:51:41Z",
+            "distinctCommitAuthorsInPage": 1,
+            "contributorsReturned": 1,
+            "pullRequestsReturned": 1,
+            "releasesReturned": 0,
+            "latestRelease": null,
+            "rootFiles": [
+              ".agents/",
+              ".env.example",
+              ".gitattributes",
+              ".github/",
+              ".gitignore",
+              ".npmrc",
+              ".vercelignore",
+              "LICENSE",
+              "README.md",
+              "apps/",
+              "contracts/",
+              "deployments/",
+              "docs/",
+              "package.json",
+              "packages/",
+              "pnpm-lock.yaml",
+              "pnpm-workspace.yaml",
+              "scripts/",
+              "services/",
+              "skills-lock.json",
+              "supabase/",
+              "tests/",
+              "tsconfig.base.json",
+              "vitest.config.ts",
+              "vitest.live.config.ts"
+            ],
+            "readme": true,
+            "ciWorkflows": [
+              "contracts.yml"
+            ],
+            "ciConfigAtRoot": true,
+            "testIndicators": [
+              "tests",
+              "vitest.config.ts"
+            ],
+            "notes": []
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac/commits?per_page=30",
+          "retrievedAt": "2026-11-19T22:16:58.341Z",
+          "ref": "E2"
+        },
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "Tests or continuous integration are configured",
+          "status": "VERIFIED",
+          "reason": "Found CI workflows (contracts.yml); CI configuration; test indicators (tests, vitest.config.ts) in the repository root. Configuration is not proof that tests pass.",
+          "observed": {
+            "ciWorkflows": [
+              "contracts.yml"
+            ],
+            "ciConfigAtRoot": true,
+            "testIndicators": [
+              "tests",
+              "vitest.config.ts"
+            ]
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac/contents/",
+          "retrievedAt": "2026-11-19T22:16:58.341Z",
+          "ref": "E3"
+        },
+        {
+          "source": "github",
+          "subject": "https://github.com/Chima30/Verac",
+          "claim": "The README describes the project",
+          "status": "UNVERIFIED",
+          "reason": "README text retrieved for review. Its statements are the applicant's own claims.",
+          "observed": {
+            "readmeChars": 12000
+          },
+          "url": "https://api.github.com/repos/Chima30/Verac/readme",
+          "retrievedAt": "2026-11-19T22:17:00.444Z",
+          "ref": "E4"
+        },
+        {
+          "source": "qorechain",
+          "subject": "0x000000000000000000000000000000000000dEaD",
+          "claim": "A contract is deployed at this address on Diana",
+          "status": "CONTRADICTED",
+          "reason": "There is no contract code at this address on Diana testnet.",
+          "observed": {
+            "chainId": 9800,
+            "codeBytes": 0
+          },
+          "url": "https://explore.qore.network/address/0x000000000000000000000000000000000000dEaD",
+          "retrievedAt": "2026-11-19T22:17:02.643Z",
+          "ref": "E5"
+        }
+      ],
+      "scores": [
+        {
+          "key": "relevance",
+          "label": "Project relevance",
+          "max": 20,
+          "evidence_refs": [
+            "E1",
+            "section:overview"
+          ],
+          "missing": [],
+          "score": 12,
+          "state": "scored",
+          "explanation": "The project builds open-source developer tooling and infrastructure targeting QoreChain builders and DAOs. It provides workflow coordination and agent management tools relevant to the ecosystem.",
+          "by": "ai"
+        },
+        {
+          "key": "technical",
+          "label": "Technical implementation",
+          "max": 20,
+          "evidence_refs": [
+            "E1",
+            "E2",
+            "E3",
+            "E5"
+          ],
+          "missing": [
+            "Verification of deployed contract byte code on the Diana testnet."
+          ],
+          "score": 15,
+          "state": "scored",
+          "explanation": "The repository contains TypeScript and Solidity codebases with configured continuous integration and test indicators. However, the claimed testnet deployment address contained zero contract code.",
+          "by": "ai"
+        },
+        {
+          "key": "approach",
+          "label": "Method or approach",
+          "max": 20,
+          "evidence_refs": [],
+          "missing": [],
+          "score": null,
+          "state": "inapplicable",
+          "explanation": "Does not apply to software projects.",
+          "by": "rules"
+        },
+        {
+          "key": "feasibility",
+          "label": "Feasibility",
+          "max": 15,
+          "evidence_refs": [
+            "E1",
+            "E2",
+            "E3",
+            "section:timeline"
+          ],
+          "missing": [],
+          "score": 10,
+          "state": "scored",
+          "explanation": "A public repository with active commits and configured CI workflows indicates development feasibility. The timeline provided in the application is six weeks.",
+          "by": "ai"
+        },
+        {
+          "key": "milestones",
+          "label": "Milestone quality",
+          "max": 15,
+          "evidence_refs": [
+            "section:milestones"
+          ],
+          "missing": [],
+          "score": 13,
+          "state": "scored",
+          "explanation": "Scored by fixed rules (13/15); see the milestone review.",
+          "by": "rules"
+        },
+        {
+          "key": "budget",
+          "label": "Budget justification",
+          "max": 10,
+          "evidence_refs": [
+            "section:budget"
+          ],
+          "missing": [],
+          "score": 6,
+          "state": "scored",
+          "explanation": "Scored by fixed rules (6/10); see the budget review.",
+          "by": "rules"
+        },
+        {
+          "key": "impact",
+          "label": "Expected impact",
+          "max": 10,
+          "evidence_refs": [
+            "section:solution"
+          ],
+          "missing": [],
+          "score": 6,
+          "state": "scored",
+          "explanation": "The project intends to streamline DAO treasury and grant operations on QoreChain. The expected impact is moderately described through workflow automation use cases.",
+          "by": "ai"
+        },
+        {
+          "key": "capability",
+          "label": "Execution capability",
+          "max": 10,
+          "evidence_refs": [
+            "E2",
+            "section:team",
+            "section:experience"
+          ],
+          "missing": [
+            "Detailed background and past experience of the team."
+          ],
+          "score": 6,
+          "state": "scored",
+          "explanation": "The repository shows ongoing commit activity from a single contributor. Experience details in the application form are sparse.",
+          "by": "ai"
+        }
+      ],
+      "flags": [
+        {
+          "code": "SIMILAR_SUBMISSION",
+          "severity": "high",
+          "message": "97% of five-word passages are shared with an earlier application, \"SAMPLE Project Alpha\". This can be legitimate (same template, same team, joint project); a reviewer should compare them.",
+          "evidence": {
+            "otherApplication": "alpha",
+            "similarity": 0.97,
+            "submittedFirst": "the other application",
+            "method": "Jaccard similarity of 5-word shingles over overview, problem, solution and technical sections"
+          }
+        },
+        {
+          "code": "SHARED_REPOSITORY",
+          "severity": "medium",
+          "message": "The same repository is listed by \"SAMPLE Project Alpha\": https://github.com/chima30/verac. A link does not prove ownership; ask both applicants about their roles.",
+          "evidence": {
+            "otherApplication": "alpha",
+            "repos": [
+              "https://github.com/chima30/verac"
+            ]
+          }
+        },
+        {
+          "code": "CONTRADICTED_CLAIM",
+          "severity": "medium",
+          "message": "A contract is deployed at this address on Diana: There is no contract code at this address on Diana testnet.",
+          "evidence": {
+            "ref": "E5",
+            "url": "https://explore.qore.network/address/0x000000000000000000000000000000000000dEaD",
+            "subject": "0x000000000000000000000000000000000000dEaD"
+          }
+        }
+      ],
+      "questions": [
+        {
+          "about": "experience",
+          "question": "Please describe relevant previous work a reviewer can check (links to past projects, publications or releases)."
+        },
+        {
+          "about": "budget",
+          "question": "One budget line (\"Engineering\") is 83.3% of the request. Please explain how that amount was estimated."
+        },
+        {
+          "about": "budget",
+          "question": "These budget lines are too general to assess: \"Engineering\". Please describe what each pays for."
+        },
+        {
+          "question": "Can you provide the correct deployed contract addresses on the Diana testnet?",
+          "about": "AI-drafted (optional)"
+        },
+        {
+          "question": "What specific steps are planned to verify milestone completion?",
+          "about": "AI-drafted (optional)"
+        }
+      ],
+      "ai": {
+        "model": "gemini-3.5-flash-lite",
+        "strengths": [
+          "Active public GitHub repository with TypeScript and Solidity implementations.",
+          "Configured continuous integration workflows and test indicators.",
+          "Clear focus on QoreChain ecosystem tooling."
+        ],
+        "concerns": [
+          "The provided testnet contract address returned zero code bytes during verification.",
+          "Limited team and experience details provided in the application.",
+          "Milestones lack intermediate checkpoints for the funding request."
+        ]
+      }
+    }
+  ]
+}
