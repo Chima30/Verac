@@ -42,6 +42,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
+          set +e
           set -o pipefail
           forge test -vv --color never 2>&1 | tee forge-test.log
           status=${PIPESTATUS[0]}
