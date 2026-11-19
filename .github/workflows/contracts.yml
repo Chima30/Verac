@@ -38,5 +38,14 @@ jobs:
       - name: Build
         run: forge build --sizes
 
+      # Failing tests are also published as annotations, which are public, so a failure can be read without the logs.
       - name: Test
-        run: forge test -vv
+        shell: bash
+        run: |
+          set -o pipefail
+          forge test -vv 2>&1 | tee forge-test.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            grep -E "^\[FAIL|Error|error\[" forge-test.log | head -10 | while IFS= read -r line; do echo "::error title=forge test::${line}"; done
+          fi
+          exit "$status"
