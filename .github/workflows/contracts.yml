@@ -43,9 +43,10 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          forge test -vv 2>&1 | tee forge-test.log
+          forge test -vv --color never 2>&1 | tee forge-test.log
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
-            grep -E "^\[FAIL|Error|error\[" forge-test.log | head -10 | while IFS= read -r line; do echo "::error title=forge test::${line}"; done
+            sed -r 's/\x1b\[[0-9;]*[A-Za-z]//g' forge-test.log | grep -E "FAIL|[Ee]rror|panicked|Suite result" | head -10 | while IFS= read -r line; do echo "::error title=forge test::${line}"; done
+            tail -n 25 forge-test.log | sed -r 's/\x1b\[[0-9;]*[A-Za-z]//g' | tr '\n' ' ' | cut -c1-3500 | sed 's/^/::error title=forge tail::/'
           fi
           exit "$status"
