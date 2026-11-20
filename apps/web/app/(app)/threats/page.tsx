@@ -50,7 +50,7 @@ export default async function Threats() {
         </dl>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="space-y-6">
         <div className="min-w-0 space-y-6">
           <Card title="Open findings" description="Highest severity first. Each names the account it applies to and what the rule saw." flush>
             {open.length === 0 ? <p className="py-6 text-center text-[13.5px] text-muted">Nothing open. Passing checks are listed below.</p> : (
@@ -100,7 +100,7 @@ export default async function Threats() {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card title="If a classical key is stolen" right={<Badge tone="pending">MANUAL, COMMAND LINE</Badge>}>
             <p className="mb-4 text-[13px] leading-relaxed text-muted">A thief with only the classical key cannot sign a native transaction, which also needs the ML-DSA-87 signature, and cannot send EVM transactions while no authorisation window is open. No attack has been staged, so this is not claimed as demonstrated.</p>
             <Steps compact steps={[

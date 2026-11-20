@@ -159,7 +159,7 @@ export default async function Simulator() {
         { label: "Policy rejects the invoice", detail: "Fixed rule; a model cannot change it.", state: "step" },
         { label: "Database refuses a second request with the same idempotency key", detail: "Unique (organisation, idempotency key).", state: "step" },
       ], next: "Check where the duplicate came from (a resent invoice or a vendor-side error)." },
-    { id: "recipient", title: "Changed payment recipient", evidence: null,
+    { id: "recipient-change", title: "Changed payment recipient", evidence: null,
       localTest: { file: "services/agent-coordinator/src/workflows/invoice-review.test.ts, tests/security/live-execution.test.ts", cases: ["an invoice whose payout differs from the vendor record is held", "an approval is bound to the exact payment hash; a changed recipient is a different payment that needs its own approvals"] },
       summary: "An invoice asks to be paid to a new address, or someone edits a request after it was approved.",
       steps: [

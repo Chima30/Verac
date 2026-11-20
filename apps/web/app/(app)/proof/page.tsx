@@ -2,7 +2,7 @@ import { QORE_NETWORK } from "@qoreops/shared-types";
 import { ExternalLink } from "lucide-react";
 import { CategorySection } from "@/components/proof/category-section";
 import { ProofLedger, type ProofRow } from "@/components/proof/ledger";
-import { Badge, Card, Metric, PageHeader, StatusDot, fmtUtc } from "@/components/ui";
+import { Badge, Card, HowItWorks, Metric, PageHeader, StatusDot, fmtUtc } from "@/components/ui";
 import { Hash } from "@/components/ui-client";
 import { RUN, type RunTx } from "@/lib/live-run";
 import { classify, contractOf, evidenceDoc, verification } from "@/lib/proof";
@@ -58,14 +58,14 @@ export default async function Proof() {
         meta={<><span>Checked {fmtUtc(checkedAt)}</span><span>Cached for up to 5 minutes</span><span>Network: Diana testnet, EVM chain {deployment.evmChainId}</span></>} />
 
       {/* The answer first. */}
-      <section aria-label="Verdict" className={`mb-6 rounded-lg border p-5 sm:p-6 ${allGood ? "border-[color-mix(in_srgb,var(--live)_30%,transparent)] bg-[var(--live-bg)]" : "border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)]"}`}>
-        <p className="text-[12.5px] font-medium" style={{ color: allGood ? "var(--live)" : "var(--bad)" }}>{allGood ? "Verdict: the record holds" : "Verdict: the chain disagrees with part of the record"}</p>
-        <p className="mt-2 max-w-4xl text-[17px] leading-relaxed sm:text-[18px]">
+      <section aria-label="Verdict" className={`mb-10 rounded-[4px] p-6 sm:p-8 ${allGood ? "theme-dark bg-[var(--band)] text-white" : "border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)]"}`}>
+        <p className="label-mono flex items-center gap-2" style={{ color: allGood ? "var(--accent)" : "var(--bad)" }}>{allGood && <span aria-hidden className="inline-block h-[2px] w-3 bg-[var(--accent)]" />}{allGood ? "Verdict: the record holds" : "Verdict: the chain disagrees with part of the record"}</p>
+        <p className="mt-3 max-w-4xl text-[20px] leading-[1.3] tracking-[-0.01em] sm:text-[22px]">
           {allGood
             ? <>All <strong>{rows.length}</strong> recorded transactions match the chain. <strong>{verified}</strong> succeeded as recorded, and all <strong>{refused}</strong> attempts that the contracts were supposed to refuse were refused on chain with a named error, not blocked in the interface.</>
             : <><strong>{mismatch}</strong> record{mismatch === 1 ? "" : "s"} do not match what the chain returns{unchecked ? <> and <strong>{unchecked}</strong> could not be checked because the node did not answer</> : null}. They are listed first under “Only problems”.</>}
         </p>
-        <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-[color-mix(in_srgb,currentColor_10%,transparent)] pt-4 sm:grid-cols-4">
+        <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-[color-mix(in_srgb,currentColor_15%,transparent)] pt-5 sm:grid-cols-4">
           <Metric label="Verified on-chain" value={verified} tone="live" />
           <Metric label="Refused on-chain, as expected" value={`${refused} / ${expectRefused}`} />
           <Metric label="Mismatches" value={mismatch} tone={mismatch ? "bad" : "muted"} />
@@ -73,14 +73,14 @@ export default async function Proof() {
         </dl>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="space-y-10">
         <ProofLedger rows={rows} checkedAt={checkedAt} />
 
-        <div className="space-y-6">
+        <div>
           <Card title="Contract identities" description={`Deployed ${deployment.deployedAt}. Bytecode is re-checked on the dashboard.`} flush>
-            <ul className="-mx-5 divide-y divide-line">
+            <ul className="-mx-5 grid grid-cols-1 border-t border-line sm:grid-cols-2 lg:grid-cols-3 [&>li]:border-b [&>li]:border-line">
               {contracts.map(([name, c]) => (
-                <li key={name} className="px-5 py-2.5">
+                <li key={name} className="px-5 py-3">
                   <p className="text-[13px] font-medium">{name}</p>
                   <Hash value={c.address} href={`${explorer}/address/${c.address}`} />
                 </li>
@@ -88,7 +88,7 @@ export default async function Proof() {
             </ul>
           </Card>
 
-          <Card title="How this is verified">
+          <HowItWorks title="How this is verified">
             <ol className="space-y-3 text-[13px] leading-relaxed text-muted">
               <li><span className="font-medium text-ink">EVM transactions.</span> The receipt is fetched over JSON-RPC and its status compared with the record.</li>
               <li><span className="font-medium text-ink">Native transactions.</span> These are hybrid-signed (secp256k1 + ML-DSA-87). They are fetched from the chain&apos;s REST endpoint; code 0 means success.</li>
@@ -102,9 +102,9 @@ export default async function Proof() {
               <p><StatusDot tone="failed">Mismatch: the chain disagrees</StatusDot></p>
               <p><StatusDot tone="unavailable">Could not check: node did not answer</StatusDot></p>
             </div>
-          </Card>
+          </HowItWorks>
 
-          <Card title="What this does not prove">
+          <HowItWorks title="What this does not prove">
             <ul className="list-disc space-y-2 pl-4 text-[13px] leading-relaxed text-muted">
               <li>Most steps were run from scripts. Two payments were made from the website: one typed in by hand (“First website payment”) and one prepared by the agent workflow (“Agent workflow payment”).</li>
               <li>No AI made any of these decisions.</li>
@@ -112,7 +112,7 @@ export default async function Proof() {
               <li>The contracts are not source-verified on an explorer and have had no external audit.</li>
             </ul>
             <a href={explorer} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-text hover:underline">QoreChain explorer<ExternalLink size={13} aria-hidden /></a>
-          </Card>
+          </HowItWorks>
         </div>
       </div>
       <CategorySection />

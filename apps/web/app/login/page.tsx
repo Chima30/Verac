@@ -1,17 +1,16 @@
 "use client";
 import { ArrowRight, Eye, EyeOff, Loader2, LockKeyhole, ShieldCheck, Users } from "lucide-react";
+import { LogoMark } from "@/components/logo";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useId, useState } from "react";
-import { Ambient } from "@/components/ambient";
-import { Constellation } from "@/components/constellation";
 import { Notice } from "@/components/ui";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Supabase reports network failures as "Failed to fetch". Say what that means instead. */
 const explain = (m: string) => (/failed to fetch|network|fetch failed|load failed/i.test(m) ? "Could not reach the sign-in service. Check your connection and try again; nothing was changed." : m);
-const field = "h-11 w-full rounded-lg border bg-white px-3.5 text-[15px] text-ink shadow-[inset_0_1px_1px_rgb(0_0_0/0.03)] transition-[border-color,box-shadow] placeholder:text-subtle focus:outline-none focus:ring-4";
+const field = "h-11 w-full rounded-lg border bg-white px-3.5 text-[15px] text-ink transition-[border-color,box-shadow] placeholder:text-subtle focus:outline-none focus:ring-4";
 const ok = "border-[#d9d9de] hover:border-[#bdbdc4] focus:border-[var(--accent)] focus:ring-[color-mix(in_srgb,var(--accent)_16%,transparent)]";
 const bad = "border-[var(--bad)] focus:border-[var(--bad)] focus:ring-[color-mix(in_srgb,var(--bad)_14%,transparent)]";
 
@@ -52,7 +51,7 @@ function LoginForm() {
 
   if (!sb) {
     return (
-      <div className="rounded-2xl border border-[#e4e4e7] bg-white/90 p-7 shadow-[0_24px_60px_-28px_rgb(9_9_11/0.25)] backdrop-blur">
+      <div className="rounded-2xl border border-[#d6d6d6] bg-white p-7 ">
         <h2 className="text-[20px] font-bold tracking-[-0.02em]">Sign-in is not configured</h2>
         <p className="mt-2 text-[14.5px] leading-relaxed text-muted">This deployment has no Supabase project connected, so there are no accounts yet. Every read-only page still works.</p>
         <Link href="/dashboard" className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-[15px] font-semibold text-primary-ink hover:bg-primary-hover">Open the dashboard<ArrowRight size={16} aria-hidden /></Link>
@@ -61,11 +60,11 @@ function LoginForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-[#e4e4e7] bg-white/90 p-6 shadow-[0_24px_60px_-28px_rgb(9_9_11/0.25)] backdrop-blur sm:p-8">
+    <div className="rounded-2xl border border-[#d6d6d6] bg-white p-6  sm:p-8">
       <div role="tablist" aria-label="Account" className="grid grid-cols-2 rounded-lg bg-[#f1f1f3] p-1 text-[13.5px] font-semibold">
         {(["in", "up"] as const).map((m) => (
           <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setMsg(null); }}
-            className={`h-9 rounded-md transition-[background-color,color,box-shadow] ${mode === m ? "bg-white text-ink shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-subtle hover:text-ink"}`}>
+            className={`h-9 rounded-md transition-[background-color,color,box-shadow] ${mode === m ? "bg-[#c8f6f9] text-ink" : "text-subtle hover:text-ink"}`}>
             {m === "in" ? "Sign in" : "Create account"}
           </button>
         ))}
@@ -101,7 +100,7 @@ function LoginForm() {
         {msg && <Notice tone={msg.kind === "error" ? "bad" : "info"} role={msg.kind === "error" ? "alert" : "status"}>{msg.text}</Notice>}
 
         <button type="submit" disabled={busy} aria-busy={busy}
-          className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary text-[15px] font-semibold text-primary-ink shadow-[0_8px_20px_-10px_rgb(9_9_11/0.6)] transition-[background-color,transform] hover:bg-primary-hover active:translate-y-px disabled:opacity-70">
+          className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-[4px] bg-primary font-mono text-[13px] font-medium uppercase text-primary-ink transition-[background-color,transform] hover:bg-primary-hover active:translate-y-px disabled:opacity-70">
           {busy ? <><Loader2 size={17} className="animate-spin" aria-hidden />{mode === "in" ? "Signing in…" : "Creating account…"}</> : <>{mode === "in" ? "Sign in" : "Create account"}<ArrowRight size={16} aria-hidden className="transition-transform group-hover:translate-x-0.5" /></>}
         </button>
       </form>
@@ -124,15 +123,10 @@ export default function LoginPage() {
   const name = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? "Verac";
   return (
     <main className="theme-light relative isolate min-h-dvh overflow-hidden bg-[#fafafa]">
-      {/* Rings radiate from the sign-in card; two ripples travel outward slowly. */}
-      <div aria-hidden className="bg-rings absolute inset-0 -z-10" />
-      <div aria-hidden className="rings-ripple -z-10"><span /><span /></div>
-      <Constellation className="absolute inset-0 -z-10 h-full w-full opacity-60" density={0.5} />
-      <Ambient ring={false} className="-z-10" />
 
       <header className="relative mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-        <span className="flex items-center gap-2.5 text-[18px] font-bold tracking-[-0.02em]">
-          <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-primary text-primary-ink"><svg viewBox="0 0 20 20" className="size-[15px]" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5l6 10 6-10" /><path d="M7.5 5h5" opacity=".55" /></svg></span>
+        <span className="flex items-center gap-2.5 text-[20px] font-medium tracking-[-0.03em]">
+          <LogoMark size={30} />
           {name}
         </span>
         <nav aria-label="Public pages" className="flex items-center gap-1 text-[14px] font-medium">
@@ -143,11 +137,11 @@ export default function LoginPage() {
 
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-5 pb-16 pt-8 sm:px-8 lg:grid-cols-[1.15fr_minmax(24rem,28rem)] lg:gap-x-16 lg:gap-y-10 lg:pt-16">
         <section aria-labelledby="hero-h" className="lg:col-start-1 lg:row-start-1">
-          <p className="inline-flex items-center gap-2 rounded-full border border-[#e4e4e7] bg-white/80 px-3 py-1 text-[12.5px] font-medium text-muted backdrop-blur">
+          <p className="inline-flex items-center gap-2 rounded-[4px] border border-[#d6d6d6] bg-white px-3 py-1 font-mono text-[11px] font-medium uppercase text-muted">
             <span aria-hidden className="size-1.5 rounded-full bg-[var(--live)]" />QoreChain Diana testnet · mainnet disabled
           </p>
           <h1 id="hero-h" className="mt-6 max-w-[14ch] text-[44px] font-extrabold leading-[0.98] tracking-[-0.045em] sm:text-[60px] lg:text-[72px]">
-            Operate your treasury with <span className="text-[var(--accent)]">control.</span>
+            Operate your treasury <span className="text-muted">with control.</span>
           </h1>
           <p className="mt-6 max-w-[34rem] text-[17px] leading-relaxed text-muted sm:text-[18px]">
             AI agents draft, check and explain. Policy decides what is allowed, a second person approves, and the contract enforces the limits. Every payment ends with a receipt you can verify.
@@ -160,7 +154,7 @@ export default function LoginPage() {
         </section>
         <ul aria-label="How Verac keeps control" className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3 lg:col-start-1 lg:row-start-2 lg:self-start">
           {FACTS.map(({ Icon, title, text }) => (
-            <li key={title} className="rounded-xl border border-[#e4e4e7] bg-white/70 p-4 backdrop-blur">
+            <li key={title} className="rounded-xl border border-[#d6d6d6] bg-white p-4">
               <Icon size={18} className="text-[var(--accent)]" aria-hidden />
               <p className="mt-3 text-[14px] font-semibold leading-snug">{title}</p>
               <p className="mt-1 text-[13px] leading-relaxed text-muted">{text}</p>

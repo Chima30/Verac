@@ -12,11 +12,11 @@ export function ChartCard({ title, description, right, children, footer, classNa
   label?: string;
 }) {
   return (
-    <section id={id} aria-label={title ? undefined : label} className={`theme-dark chart-card min-w-0 scroll-mt-24 rounded-[20px] p-5 sm:p-6 ${className}`}>
+    <section id={id} aria-label={title ? undefined : label} className={`theme-dark chart-card min-w-0 scroll-mt-24 rounded-[4px] p-6 sm:p-8 ${className}`}>
       {(title || right) && (
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            {title && <h2 className="text-[15px] font-semibold tracking-[-0.01em]">{title}</h2>}
+            {title && <h2 className="text-[18px] font-medium tracking-[-0.01em]">{title}</h2>}
             {description && <p className="mt-0.5 text-[13px] leading-relaxed text-subtle">{description}</p>}
           </div>
           {right && <div className="flex shrink-0 flex-wrap items-center gap-2">{right}</div>}
@@ -31,7 +31,7 @@ export function ChartCard({ title, description, right, children, footer, classNa
 /** Honest empty chart: says why there is nothing to draw. Never a placeholder line. */
 export function ChartEmpty({ title, children, height = 220 }: { title: string; children?: ReactNode; height?: number }) {
   return (
-    <div className="grid place-items-center rounded-xl border border-dashed border-white/10 px-6 text-center" style={{ minHeight: height }}>
+    <div className="grid place-items-center rounded-[4px] border border-dashed border-white/15 px-6 text-center" style={{ minHeight: height }}>
       <div>
         <BarChart3 size={22} className="mx-auto text-subtle" aria-hidden />
         <p className="mt-3 text-[14px] font-semibold">{title}</p>
@@ -44,7 +44,7 @@ export function ChartEmpty({ title, children, height = 220 }: { title: string; c
 /** Loading state with the proportions of a real chart card, so nothing jumps when data arrives. */
 export function ChartSkeleton({ height = 220, className = "", label = "Loading chart" }: { height?: number; className?: string; label?: string }) {
   return (
-    <div role="status" aria-label={label} className={`theme-dark chart-card rounded-2xl p-5 sm:p-6 ${className}`}>
+    <div role="status" aria-label={label} className={`theme-dark chart-card rounded-[4px] p-6 sm:p-8 ${className}`}>
       <div className="skeleton h-3 w-28" />
       <div className="skeleton mt-3 h-9 w-44" />
       <div className="skeleton mt-6 w-full !rounded-xl opacity-60" style={{ height }} />

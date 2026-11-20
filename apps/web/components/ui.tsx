@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { Check, Circle, CircleAlert, CircleDot, Info, OctagonX, TriangleAlert, type LucideIcon } from "lucide-react";
+import { Check, ChevronRight, Circle, CircleAlert, CircleDot, Info, OctagonX, TriangleAlert, type LucideIcon } from "lucide-react";
+import { CountUp } from "./ui-client";
 import { locateByLabel, type Tile } from "@/lib/nav";
 
-/** A saturated square with a white glyph. The bright, scannable marker for a page or a section. */
+/** A quiet square with the section's icon: a marker, not decoration. */
 export function IconTile({ icon: Icon, tile = "slate", size = "md" }: { icon: LucideIcon; tile?: Tile; size?: "sm" | "md" | "lg" }) {
   const box = size === "lg" ? "size-11 rounded-xl" : size === "sm" ? "size-7 rounded-md" : "size-9 rounded-lg";
   const glyph = size === "lg" ? 20 : size === "sm" ? 14 : 17;
-  return <span aria-hidden className={`grid shrink-0 place-items-center text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18)] ${box}`} style={{ background: `var(--tile-${tile})` }}><Icon size={glyph} strokeWidth={2.25} /></span>;
+  return <span aria-hidden className={`grid shrink-0 place-items-center border border-line text-ink ${box}`} style={{ background: `var(--tile-${tile})` }}><Icon size={glyph} strokeWidth={1.75} /></span>;
 }
 
 /* ------------------------------------------------------------------------------------------------
@@ -30,7 +31,7 @@ const LABELS: Record<Tone, string> = { live: "LIVE TESTNET", sim: "SIMULATION", 
 /** Compact status label. Tone carries meaning: live, simulation, approval needed, failed, unavailable. */
 export function Badge({ tone, children, className = "" }: { tone: Tone; children?: ReactNode; className?: string }) {
   return (
-    <span className={`inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-[10.5px] font-medium leading-none tracking-[0.03em] ${TONES[tone]} ${className}`}>
+    <span className={`inline-flex h-[22px] items-center gap-1.5 whitespace-nowrap rounded-[4px] px-2 font-mono text-[11px] font-medium uppercase leading-none tracking-[0.007em] ${TONES[tone]} ${className}`}>
       <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current opacity-80" />
       {children ?? LABELS[tone]}
     </span>
@@ -43,18 +44,16 @@ export function StatusDot({ tone, children }: { tone: Tone; children: ReactNode 
   return <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[13px]"><span aria-hidden className="size-2 rounded-full" style={{ background: c[tone] }} />{children}</span>;
 }
 
-export function PageHeader({ title, description, badge, actions, eyebrow, meta, icon, tile }: {
-  title: string; description?: ReactNode; badge?: ReactNode; actions?: ReactNode; eyebrow?: ReactNode; meta?: ReactNode; icon?: LucideIcon; tile?: Tile;
+export function PageHeader({ title, description, badge, actions, meta }: {
+  title: string; description?: ReactNode; badge?: ReactNode; actions?: ReactNode; meta?: ReactNode;
+  /** Accepted for compatibility; the console style shows no label above the title and no icon tile. */
+  eyebrow?: ReactNode; icon?: LucideIcon; tile?: Tile;
 }) {
-  // A page whose title matches its navigation label gets that item's icon and colour, so every page is marked the same way.
-  const nav = icon ? null : locateByLabel(title);
-  const Icon = icon ?? nav?.icon;
   return (
-    <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <header className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">
-        {eyebrow && <div className="mb-2 text-[12.5px] font-medium text-subtle">{eyebrow}</div>}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">{Icon && <IconTile icon={Icon} tile={tile ?? nav?.tile} size="lg" />}<h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] sm:text-[32px]">{title}</h1>{badge}</div>
-        {description && <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-muted">{description}</p>}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2"><h1 className="text-[28px] font-medium leading-[1.15] tracking-[-0.015em] sm:text-[40px] sm:tracking-[-0.02em]">{title}</h1>{badge}</div>
+        {description && <p className="mt-3 max-w-3xl text-[16px] leading-[1.35] tracking-[-0.01em] text-muted sm:text-[18px]">{description}</p>}
         {meta && <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">{meta}</div>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
@@ -67,13 +66,13 @@ export function Card({ title, description, children, right, footer, className = 
   title?: ReactNode; description?: ReactNode; children: ReactNode; right?: ReactNode; footer?: ReactNode; className?: string; flush?: boolean; id?: string; icon?: LucideIcon; tile?: Tile;
 }) {
   return (
-    <section id={id} className={`min-w-0 scroll-mt-24 rounded-lg border border-line bg-surface shadow-card ${className}`}>
+    <section id={id} className={`min-w-0 scroll-mt-24 rounded-lg border border-line bg-surface ${className}`}>
       {(title || right) && (
         <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 px-5 pb-1 pt-4">
           <div className="flex min-w-0 items-start gap-3">
             {icon && <IconTile icon={icon} tile={tile} />}
             <div className="min-w-0">
-              {title && <h2 className="text-[15.5px] font-bold leading-snug tracking-[-0.015em]">{title}</h2>}
+              {title && <h2 className="text-[18px] font-medium leading-snug tracking-[-0.01em]">{title}</h2>}
               {description && <p className="mt-0.5 text-[13px] leading-relaxed text-muted">{description}</p>}
             </div>
           </div>
@@ -86,15 +85,25 @@ export function Card({ title, description, children, right, footer, className = 
   );
 }
 
-export function Stat({ label, value, sub, badge, large = false, tone }: { label: ReactNode; value: ReactNode; sub?: ReactNode; badge?: ReactNode; large?: boolean; tone?: "bad" | "warn" | "live" }) {
+/** Category tints: what a figure is about, the same on every page. */
+export type Tint = "sky" | "peach" | "blush" | "mint";
+const animated = (v: ReactNode) => (typeof v === "string" || typeof v === "number" ? <CountUp value={String(v)} /> : v);
+
+/** A figure. With `tint` it becomes a filled tile: sky = treasury money, peach = waiting for a person, blush = grants, mint = proven on chain. */
+export function Stat({ label, value, sub, badge, large = false, tone, tint }: { label: ReactNode; value: ReactNode; sub?: ReactNode; badge?: ReactNode; large?: boolean; tone?: "bad" | "warn" | "live"; tint?: Tint }) {
   const color = tone === "bad" ? "text-[var(--bad)]" : tone === "warn" ? "text-[var(--warn)]" : tone === "live" ? "text-[var(--live)]" : "";
   return (
-    <div className="min-w-0 rounded-lg border border-line bg-surface p-4 shadow-card sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-[12.5px] text-muted">{label}</span>{badge}</div>
-      <div className={`mt-2 break-words font-bold tabular-nums tracking-tight ${large ? "text-[34px] leading-none sm:text-[40px]" : "text-[22px] leading-tight"} ${color}`}>{value}</div>
-      {sub && <div className="mt-2 text-[12.5px] leading-relaxed text-muted">{sub}</div>}
+    <div className={`min-w-0 rounded-[4px] p-5 sm:p-6 ${tint ? "text-[var(--tint-ink)]" : "border border-line bg-surface"}`} style={tint ? { background: `var(--tint-${tint})` } : undefined}>
+      <div className="flex flex-wrap items-center justify-between gap-2"><span className="label-mono">{label}</span>{badge}</div>
+      <div className={`mt-4 break-words font-medium tabular-nums leading-[1.1] tracking-[-0.03em] ${large ? "text-[48px] sm:text-[64px]" : "text-[40px] lg:text-[48px]"} ${color}`}>{animated(value)}</div>
+      {sub && <div className="mt-2 text-[14px] leading-[1.25] tracking-[-0.01em]" style={{ color: tint ? "var(--tint-sub)" : "var(--muted)" }}>{sub}</div>}
     </div>
   );
+}
+
+/** A row of figures that arrive one after another. */
+export function StatRow({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <div className={`stagger mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] ${className}`}>{children}</div>;
 }
 
 /** A figure inside a larger panel: no border of its own. */
@@ -102,8 +111,8 @@ export function Metric({ label, value, sub, tone }: { label: ReactNode; value: R
   const color = tone === "bad" ? "text-[var(--bad)]" : tone === "warn" ? "text-[var(--warn)]" : tone === "live" ? "text-[var(--live)]" : tone === "muted" ? "text-muted" : "";
   return (
     <div className="min-w-0">
-      <dt className="text-[12.5px] text-muted">{label}</dt>
-      <dd className={`mt-1 text-[21px] font-bold leading-tight tracking-tight tabular-nums ${color}`}>{value}</dd>
+      <dt className="label-mono text-muted">{label}</dt>
+      <dd className={`mt-1.5 text-[22px] font-medium leading-tight tracking-[-0.01em] tabular-nums ${color}`}>{animated(value)}</dd>
       {sub && <dd className="mt-1 text-[12px] leading-relaxed text-muted">{sub}</dd>}
     </div>
   );
@@ -111,11 +120,11 @@ export function Metric({ label, value, sub, tone }: { label: ReactNode; value: R
 
 export function EmptyState({ title, children, action, icon }: { title: string; children?: ReactNode; action?: ReactNode; icon?: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-line-strong bg-surface/60 px-6 py-10 text-center">
-      {icon && <div className="mx-auto mb-3 grid size-10 place-items-center rounded-lg bg-surface-2 text-muted">{icon}</div>}
-      <p className="text-[14px] font-medium">{title}</p>
-      {children && <div className="mx-auto mt-1.5 max-w-xl text-[13.5px] leading-relaxed text-muted">{children}</div>}
-      {action && <div className="mt-4 flex justify-center">{action}</div>}
+    <div className="rounded-lg border border-line bg-surface px-6 py-12 sm:px-10">
+      {icon && <div className="mb-4 grid size-10 place-items-center rounded-md border border-line text-ink">{icon}</div>}
+      <p className="text-[22px] font-medium tracking-[-0.01em]">{title}</p>
+      {children && <div className="mt-2 max-w-xl text-[15px] leading-relaxed text-muted">{children}</div>}
+      {action && <div className="mt-6 flex flex-wrap gap-2">{action}</div>}
     </div>
   );
 }
@@ -167,7 +176,7 @@ export function SectionHeading({ title, description, right, id }: { title: React
   return (
     <div id={id} className="mb-3 mt-10 flex scroll-mt-24 flex-wrap items-end justify-between gap-2 first:mt-0">
       <div>
-        <h2 className="text-[17px] font-bold tracking-[-0.02em]">{title}</h2>
+        <h2 className="text-[22px] font-medium tracking-[-0.01em]">{title}</h2>
         {description && <p className="mt-0.5 max-w-3xl text-[13px] text-muted">{description}</p>}
       </div>
       {right}
@@ -182,7 +191,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
 /** Placeholder for a streamed card while its data loads. Keeps the layout stable. */
 export function CardSkeleton({ rows = 3, className = "", label = "Loading" }: { rows?: number; className?: string; label?: string }) {
   return (
-    <div className={`rounded-lg border border-line bg-surface p-5 shadow-card ${className}`} role="status" aria-label={label}>
+    <div className={`rounded-lg border border-line bg-surface p-5 ${className}`} role="status" aria-label={label}>
       <Skeleton className="h-4 w-40" />
       <div className="mt-5 space-y-3">{Array.from({ length: rows }, (_, i) => <Skeleton key={i} className={`h-3.5 ${i % 2 ? "w-3/4" : "w-full"}`} />)}</div>
       <span className="sr-only">{label}…</span>
@@ -225,20 +234,44 @@ export function Steps({ steps, compact = false }: { steps: Array<{ label: ReactN
 export function Pipeline({ stages, counts, current, label }: { stages: Array<{ key: string; label: string }>; counts?: Record<string, number>; current?: string; label: string }) {
   const at = current ? stages.findIndex((s) => s.key === current) : -1;
   return (
-    <ol aria-label={label} className="grid grid-cols-2 gap-1.5 sm:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))]">
+    <ol aria-label={label} className="grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-surface sm:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))]">
       {stages.map((s, i) => {
         const state = current ? (i < at ? "past" : i === at ? "now" : "next") : (counts?.[s.key] ? "now" : "next");
         return (
           <li key={s.key} aria-current={current && i === at ? "step" : undefined}
-            className={`relative min-w-0 rounded-md border px-3 py-2.5 ${state === "now" ? "border-[color-mix(in_srgb,var(--accent)_40%,transparent)] bg-accent-soft" : state === "past" ? "border-line bg-surface-2" : "border-line bg-surface"}`}>
-            {counts && <p className={`text-[20px] font-semibold leading-none tabular-nums ${counts[s.key] ? "" : "text-subtle"}`}>{counts[s.key] ?? 0}</p>}
-            <p className={`truncate text-[12px] ${counts ? "mt-1.5" : ""} ${state === "now" ? "font-medium text-accent-text" : state === "past" ? "text-muted" : "text-subtle"}`} title={s.label}>
-              {!counts && <span className="mr-1 tabular-nums">{i + 1}.</span>}{s.label}{current && i === at && <span className="sr-only"> (current stage)</span>}
+            className={`relative min-w-0 border-b border-r border-line px-4 py-4 last:border-r-0 sm:border-b-0 ${state === "now" ? "bg-[var(--tint-mint)] text-[var(--tint-ink)]" : ""} ${state === "past" ? "bg-surface-2" : ""}`}>
+            {counts && <p className={`text-[28px] font-medium leading-none tabular-nums tracking-[-0.015em] ${counts[s.key] ? "" : "text-muted"}`}>{counts[s.key] ?? 0}</p>}
+            <p className={`label-mono truncate ${counts ? "mt-2" : ""} ${state === "now" ? "" : "text-muted"}`} title={s.label}>
+              {!counts && <span className="mr-1 tabular-nums">{i + 1}</span>}{s.label}{current && i === at && <span className="sr-only"> (current stage)</span>}
             </p>
           </li>
         );
       })}
     </ol>
+  );
+}
+
+/** A transaction confirmed on chain: a mono hash with a tick that draws itself, linking to the explorer. */
+export function ProofStamp({ hash, href, detail }: { hash: string; href?: string; detail?: ReactNode }) {
+  const short = hash.length > 18 ? `${hash.slice(0, 6)}…${hash.slice(-4)}` : hash;
+  const body = (
+    <>
+      <svg viewBox="0 0 16 16" aria-hidden className="size-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path className="stamp-tick" d="M3.5 8.5l3 3 6-7" /></svg>
+      <span title={hash}>{short}</span>{detail && <span className="opacity-80">· {detail}</span>}
+      <span className="sr-only"> (confirmed on chain)</span>
+    </>
+  );
+  const cls = "inline-flex items-center gap-1.5 whitespace-nowrap rounded-[4px] bg-[var(--tint-mint)] px-2 py-0.5 font-mono text-[11px] font-medium text-[var(--tint-ink)]";
+  return href ? <a href={href} target="_blank" rel="noreferrer" className={`${cls} hover:underline`}>{body}</a> : <span className={cls}>{body}</span>;
+}
+
+/** A process explained in one line that opens: keeps "how it works" text out of the way of the work. */
+export function HowItWorks({ title = "How it works", children }: { title?: string; children: ReactNode }) {
+  return (
+    <details className="how mt-16 border-t border-line pt-4">
+      <summary className="flex items-center gap-2 text-ink"><ChevronRight size={15} aria-hidden className="chevron text-subtle" /><span className="label-mono">{title}</span></summary>
+      <div className="mt-4 max-w-3xl space-y-3 pl-6 text-[14px] leading-relaxed text-muted">{children}</div>
+    </details>
   );
 }
 
@@ -253,14 +286,15 @@ export function Source({ children }: { children: ReactNode }) {
   return <p className="mt-3 text-[12px] leading-relaxed text-subtle">{children}</p>;
 }
 
-export const labelCls = "mb-1.5 block text-[12.5px] font-medium text-muted";
-export const inputCls = "w-full rounded-md border border-line bg-surface px-3 py-2 text-[14px] shadow-[inset_0_1px_0_rgb(0_0_0/0.02)] transition-colors placeholder:text-subtle hover:border-line-strong focus:border-[var(--ring)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ring)_25%,transparent)] disabled:opacity-60";
-const btnBase = "inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md px-3.5 text-[13.5px] font-medium transition-[background-color,border-color,color,opacity,transform] active:translate-y-px disabled:pointer-events-none disabled:opacity-50";
-export const btnCls = `${btnBase} bg-primary text-primary-ink font-semibold shadow-sm hover:bg-primary-hover`;
-export const btnSecondaryCls = `${btnBase} border border-line bg-surface text-ink shadow-sm hover:border-line-strong hover:bg-surface-2`;
-export const btnGhostCls = `${btnBase} text-muted hover:bg-surface-2 hover:text-ink`;
+export const labelCls = "mb-1.5 block text-[14px] tracking-[-0.01em] text-muted";
+export const inputCls = "w-full rounded-[4px] border border-line bg-surface px-3 py-2 text-[15px] tracking-[-0.01em] transition-colors placeholder:text-subtle hover:border-line-strong focus:border-[var(--ring)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--ring)_25%,transparent)] disabled:opacity-60";
+// Buttons speak in the mono voice: 13px, weight 500, uppercase, 8px by 16px, 4px corners. No colour shift on hover.
+const btnBase = "inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-[4px] px-4 py-2 font-mono text-[13px] font-medium uppercase leading-none tracking-[0.007em] transition-[border-color,color,opacity,transform] active:translate-y-px disabled:pointer-events-none disabled:opacity-50";
+export const btnCls = `${btnBase} bg-primary text-primary-ink`;
+export const btnSecondaryCls = `${btnBase} border border-line bg-transparent text-muted hover:border-ink hover:text-ink`;
+export const btnGhostCls = `${btnBase} text-muted hover:text-ink`;
 export const btnDangerCls = `${btnBase} border border-[color-mix(in_srgb,var(--bad)_35%,transparent)] bg-surface text-[var(--bad)] hover:bg-[var(--bad-bg)]`;
-export const chipCls = (active: boolean) => `inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-[12.5px] transition-colors ${active ? "border-[color-mix(in_srgb,var(--accent)_45%,transparent)] bg-accent-soft font-medium text-accent-text" : "border-line bg-surface text-muted hover:border-line-strong hover:text-ink"}`;
+export const chipCls = (active: boolean) => `inline-flex h-8 items-center gap-1.5 rounded-[4px] border px-3 text-[13px] tracking-[-0.01em] transition-colors ${active ? "border-transparent bg-[var(--tint-mint)] font-medium text-[var(--tint-ink)]" : "border-line bg-surface text-muted hover:text-ink"}`;
 
 export const fmtUtc = (iso: string | number | Date) => `${new Date(iso).toISOString().replace("T", " ").slice(0, 16)} UTC`;
 export function relTime(iso: string | number | Date, now = Date.now()): string {

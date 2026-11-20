@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, btnCls, btnSecondaryCls, fmtUtc, inputCls, labelCls, relTime } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Notice, PageHeader, btnCls, btnSecondaryCls, fmtUtc, inputCls, labelCls, relTime } from "@/components/ui";
+import { Panel } from "@/components/ui-client";
 import { SummariseButton } from "@/components/disputes/summarise-button";
 import { formatQor } from "@/lib/approvals";
 import { getSession } from "@/lib/session";
@@ -56,7 +57,7 @@ export default async function Disputes({ searchParams }: { searchParams: Promise
         actions={canOpen && openable.length > 0 ? <a href="#open" className={btnCls}>Open a dispute</a> : undefined} />
       <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <>
         <div className="min-w-0 space-y-6">
           {list.length === 0 ? <EmptyState title="Nothing is in dispute">When a vendor and a reviewer disagree about a milestone, either can open a case here. The milestone is frozen until it is resolved.</EmptyState> : sorted.map((d) => {
             const m = msById.get(d.milestone_id);
@@ -120,9 +121,9 @@ export default async function Disputes({ searchParams }: { searchParams: Promise
           })}
         </div>
 
-        <div className="space-y-6">
+        <>
           {canOpen && (
-            <Card id="open" title="Open a dispute" description="Freezes the milestone until it is resolved.">
+            <Panel id="open" title="Open a dispute" description="Freezes the milestone until it is resolved.">
               {openable.length === 0 ? <p className="text-[13.5px] text-muted">There is no milestone you can dispute right now.</p> : (
                 <form action={openDispute} className="space-y-3">
                   <div><label htmlFor="dp-m" className={labelCls}>Milestone</label>
@@ -135,13 +136,13 @@ export default async function Disputes({ searchParams }: { searchParams: Promise
                   <p className="text-[12.5px] text-muted">Statements are plain text, not encrypted. Do not paste secrets.</p>
                 </form>
               )}
-            </Card>
+            </Panel>
           )}
-          <Card title="Escrow and money">
+          <HowItWorks title="Escrow and money">
             <p className="text-[13px] leading-relaxed text-muted">Resolving a dispute changes the milestone in Verac only. No QOR moves and the on-chain MilestoneEscrow is not called. Accepted work still needs a payment request approved on Approvals.</p>
-          </Card>
-        </div>
-      </div>
+          </HowItWorks>
+        </>
+      </>
     </>
   );
 }

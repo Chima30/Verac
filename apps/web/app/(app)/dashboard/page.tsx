@@ -4,8 +4,7 @@ import Link from "next/link";
 import { Suspense, cache } from "react";
 import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
 import { ChartCard, ChartEmpty, ChartSkeleton } from "@/components/charts/chart-card";
-import { Ambient } from "@/components/ambient";
-import { Badge, Card, CardSkeleton, EmptyState, IconTile, Metric, Notice, ShortHash, Source, StatusDot, Steps, btnCls, btnSecondaryCls, fmtUtc, relTime, type StepState } from "@/components/ui";
+import { Badge, Card, CardSkeleton, EmptyState, IconTile, Metric, Notice, ShortHash, Source, Stat, StatRow, StatusDot, type StepState, Steps, btnCls, btnSecondaryCls, fmtUtc, relTime } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { orgData as loadOrgData, windowed, type OrgData } from "@/lib/dashboard";
 import { liveStatusFlags } from "@/lib/live/config";
@@ -49,27 +48,15 @@ async function Money() {
 
   return (
     <>
-    <Card icon={Landmark} tile="green" title="Funds" description="TreasuryVault on Diana testnet, read from the chain when this page loaded."
-      right={<><Badge tone="live" />{v.paused && <Badge tone="failed">VAULT PAUSED</Badge>}</>}>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-[12.5px] text-muted">Vault balance</p>
-          <p className="mt-1 text-[38px] font-semibold leading-none tracking-tight tabular-nums sm:text-[44px]">{qorFmt(formatWei(v.balance!))}<span className="ml-2 text-[18px] font-medium text-muted">QOR</span></p>
-          <p className="mt-2 text-[12.5px] text-muted">at block {Number(v.readAtBlock).toLocaleString("en-US")} · {v.paused ? <span className="text-[var(--bad)]">all payments frozen</span> : "payments open within each agent's limits"}</p>
-        </div>
-        <Link href="/treasury" className={btnSecondaryCls}>Open treasury<ArrowRight size={14} aria-hidden /></Link>
-      </div>
-
-      <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-5 md:grid-cols-4">
-        <Metric label="Agents may still spend today" value={<>{qorFmt(formatWei(agentRoom))} <span className="text-[13px] font-medium text-muted">QOR</span></>} sub={`${active.length} active spending rule${active.length === 1 ? "" : "s"}, enforced by the contract`} />
-        <Metric label="Held in milestone escrow" value={escrow?.balanceQor != null ? <>{qorFmt(escrow.balanceQor)} <span className="text-[13px] font-medium text-muted">QOR</span></> : "n/a"} sub="MilestoneEscrow contract balance" tone={escrow?.balanceQor == null ? "muted" : undefined} />
-        <Metric label="Human approvals needed" value={`${v.approvalThreshold} of ${v.approverCount}`} sub="above an agent's auto-approve amount" />
-        <Metric label="Vault events" value={v.events.length} sub={`${deposits} deposits · ${paid} payments · ${escrowFunded} escrow`} />
-      </dl>
-
-    </Card>
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-3"><span className="label-mono text-muted">Funds · TreasuryVault on Diana testnet{v.paused ? " · paused" : ""}</span><Link href="/treasury" className={btnSecondaryCls}>Open treasury<ArrowRight size={14} aria-hidden /></Link></div>
+    <StatRow className="!mb-3">
+      <Stat tint="sky" label="Vault balance" value={qorFmt(formatWei(v.balance!))} sub={<>QOR at block {Number(v.readAtBlock).toLocaleString("en-US")}{v.paused ? " · all payments frozen" : ""}</>} />
+      <Stat tint="sky" label="Agents may spend today" value={qorFmt(formatWei(agentRoom))} sub={`QOR across ${active.length} active spending rule${active.length === 1 ? "" : "s"}`} />
+      <Stat tint="peach" label="Human approvals" value={`${v.approvalThreshold} of ${v.approverCount}`} sub="needed above an agent's auto-approve amount" />
+      <Stat tint="mint" label="Vault events" value={String(v.events.length)} sub={`${deposits} deposits · ${paid} payments · ${escrowFunded} escrow`} />
+    </StatRow>
     <ChartCard label="Treasury balance"
-      footer={<><span className="mr-1.5 font-semibold text-[#34d399]">● Live testnet.</span>Rebuilt from the vault's Deposited, PaymentExecuted and EscrowFunded events, dated by their block timestamps and anchored to the balance read now.</>}>
+      footer={<><span className="mr-1.5 font-mono text-[11px] font-medium uppercase text-[#ff8a3d]">Live testnet.</span>Rebuilt from the vault's Deposited, PaymentExecuted and EscrowFunded events, dated by their block timestamps and anchored to the balance read now.</>}>
       {Object.keys(series).length ? <InteractiveAreaChart title="Treasury balance" unit="QOR" data={series} defaultRange={series["30 days"] ? "30 days" : undefined} height={230} />
         : <ChartEmpty title="Not enough history yet">The vault's events do not give two real points to draw. A chart is never filled with estimates.</ChartEmpty>}
     </ChartCard>
@@ -350,18 +337,17 @@ async function Header() {
   const greeting = d.session.org ? d.session.org.name : "Dashboard";
   const pending = d.queue.length;
   return (
-    <header className="relative isolate mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <Ambient ring={false} className="-z-10 !-inset-x-4 !-top-16 !bottom-[-2rem] opacity-70 [mask-image:linear-gradient(to_bottom,#000_40%,transparent)]" />
-      <div className="min-w-0">
-        <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted"><span>QoreChain Diana testnet</span><span aria-hidden className="text-line-strong">·</span><span>Read at {fmtUtc(Date.now())}</span></p>
-        <div className="flex items-center gap-3"><IconTile icon={Gauge} tile="blue" size="lg" /><h1 className="text-[28px] font-bold leading-tight tracking-[-0.03em] sm:text-[32px]">{greeting}</h1></div>
-        <p className="mt-1.5 max-w-2xl text-[14.5px] text-muted">
-          {!d.session.configured ? "Funds, agents and security on Diana testnet. Organisation records are not connected on this server, so approvals and tasks are hidden."
-            : !d.session.user ? "Funds, agents and security on Diana testnet. Sign in to see your organisation's approvals and agent work."
-              : pending ? <>{pending} payment request{pending === 1 ? " is" : "s are"} waiting for a decision. Funds and security are below.</> : "Nothing is waiting for your decision. Funds, agent work and security are below."}
-        </p>
+    <header className="mb-12">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="label-mono flex flex-wrap items-center gap-x-3 gap-y-1 text-muted"><span>{greeting}</span><span aria-hidden>·</span><span>Diana testnet</span><span aria-hidden>·</span><span>Read at {fmtUtc(Date.now())}</span></p>
+        <div className="flex flex-wrap items-center gap-2">{actions}{pending > 0 && <Link href="/approvals" className={`${btnSecondaryCls} md:hidden`}><ClipboardCheck size={15} aria-hidden />Review {pending}</Link>}</div>
       </div>
-      <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}{pending > 0 && <Link href="/approvals" className={`${btnSecondaryCls} md:hidden`}><ClipboardCheck size={15} aria-hidden />Review {pending}</Link>}</div>
+      <h1 className="mt-8 text-[40px] font-medium leading-[1.1] tracking-[-0.025em] sm:text-[56px] lg:text-[64px] lg:tracking-[-0.03em]">Agents prepare the work.<span className="block text-muted">People decide. The chain enforces.</span></h1>
+      <p className="mt-5 max-w-2xl text-[18px] leading-[1.3] tracking-[-0.01em] text-muted">
+        {!d.session.configured ? "Funds, agents and security on Diana testnet. Organisation records are not connected on this server, so approvals and tasks are hidden."
+          : !d.session.user ? "Funds, agents and security on Diana testnet. Sign in to see your organisation's approvals and agent work."
+            : pending ? <>{pending} payment request{pending === 1 ? " is" : "s are"} waiting for a decision.</> : "Nothing is waiting for your decision."}
+      </p>
     </header>
   );
 }

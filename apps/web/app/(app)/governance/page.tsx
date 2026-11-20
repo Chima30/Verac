@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, FlashMessages, PageHeader, SectionHeading, StatusDot, btnCls, btnSecondaryCls, fmtUtc, inputCls, labelCls, relTime } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, HowItWorks, PageHeader, SectionHeading, StatusDot, btnCls, btnSecondaryCls, fmtUtc, inputCls, labelCls, relTime } from "@/components/ui";
+import { Panel } from "@/components/ui-client";
 import { AnalyseButton } from "@/components/governance/analyse-button";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -113,7 +114,7 @@ export default async function Governance({ searchParams }: { searchParams: Promi
         actions={admin ? <a href="#new" className={btnCls}>New proposal</a> : undefined} />
       <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <>
         <div className="min-w-0">
           {list.length === 0 ? <EmptyState title="No proposals yet" action={admin ? <a href="#new" className={btnCls}>Write the first proposal</a> : undefined}>{admin ? "A proposal has a title, a text, a quorum and a pass threshold." : "An owner or administrator creates proposals."}</EmptyState>
             : groups.filter((g) => g.items.length).map((g) => (
@@ -123,9 +124,9 @@ export default async function Governance({ searchParams }: { searchParams: Promi
               </section>
             ))}
         </div>
-        <div className="space-y-6">
+        <>
           {admin && (
-            <Card id="new" title="New proposal" description="Starts in discussion. You open voting when it is ready.">
+            <Panel id="new" title="New proposal" description="Starts in discussion. You open voting when it is ready.">
               <form action={createProposal} className="space-y-3">
                 <div><label htmlFor="gp-title" className={labelCls}>Title</label><input id="gp-title" name="title" required minLength={3} maxLength={160} className={inputCls} /></div>
                 <div><label htmlFor="gp-body" className={labelCls}>What is proposed, and why</label><textarea id="gp-body" name="body" required minLength={10} maxLength={8000} rows={6} className={inputCls} /></div>
@@ -136,13 +137,13 @@ export default async function Governance({ searchParams }: { searchParams: Promi
                 <p className="text-[12px] text-muted">The pass threshold is a share of for plus against votes; abstentions count only towards quorum.</p>
                 <button className={btnCls}>Create proposal</button>
               </form>
-            </Card>
+            </Panel>
           )}
-          <Card title="What a vote does">
+          <HowItWorks title="What a vote does">
             <p className="text-[13px] leading-relaxed text-muted">A passed proposal executes nothing by itself. Any spending that follows still goes through Approvals, with its own limits and a second person.</p>
-          </Card>
-        </div>
-      </div>
+          </HowItWorks>
+        </>
+      </>
     </>
   );
 }

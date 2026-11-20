@@ -2,7 +2,7 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { AddressLookup } from "@/components/address-lookup";
 import { LivePayments } from "@/components/live/live-payments";
-import { Badge, Card, EmptyState, Metric, Notice, PageHeader, ShortHash, Source, StatusDot, Steps, btnCls } from "@/components/ui";
+import { Badge, Card, EmptyState, HowItWorks, Metric, Notice, PageHeader, ShortHash, Source, StatusDot, Steps, btnCls } from "@/components/ui";
 import { Hash } from "@/components/ui-client";
 import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
 import { ChartCard, ChartEmpty } from "@/components/charts/chart-card";
@@ -71,7 +71,7 @@ export default async function Treasury() {
         </dl>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="space-y-6">
         <div className="min-w-0 space-y-6">
           <Card id="pay" title="Live payments" description="Request, approve and execute real testnet payments. Every confirmed row links to its transaction." right={<Badge tone="live" />}>
             {live.signedIn ? (
@@ -80,14 +80,14 @@ export default async function Treasury() {
           </Card>
 
           <ChartCard label="Treasury balance"
-            footer={<><span className="mr-1.5 font-semibold text-[#34d399]">● Live testnet.</span>Rebuilt from the vault's own deposit, payment and escrow events, dated by block timestamps and anchored to the balance read now. If the events ever fail to explain the balance, the chart is hidden rather than guessed.</>}>
+            footer={<><span className="mr-1.5 font-mono text-[11px] font-medium uppercase text-[#ff8a3d]">Live testnet.</span>Rebuilt from the vault's own deposit, payment and escrow events, dated by block timestamps and anchored to the balance read now. If the events ever fail to explain the balance, the chart is hidden rather than guessed.</>}>
             {Object.keys(series).length ? <InteractiveAreaChart title="Treasury balance" unit="QOR" data={series} height={260} /> : <ChartEmpty title="Not enough history yet" height={260}>The vault's events do not give two real points to draw.</ChartEmpty>}
           </ChartCard>
 
           <ChartCard title="Money in and out" description={`QOR deposited into the vault and paid out of it, per ${flows.length && flows[0]!.key.length === 7 ? "month" : "day"}.`}
-            right={flows.length ? <span className="text-[12.5px] tabular-nums text-subtle"><span className="font-semibold text-[var(--live)]">+{flowIn.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span> in · <span className="font-semibold text-[#f59e0b]">−{flowOut.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span> out</span> : undefined}
+            right={flows.length ? <span className="text-[12.5px] tabular-nums text-subtle"><span className="font-semibold text-[var(--live)]">+{flowIn.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span> in · <span className="font-semibold text-[#ff8a3d]">−{flowOut.toLocaleString("en-US", { maximumFractionDigits: 2 })}</span> out</span> : undefined}
             footer="Each bar adds up real vault events. Outflows include agent payments and escrow funding. Refused payments revert and move nothing, so they never appear here.">
-            {flows.length ? <BarChart unit="QOR" caption="UTC, from block timestamps" series={[{ key: "in", label: "Deposited", color: "#10b981" }, { key: "out", label: "Paid out", color: "#f59e0b" }]} data={flows.map((b) => ({ key: b.key, label: b.label, values: { in: b.inflow, out: b.outflow } }))} />
+            {flows.length ? <BarChart unit="QOR" caption="UTC, from block timestamps" series={[{ key: "in", label: "Deposited", color: "#c8f6f9" }, { key: "out", label: "Paid out", color: "#ff8a3d" }]} data={flows.map((b) => ({ key: b.key, label: b.label, values: { in: b.inflow, out: b.outflow } }))} />
               : <ChartEmpty title="No movements yet">Deposits and payments will show here once the vault has events.</ChartEmpty>}
           </ChartCard>
 
@@ -113,8 +113,8 @@ export default async function Treasury() {
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <Card title="How a payment moves">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 [&>details]:md:col-span-2 [&>details]:xl:col-span-3">
+          <HowItWorks title="How a payment moves">
             <Steps compact steps={[
               { label: "Enter recipient and amount", detail: "The recipient must already be approved on the vault.", state: "step" },
               { label: "Policy and limits checked", detail: "The amount is checked against the agent's on-chain caps before the request is saved.", state: "step" },
@@ -123,7 +123,7 @@ export default async function Treasury() {
               { label: "Execute on Diana testnet", detail: flags.emergencyStop ? "Emergency stop is on: execution is refused." : flags.ready ? "PaymentAgent sends it through the authorised pipeline." : "Live execution is not configured here, so this step is unavailable.", state: flags.emergencyStop ? "blocked" : flags.ready ? "step" : "blocked" },
               { label: "Receipt read back from the chain", detail: "Shown as confirmed only after the receipt arrives; otherwise the reason it failed.", state: "step" },
             ]} />
-          </Card>
+          </HowItWorks>
 
           <Card title="Agent spending rules" description="Enforced by the contract: a payment above them reverts on chain." right={<Badge tone="live" />}>
             {v.eventsError && <Notice tone="bad" className="mb-3">Could not read the rules: {v.eventsError}</Notice>}

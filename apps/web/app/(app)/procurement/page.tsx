@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, PageHeader, Pipeline, btnCls, inputCls, relTime } from "@/components/ui";
+import { KeyRound } from "lucide-react";
+import { Badge, Card, EmptyState, HowItWorks, PageHeader, Pipeline, btnCls, btnSecondaryCls, inputCls, relTime } from "@/components/ui";
+import { Panel } from "@/components/ui-client";
 import { ReviewerKey } from "@/components/procurement/reviewer-key";
 import { formatQor } from "@/lib/approvals";
 import { keyFingerprint, REVIEWER_ROLES } from "@/lib/seal-server";
@@ -31,11 +33,17 @@ export default async function Procurement({ searchParams }: { searchParams: Prom
   }
   return (
     <>
-      <PageHeader title="Procurement" description="Run a tender: vendors seal their bids so nobody can read them until bidding closes, reviewers open them in their own browser, fixed rules check and rank them, and a person awards the winner." badge={<Badge tone="sim" />} />
+      <PageHeader title="Procurement" description="Run a tender: vendors seal their bids so nobody can read them until bidding closes, reviewers open them in their own browser, fixed rules check and rank them, and a person awards the winner." badge={<Badge tone="sim" />}
+        actions={reviewer ? <><a href="#reading-key" className={btnSecondaryCls}>Reading key</a><a href="#create" className={btnCls}>Create tender</a></> : undefined} />
+      {reviewer && !published && (
+        <a href="#reading-key" className="mb-6 flex items-center gap-3 rounded-lg bg-[var(--warn-bg)] px-4 py-3 text-[14px] text-[var(--warn)] hover:underline">
+          <KeyRound size={16} aria-hidden className="shrink-0" /><span className="flex-1">Create your reading key to open sealed bids. It is made in this browser and never sent to the server.</span><span className="label-mono">Create key</span>
+        </a>
+      )}
       {(sp.error || error) && <p role="alert" className="mb-6 rounded-lg border border-[color-mix(in_srgb,var(--bad)_30%,transparent)] bg-[var(--bad-bg)] px-4 py-3 text-[13.5px] text-[var(--bad)]">{sp.error ?? error?.message}</p>}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
-          {!tenders || tenders.length === 0 ? <EmptyState title="No tenders yet">{reviewer ? "Create a tender on the right. First create and publish your reading key below it, so vendors can seal bids to you." : "Nothing is open for bids right now."}</EmptyState> : (
+      <>
+        <div className="space-y-4">
+          {!tenders || tenders.length === 0 ? <EmptyState title="No tenders yet">{reviewer ? "Create a tender with the button above. Create your reading key first, so vendors can seal bids to you." : "Nothing is open for bids right now."}</EmptyState> : (
             <>
             <Pipeline label="Tenders by stage" stages={STAGES} counts={tenders.reduce<Record<string, number>>((c, t) => ({ ...c, [t.status]: (c[t.status] ?? 0) + 1 }), {})} />
             <Card title={`${tenders.length} tender${tenders.length === 1 ? "" : "s"}`} description="Budgets are what the organisation set aside, not what has been paid." flush>
@@ -57,19 +65,19 @@ export default async function Procurement({ searchParams }: { searchParams: Prom
           )}
         </div>
         {reviewer ? (
-          <div className="space-y-4">
-            <Card title="Your reading key"><ReviewerKey orgId={s.org.id} userId={s.user.id} publishedFingerprint={published} /></Card>
-            <Card id="create" title="Create a tender" description="Starts as a draft that vendors cannot see.">
+          <>
+            <Panel id="reading-key" title="Your reading key" description="Bids are sealed so only people holding a reading key can open them. Download the backup: if you lose the key, everything sealed to it cannot be recovered."><ReviewerKey orgId={s.org.id} userId={s.user.id} publishedFingerprint={published} /></Panel>
+            <Panel id="create" title="Create a tender" description="Starts as a draft that vendors cannot see.">
               <form action={createTender} className="space-y-3">
                 <div><label htmlFor="title" className="mb-1.5 block text-[12.5px] font-medium text-muted">Title</label><input id="title" name="title" required minLength={3} maxLength={160} className={inputCls} /></div>
                 <div><label htmlFor="requirements" className="mb-1.5 block text-[12.5px] font-medium text-muted">Requirements (shown to vendors)</label><textarea id="requirements" name="requirements" required minLength={10} maxLength={3000} rows={4} className={inputCls} /></div>
                 <div><label htmlFor="budget" className="mb-1.5 block text-[12.5px] font-medium text-muted">Budget (QOR)</label><input id="budget" name="budget" required inputMode="decimal" className={inputCls} /></div>
                 <button className={btnCls} type="submit">Create draft</button>
               </form>
-            </Card>
-          </div>
-        ) : <Card title="Vendors"><p className="text-[13.5px] text-muted">Open a tender to read its requirements and submit a sealed bid. Only organisation reviewers can open bids, and only after bidding closes.</p></Card>}
-      </div>
+            </Panel>
+          </>
+        ) : <HowItWorks title="Vendors"><p className="text-[13.5px] text-muted">Open a tender to read its requirements and submit a sealed bid. Only organisation reviewers can open bids, and only after bidding closes.</p></HowItWorks>}
+      </>
     </>
   );
 }

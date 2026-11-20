@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, FlashMessages, Metric, PageHeader, Pipeline, Source, Steps, btnCls, inputCls, labelCls } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Metric, PageHeader, Pipeline, Source, Stat, StatRow, Steps, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Panel } from "@/components/ui-client";
 import { formatQor } from "@/lib/approvals";
 import { CATEGORY_LABEL, STATUS_TEXT, STATUS_TONE, nextAction, sumWei, wei, type AppRow, type RoundRow } from "@/lib/grants";
 import { getSession } from "@/lib/session";
@@ -74,8 +75,15 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
       <PageHeader title="Grants" eyebrow="Operations"
         description={admin ? "Programmes, applications and evidence-based reviews. Agents investigate and draft; people decide; funds move only through the treasury's approval path." : "Open grant programmes and your applications."}
         badge={<Badge tone="sim" />}
-        actions={admin ? <a href="#create" className={btnCls}>Open a round</a> : undefined} />
+        actions={admin ? <><form action={loadGrantDemo}><button className={btnSecondaryCls} title="Three fictional applications (Alpha, Beta, Gamma) in a 20,000 QOR round, clearly labelled SAMPLE">Load sample programme</button></form><a href="#create" className={btnCls}>Open a round</a></> : undefined} />
       <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
+      {admin && rounds.length > 0 && (
+        <StatRow>
+          <Stat tint="blush" label="Open budget" value={formatQor(sumWei(rounds.filter(isOpen).map((g) => g.budget)).toString())} sub={`QOR across ${rounds.filter(isOpen).length} open round${rounds.filter(isOpen).length === 1 ? "" : "s"}`} />
+          <Stat tint="blush" label="Awarded" value={formatQor(sumWei(live.filter((a) => a.status === "awarded").map((a) => a.requested_amount)).toString())} sub="QOR committed to awarded projects" />
+          <Stat tint="peach" label="Needs a person" value={String(live.filter((a) => ["submitted", "under_review", "clarification_requested", "recommended"].includes(a.status)).length)} sub="applications to review, clarify or award" />
+        </StatRow>
+      )}
       {!migrated && admin && <p className="mb-4 text-[13px] text-[var(--warn)]">The database is missing migration 0019 (structured applications and rubrics). Apply supabase/migrations/0019_grants_portal.sql to use the full grants workflow.</p>}
 
       {admin && (
@@ -93,7 +101,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
       {pf && pf.awardedCount > 0 && <div className="mb-6"><PortfolioCard p={pf} alerts={al} /></div>}
       {pf && pf.awardedCount === 0 && al.length > 0 && <div className="mb-6"><PortfolioCard p={pf} alerts={al} /></div>}
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <>
         <div className="min-w-0 space-y-6">
           {applicant && (
             <Card title="Your applications" description="What you need to do next is shown on each one.">
@@ -134,7 +142,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                         <span><span className="font-semibold tabular-nums">{formatQor(aw.toString())}</span> <span className="text-muted">of {formatQor(b.toString())} QOR awarded{admin ? ` · ${ga.length} application${ga.length === 1 ? "" : "s"}` : ""}</span></span>
                         <Link href={`/grants/${g.id}`} className="font-medium text-accent-text hover:underline">{admin ? "Review applications" : isOpen(g) ? "Read and apply" : "View"}</Link>
                       </div>
-                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-3" role="img" aria-label={`${pct}% of the budget awarded`}><div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(pct, 100)}%` }} /></div>
+                      <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-3" role="img" aria-label={`${pct}% of the budget awarded`}><div className="h-full rounded-full bg-ink" style={{ width: `${Math.min(pct, 100)}%` }} /></div>
                     </li>
                   );
                 })}
@@ -143,9 +151,9 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
           )}
         </div>
 
-        <div className="space-y-6">
+        <>
           {admin && (
-            <Card id="create" title="Open a grant round" description="Awards can never exceed the budget. A default rubric is attached; edit it before the first evaluation.">
+            <Panel id="create" title="Open a grant round" description="Awards can never exceed the budget. A default rubric is attached; edit it before the first evaluation.">
               <form action={createRound} className="space-y-3">
                 <div><label htmlFor="g-title" className={labelCls}>Title</label><input id="g-title" name="title" required minLength={3} maxLength={160} className={inputCls} placeholder="Web3 Developer Grants" /></div>
                 <div><label htmlFor="g-desc" className={labelCls}>Description</label><textarea id="g-desc" name="description" rows={2} maxLength={4000} className={inputCls} /></div>
@@ -160,15 +168,9 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                 </fieldset>
                 <button className={btnCls}>Open round</button>
               </form>
-            </Card>
+            </Panel>
           )}
-          {admin && (
-            <Card title="Sample programme" description="Three fictional applications (Alpha, Beta, Gamma) in a 20,000 QOR round, clearly labelled SAMPLE, to try the review end to end.">
-              <form action={loadGrantDemo}><button className={btnCls}>Load the sample programme</button></form>
-              <Source>Alpha links Verac's own public repository, so its evidence is real; a link never proves ownership. No GitHub activity or transaction is invented.</Source>
-            </Card>
-          )}
-          <Card title="How a grant is decided">
+          <HowItWorks title="How a grant is decided">
             <Steps compact steps={[
               { label: "Applicant submits", detail: "Structured sections, budget lines and milestones that add up exactly; every version kept.", state: "step" },
               { label: "Agents investigate", detail: "Evidence from GitHub and QoreChain, rubric scores, risks and draft questions. Advisory.", state: "step" },
@@ -177,9 +179,9 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
               { label: "Milestones are reviewed", detail: "Funds move only through the treasury's approval path; pending states are shown as pending.", state: "step" },
             ]} />
             <Source>Awards are records in Verac. A transaction hash is shown only for a payment that QoreChain confirmed.</Source>
-          </Card>
-        </div>
-      </div>
+          </HowItWorks>
+        </>
+      </>
     </>
   );
 }

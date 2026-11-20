@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, Pipeline, Source, Steps, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Notice, PageHeader, Pipeline, Source, Steps, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Panel } from "@/components/ui-client";
 import { EvidenceForm } from "@/components/milestones/evidence-form";
 import { EvidenceReview } from "@/components/milestones/evidence-review";
 import { formatQor } from "@/lib/approvals";
@@ -58,12 +59,13 @@ export default async function Milestones({ searchParams }: { searchParams: Promi
     <>
       <PageHeader title="Milestones" eyebrow="Operations"
         description="After a tender is awarded, the vendor submits sealed evidence for each milestone, in order. Reviewers open it in their own browser and accept or reject it. An accepted milestone can open a payment request that a different finance member must approve."
-        badge={<Badge tone="sim" />} />
+        badge={<Badge tone="sim" />}
+        actions={isVendor ? <a href="#payout" className={btnSecondaryCls}>Payout address</a> : undefined} />
       <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
       {list.length > 0 && <div className="mb-6"><Pipeline label="Milestones by stage" stages={STAGES} counts={counts} /></div>}
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <>
         <div className="min-w-0 space-y-6">
           {list.length === 0 ? <EmptyState title="No milestones yet" action={<Link href="/procurement" className={btnSecondaryCls}>Go to Procurement</Link>}>Milestones appear when a tender is awarded with a milestone plan.</EmptyState> : parents.map((pid) => {
             const items = byParent.get(pid) ?? [];
@@ -109,18 +111,18 @@ export default async function Milestones({ searchParams }: { searchParams: Promi
           })}
         </div>
 
-        <div className="space-y-6">
+        <>
           {isVendor && (
-            <Card title="Where you are paid" description="Payment requests can only go to this address. Every change is recorded for the organisation.">
+            <Panel id="payout" title="Where you are paid" description="Payment requests can only go to this address. Every change is recorded for the organisation.">
               <p className="mb-3 break-all rounded-md bg-surface-2 px-3 py-2 font-mono text-[12.5px]">{me?.payout_address ?? "Not set yet"}</p>
               <form action={setPayoutAddress} className="space-y-2">
                 <label htmlFor="payout" className={labelCls}>New payout address</label>
                 <input id="payout" name="address" required className={`${inputCls} font-mono text-[12.5px]`} placeholder="0x…" spellCheck={false} autoComplete="off" />
                 <button className={btnCls}>Save address</button>
               </form>
-            </Card>
+            </Panel>
           )}
-          <Card title="How a milestone is paid">
+          <HowItWorks title="How a milestone is paid">
             <Steps compact steps={[
               { label: "Vendor submits sealed evidence", detail: "Encrypted to the reviewers' reading keys, in order.", state: "step" },
               { label: "A reviewer accepts or rejects", detail: "Opened in the reviewer's own browser.", state: "step" },
@@ -128,9 +130,9 @@ export default async function Milestones({ searchParams }: { searchParams: Promi
               { label: "A different finance member approves", detail: "On the Approvals page.", state: "step" },
             ]} />
             <Source>Accepting a milestone and approving its payment are recorded in Verac only. Nothing is released from the on-chain MilestoneEscrow from here; that needs a signing step the web app does not have. A real escrow release is on Live Proof.</Source>
-          </Card>
-        </div>
-      </div>
+          </HowItWorks>
+        </>
+      </>
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Check, FileLock2, Lock, Minus, TriangleAlert } from "lucide-react";
-import { Badge, Card, EmptyState, FlashMessages, PageHeader, Source, btnCls, btnDangerCls, fmtUtc, relTime } from "@/components/ui";
-import { CopyButton } from "@/components/ui-client";
+import { Badge, Card, EmptyState, FlashMessages, HowItWorks, PageHeader, Source, btnCls, btnDangerCls, btnSecondaryCls, fmtUtc, relTime } from "@/components/ui";
+import { CopyButton, Panel } from "@/components/ui-client";
 import { ReviewerKey } from "@/components/procurement/reviewer-key";
 import { OpenDocument } from "@/components/vault/open-document";
 import { UploadForm, type Reader } from "@/components/vault/upload-form";
@@ -45,10 +45,10 @@ export default async function Vault({ searchParams }: { searchParams: Promise<{ 
         description="Notes and small files sealed in your browser to the members you choose, with post-quantum hybrid encryption (QoreSeal). The server only ever stores ciphertext. Only a chosen reader's own key can open a document."
         badge={<Badge tone="live">ENCRYPTED IN BROWSER</Badge>}
         meta={<><span><strong className="font-semibold text-ink">{docs.length}</strong> document{docs.length === 1 ? "" : "s"}</span><span><strong className="font-semibold text-ink">{readable}</strong> you can open</span><span>{published ? "Your reading key is published" : "No reading key yet"}</span></>}
-        actions={published ? <a href="#upload" className={btnCls}>Add a document</a> : undefined} />
+        actions={<><a href="#reading-key" className={btnSecondaryCls}>Reading key</a>{published && <a href="#upload" className={btnCls}>Add a document</a>}</>} />
       <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <>
         <div className="min-w-0">
           {docs.length === 0 ? <EmptyState icon={<FileLock2 size={18} aria-hidden />} title="No documents yet" action={published ? <a href="#upload" className={btnCls}>Add the first document</a> : undefined}>{published ? "Seal a note or a small file to the members who should read it." : "Create and publish your reading key first. Others need it to seal documents to you."}</EmptyState> : (
             <Card title="Library" description="Newest first. Opening a document decrypts it in this browser only." flush>
@@ -84,10 +84,10 @@ export default async function Vault({ searchParams }: { searchParams: Promise<{ 
           )}
         </div>
 
-        <div className="space-y-6">
-          <Card title="Your reading key" description="Lets others seal documents to you. It stays in this browser."><ReviewerKey orgId={s.org.id} userId={s.user.id} publishedFingerprint={published} publish={publishVaultKey} purpose="Documents" /></Card>
-          {published && <Card id="upload" title="Add a document" description="Sealed in your browser before it is uploaded."><UploadForm readers={readers} me={s.user.id} /></Card>}
-          <Card title="What is and is not protected">
+        <>
+          <Panel id="reading-key" title="Your reading key" description="Lets others seal documents to you. It stays in this browser."><ReviewerKey orgId={s.org.id} userId={s.user.id} publishedFingerprint={published} publish={publishVaultKey} purpose="Documents" /></Panel>
+          {published && <Panel id="upload" title="Add a document" description="Sealed in your browser before it is uploaded."><UploadForm readers={readers} me={s.user.id} /></Panel>}
+          <HowItWorks title="What is and is not protected">
             <ul className="space-y-2 text-[13px] leading-relaxed">
               <li className="flex gap-2"><Check size={15} className="mt-0.5 shrink-0 text-[var(--live)]" aria-hidden /><span>Contents are encrypted; the server cannot read them.</span></li>
               <li className="flex gap-2"><Minus size={15} className="mt-0.5 shrink-0 text-subtle" aria-hidden /><span className="text-muted">Titles and reader lists are not encrypted. Owners and administrators can see that a document exists.</span></li>
@@ -95,9 +95,9 @@ export default async function Vault({ searchParams }: { searchParams: Promise<{ 
               <li className="flex gap-2"><TriangleAlert size={15} className="mt-0.5 shrink-0 text-[var(--warn)]" aria-hidden /><span className="text-muted">Lose your reading key and its backup, and your documents cannot be recovered.</span></li>
             </ul>
             <Source>Version history is not kept: a new upload is a new document. QoreSeal is pre-1.0 and its specification awaits external review.</Source>
-          </Card>
-        </div>
-      </div>
+          </HowItWorks>
+        </>
+      </>
     </>
   );
 }

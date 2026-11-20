@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Badge, Card, FlashMessages, Notice, PageHeader, SectionHeading } from "@/components/ui";
+import { Badge, Card, FlashMessages, HowItWorks, Notice, PageHeader, SectionHeading } from "@/components/ui";
 import { DcaCalc, RebalanceCalc } from "@/components/strategies/calculators";
 import { SavedList } from "@/components/strategies/saved-list";
 import { getSession } from "@/lib/session";
@@ -14,13 +14,13 @@ const HEADER = (
     badge={<Badge tone="sim" />} />
 );
 const CONSTRAINTS = (
-  <Card title="Risk constraints that apply">
+  <HowItWorks title="Risk constraints that apply">
     <ul className="space-y-2 text-[13px] leading-relaxed text-muted">
       <li>StrategyAgent can only propose payments; a person approves each one.</li>
       <li>Any real spending would still be capped by the vault&apos;s on-chain per-payment and daily limits.</li>
       <li>Saved inputs are stored as paused simulations and never run on a schedule.</li>
     </ul>
-  </Card>
+  </HowItWorks>
 );
 
 export default async function Strategies({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
@@ -47,9 +47,9 @@ export default async function Strategies({ searchParams }: { searchParams: Promi
         <Card title="DCA simulator" description="Spread one budget over several buys."><DcaCalc canSave={canSave} /></Card>
         <Card title="Rebalancing calculator" description="Bring holdings back to target shares."><RebalanceCalc canSave={canSave} /></Card>
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="mt-10">
         <div className="min-w-0"><SectionHeading title="Saved inputs" description="Stored numbers only. Every entry is a paused simulation." /><SavedList rows={(data ?? []) as never} canCancel={canSave} back="/strategies" /></div>
-        <div className="xl:pt-[3.25rem]">{CONSTRAINTS}</div>
+        {CONSTRAINTS}
       </div>
     </>
   );

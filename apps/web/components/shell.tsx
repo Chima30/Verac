@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { LABS, NAV, locate } from "@/lib/nav";
 import { CommandPalette } from "./command-palette";
-import { Constellation } from "./constellation";
+import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
 export interface ShellProps {
@@ -20,17 +20,6 @@ export interface ShellProps {
 const GROUPS_KEY = "verac-nav-groups";
 const SIDEBAR_KEY = "verac-sidebar";
 const role = (r: string) => r.replaceAll("_", " ");
-
-function Logo({ name, hideText = false }: { name: string; hideText?: boolean }) {
-  return (
-    <span className="flex min-w-0 items-center gap-2.5">
-      <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-ink">
-        <svg viewBox="0 0 20 20" className="size-[15px]" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5l6 10 6-10" /><path d="M7.5 5h5" opacity=".55" /></svg>
-      </span>
-      <span className={`truncate text-[17px] font-bold tracking-[-0.02em] ${hideText ? "lg:collapsed:hidden" : ""}`}>{name}</span>
-    </span>
-  );
-}
 
 /** Small popover menu: closes on outside click and Escape, returns focus to its button. */
 function Menu_({ button, label, children, align = "right" }: { button: (p: { open: boolean; toggle: () => void; ref: React.RefObject<HTMLButtonElement | null> }) => ReactNode; label: string; children: (close: () => void) => ReactNode; align?: "left" | "right" }) {
@@ -152,7 +141,7 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
         return (
           <div key={s.title} className="mt-4 first:mt-1">
             <button type="button" onClick={() => toggleGroup(s.title)} aria-expanded={isOpen} aria-controls={gid}
-              className={`group flex h-7 w-full items-center gap-1 rounded-md px-2.5 text-left text-[12px] font-semibold text-subtle hover:text-muted ${inDrawer ? "" : "lg:collapsed:hidden"}`}>
+              className={`group label-mono flex h-7 w-full items-center gap-1 rounded-md px-2.5 text-left text-subtle hover:text-ink ${inDrawer ? "" : "lg:collapsed:hidden"}`}>
               {s.title}<ChevronRight size={12} aria-hidden className={`ml-auto opacity-0 transition-transform group-hover:opacity-100 group-focus-visible:opacity-100 ${isOpen ? "rotate-90" : ""}`} />
             </button>
             {!inDrawer && <div aria-hidden className="mx-3 my-2 hidden h-px bg-line lg:collapsed:block" />}
@@ -164,9 +153,9 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
                   <li key={href}>
                     <Link href={href} aria-current={active ? "page" : undefined} aria-label={!inDrawer && collapsed ? label : undefined}
                       onMouseEnter={inDrawer ? undefined : showTip(label)} onMouseLeave={() => setTip(null)} onFocus={inDrawer ? undefined : showTip(label)} onBlur={() => setTip(null)}
-                      className={`relative flex h-9 items-center gap-3 rounded-lg px-2.5 text-[14.5px] ${!inDrawer ? "lg:collapsed:justify-center lg:collapsed:px-0" : ""} ${active ? "bg-surface-2 font-semibold text-ink" : "font-medium text-muted hover:bg-surface-2/70 hover:text-ink"}`}>
-                      {active && <span aria-hidden className={`absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-accent ${!inDrawer ? "lg:collapsed:hidden" : ""}`} />}
-                      <Icon size={18} strokeWidth={active ? 2.25 : 2} aria-hidden className={`shrink-0 ${active ? "text-accent-text" : ""}`} />
+                      className={`relative flex h-9 items-center gap-3 rounded-[4px] px-2.5 text-[15px] tracking-[-0.01em] ${!inDrawer ? "lg:collapsed:justify-center lg:collapsed:px-0" : ""} ${active ? "font-medium text-ink" : "text-ink/80 hover:bg-surface-2 hover:text-ink"}`}>
+                      {active && <span aria-hidden className={`absolute -left-1 top-1/2 h-[2px] w-3 -translate-y-1/2 bg-[var(--ring)] ${!inDrawer ? "lg:collapsed:hidden" : ""}`} />}
+                      <Icon size={17} strokeWidth={active ? 2 : 1.75} aria-hidden className="shrink-0" />
                       <span className={`truncate ${!inDrawer ? "lg:collapsed:hidden" : ""}`}>{label}</span>
                       {badge && <span className={`ml-auto rounded-md bg-[var(--warn-bg)] px-1.5 text-[11px] font-semibold tabular-nums text-[var(--warn)] ${!inDrawer ? "lg:collapsed:absolute lg:collapsed:right-1 lg:collapsed:top-0.5 lg:collapsed:px-1 lg:collapsed:text-[9.5px]" : ""}`}>{badge}<span className="sr-only"> waiting</span></span>}
                     </Link>
@@ -228,11 +217,9 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
       )}
 
       <div className="min-w-0 lg:pl-[15.5rem] lg:transition-[padding] lg:duration-200 lg:collapsed:pl-16">
-        {/* Ambient connected dots behind every page; cards are opaque, so it fills only the open space. */}
-        <Constellation className="fixed inset-y-0 left-0 z-0 h-dvh w-full lg:left-[15.5rem] lg:w-[calc(100%-15.5rem)] lg:collapsed:left-16 lg:collapsed:w-[calc(100%-4rem)]" />
         {/* Top bar */}
-        <header className="sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur-md supports-[backdrop-filter]:bg-bg/75">
-          <div className="mx-auto flex h-14 max-w-[88rem] items-center gap-2 px-4 sm:gap-3 lg:px-8">
+        <header className="sticky top-0 z-30 bg-bg shadow-[var(--shadow-nav)] dark:border-b dark:border-line">
+          <div className="mx-auto flex h-14 max-w-[75rem] items-center gap-2 px-4 sm:gap-3 lg:px-8">
             <button type="button" onClick={() => setMobile(true)} aria-label="Open navigation" aria-expanded={mobile} className="grid size-9 place-items-center rounded-md border border-line bg-surface lg:hidden"><Menu size={17} aria-hidden /></button>
             <span className="lg:hidden"><Logo name={productName} hideText /></span>
 
@@ -288,7 +275,7 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
             </div>
           </div>
         </header>
-        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[88rem] px-4 pb-16 pt-7 sm:pt-9 lg:px-8">
+        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[75rem] px-4 pb-16 pt-7 sm:pt-9 lg:px-8">
           {here?.section.title === LABS && (
             <p role="note" className="mb-5 rounded-lg border border-line bg-surface-2 px-3.5 py-2.5 text-[13px] leading-relaxed text-muted">
               <span className="font-semibold text-ink">Labs.</span> This module works, but agents do not run it and it has no live on-chain proof yet. The proven core is Invoices, Approvals, Grants, Treasury and Live Proof.

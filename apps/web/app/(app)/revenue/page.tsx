@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { PublicClient } from "viem";
-import { Badge, Card, EmptyState, FlashMessages, Metric, Notice, PageHeader, Source, StatusDot, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
-import { Hash } from "@/components/ui-client";
+import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Metric, Notice, PageHeader, Source, StatusDot, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Hash, Panel } from "@/components/ui-client";
 import { formatQor } from "@/lib/approvals";
 import { ChartCard } from "@/components/charts/chart-card";
 import { BarChart } from "@/components/charts/bar-chart";
@@ -77,12 +77,12 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
         </dl>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <>
         <div className="min-w-0 space-y-6">
         {byMonth.length > 0 && (
           <ChartCard title="Receivables by due month" description="What customers settled and what is still owed, by the month it falls due."
             footer="From your revenue records. Paid means marked paid in Verac; whether each payment checks out on chain is shown on the record. Void records are left out.">
-            <BarChart unit="QOR" caption="By due date, UTC" series={[{ key: "paid", label: "Paid", color: "#10b981" }, { key: "open", label: "Still owed", color: "#818cf8" }]} data={byMonth.map((b) => ({ key: b.key, label: b.label, values: { paid: b.paid, open: b.outstanding } }))} />
+            <BarChart unit="QOR" caption="By due date, UTC" series={[{ key: "paid", label: "Paid", color: "#c8f6f9" }, { key: "open", label: "Still owed", color: "#bdbbff" }]} data={byMonth.map((b) => ({ key: b.key, label: b.label, values: { paid: b.paid, open: b.outstanding } }))} />
           </ChartCard>
         )}
         <Card title="Receivables" description="Overdue first. Open a record to settle or void it." flush>
@@ -138,9 +138,9 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
         </Card>
         </div>
 
-        <div className="space-y-6">
+        <>
           {finance && (
-            <Card id="record" title="Record money owed" description="This only records the debt. It does not invoice or message anyone.">
+            <Panel id="record" title="Record money owed" description="This only records the debt. It does not invoice or message anyone.">
               <form action={recordRevenue} className="space-y-3">
                 <div><label htmlFor="rv-c" className={labelCls}>Customer</label><input id="rv-c" name="customer" required maxLength={160} className={inputCls} /></div>
                 <div><label htmlFor="rv-r" className={labelCls}>Reference (unique)</label><input id="rv-r" name="reference" required maxLength={80} className={inputCls} placeholder="INV-001" /></div>
@@ -151,14 +151,14 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
                 <div><label htmlFor="rv-desc" className={labelCls}>What it is for (optional)</label><input id="rv-desc" name="description" maxLength={500} className={inputCls} /></div>
                 <button className={btnCls}>Record</button>
               </form>
-            </Card>
+            </Panel>
           )}
-          <Card title="Where payments go">
+          <HowItWorks title="Where payments go">
             {treasury ? <Hash value={treasury} href={`https://explore.qore.network/address/${treasury}`} /> : <p className="text-[13.5px] text-muted">No treasury is linked yet, so payments cannot be verified. Link one in Organisation settings.</p>}
             <Source>Only native QOR transfers to this address can be checked. A record marked paid with a hash that does not check out stays flagged as not verified. Nothing here sends money or chases customers.</Source>
-          </Card>
-        </div>
-      </div>
+          </HowItWorks>
+        </>
+      </>
     </>
   );
 }

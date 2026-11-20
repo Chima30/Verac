@@ -1,6 +1,8 @@
+import { cloneElement } from "react";
 import Link from "next/link";
 import { Bot, Receipt } from "lucide-react";
 import { Badge, Card, EmptyState, FlashMessages, PageHeader, SectionHeading, ShortHash, btnCls, btnSecondaryCls, inputCls, labelCls, relTime } from "@/components/ui";
+import { Panel } from "@/components/ui-client";
 import { InvoiceChecker } from "@/components/invoices/checker";
 import { formatQor } from "@/lib/approvals";
 import { getSession } from "@/lib/session";
@@ -41,7 +43,7 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      {header}
+      {cloneElement(header, { actions: finance ? <>{admin && invoices.length > 0 && <a href="#demo" className={btnSecondaryCls}>Demo data</a>}<a href="#vendors" className={btnSecondaryCls}>Vendors</a><a href="#record" className={btnCls}>Record invoice</a></> : undefined })}
       <FlashMessages msg={sp.msg} error={sp.error ?? inv.error?.message} />
 
       {open > 0 && finance && (
@@ -51,7 +53,7 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_23rem]">
+      <>
         <Card icon={Receipt} tile="orange" title="Recorded invoices" description="Linked to a vendor and a milestone. An invoice is marked paid only when its payment is confirmed on chain." flush>
           {invoices.length === 0 ? (
             <div className="py-6"><EmptyState title="No invoices recorded yet" action={admin ? <form action={resetDemo}><button className={btnSecondaryCls}>Load the three-invoice demo</button></form> : undefined}>Record one on the right{admin ? ", or load the demo: three synthetic invoices (one eligible, one waiting for its milestone, one with a suspicious payout address), clearly marked DEMO" : ""}.</EmptyState></div>
@@ -79,9 +81,9 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
           )}
         </Card>
 
-        <div className="space-y-6">
+        <>
           {finance && (
-            <Card title="Record an invoice" description="Exactly what the contractor sent. Agents compare it with the vendor record and milestone.">
+            <Panel id="record" title="Record an invoice" description="Exactly what the contractor sent. Agents compare it with the vendor record and milestone.">
               <form action={recordInvoice} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div><label htmlFor="iv-n" className={labelCls}>Invoice number</label><input id="iv-n" name="number" required maxLength={60} className={inputCls} /></div>
@@ -98,10 +100,10 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
                 <button className={btnCls}>Record invoice</button>
                 <p className="text-[12px] text-muted">Invoice text is untrusted. If it contains instructions, agents treat them as a warning sign, never as commands.</p>
               </form>
-            </Card>
+            </Panel>
           )}
           {finance && (
-            <Card title="Vendors" description="The approved payout address on file is what invoices are checked against.">
+            <Panel id="vendors" title="Vendors" description="The approved payout address on file is what invoices are checked against.">
               {vendors.length > 0 && <ul className="mb-4 space-y-2 text-[13px]">{vendors.map((v) => <li key={v.id} className="flex items-center justify-between gap-2"><span className="min-w-0 truncate">{v.name}{v.is_demo ? <span className="text-muted"> · demo</span> : ""}</span>{v.payout_address ? <ShortHash value={v.payout_address} /> : <span className="text-muted">no payout</span>}</li>)}</ul>}
               <form action={saveVendor} className="space-y-3 border-t border-line pt-4">
                 <div><label htmlFor="vd-n" className={labelCls}>New vendor name</label><input id="vd-n" name="name" required maxLength={120} className={inputCls} /></div>
@@ -109,16 +111,16 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
                 <label className="flex items-center gap-2 text-[13px]"><input type="checkbox" name="verified" className="size-4 accent-[var(--accent)]" />Payout address confirmed with the vendor</label>
                 <button className={btnSecondaryCls}>Save vendor</button>
               </form>
-            </Card>
+            </Panel>
           )}
           {admin && invoices.length > 0 && (
-            <Card title="Demo data" description="Three synthetic DEMO-* invoices: one eligible, one waiting for its milestone, one with a suspicious payout address.">
+            <Panel id="demo" title="Demo data" description="Three synthetic DEMO-* invoices: one eligible, one waiting for its milestone, one with a suspicious payout address.">
               <form action={resetDemo}><button className={`${btnSecondaryCls} w-full`}>Reset and load a fresh demo</button></form>
               <p className="mt-2 text-[12px] text-muted">Replaces the open DEMO-* invoices with a fresh set (invoice A is 1.25 QOR). Demo invoices already linked to a payment request are kept, as part of the record.</p>
-            </Card>
+            </Panel>
           )}
-        </div>
-      </div>
+        </>
+      </>
 
       <div className="mt-10">{checker}</div>
     </>

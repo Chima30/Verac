@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { PayrollItem } from "@qoreops/policy-engine";
-import { Badge, Card, EmptyState, FlashMessages, Metric, PageHeader, ShortHash, Source, Steps } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Metric, PageHeader, ShortHash, Source, Steps } from "@/components/ui";
 import { PayrollWorkbench } from "@/components/payroll-workbench";
 import { formatQor } from "@/lib/approvals";
 import { getSession } from "@/lib/session";
@@ -74,14 +74,14 @@ export default async function Payroll() {
                   </ul>
                 )}
               </Card>
-              <Card title="How payroll is approved">
+              <HowItWorks title="How payroll is approved">
                 <Steps compact steps={[
                   { label: "Paste the lines and check", detail: "Addresses, amounts and changes from last period are checked by fixed rules.", state: "step" },
                   { label: "Submit for approval", detail: "The batch hash binds every address and amount.", state: "step" },
                   { label: "A second finance member approves", detail: "They see every line before deciding.", state: "step" },
                 ]} />
                 <Source>Approved means approved in Verac. No QOR is sent: executing payroll on chain is not wired to the web app.</Source>
-              </Card>
+              </HowItWorks>
             </div>
           </div>
         </>
