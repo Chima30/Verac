@@ -59,8 +59,8 @@ export default async function Intelligence({ params, searchParams }: { params: P
   const kind = sp.q ? classify(sp.q) : null;
   let answer: React.ReactNode = null;
   if (kind === "incomplete_budgets") {
-    const hits = [...latest.values()].filter((r) => (r.report.missing ?? []).some((m) => m.about === "budget::text"));
-    answer = hits.length ? <ul className="list-disc space-y-1 pl-5">{hits.map((r) => <li key={r.id}><Link className="underline" href={`/grants/applications/${r.application_id}`}>{appName.get(r.application_id)}</Link>: {(r.report.missing ?? []).filter((m) => m.about === "budget::text").map((m) => m.question).join(" ")}</li>)}</ul> : <p>No application's latest report has a budget question.</p>;
+    const hits = [...latest.values()].filter((r) => (r.report.missing ?? []).some((m) => m.about === "budget"));
+    answer = hits.length ? <ul className="list-disc space-y-1 pl-5">{hits.map((r) => <li key={r.id}><Link className="underline" href={`/grants/applications/${r.application_id}`}>{appName.get(r.application_id)}</Link>: {(r.report.missing ?? []).filter((m) => m.about === "budget").map((m) => m.question).join(" ")}</li>)}</ul> : <p>No application's latest report has a budget question.</p>;
   } else if (kind === "verified_deployments") {
     const { data: ev } = await sb.from("grant_evidence").select("application_id,subject,claim,url,status,retrieved_at").eq("source", "qorechain").eq("status", "VERIFIED").in("application_id", (apps ?? []).map((a) => a.id as string));
     answer = ev?.length ? <ul className="list-disc space-y-1 pl-5">{ev.map((e, i) => <li key={i}><span className="font-medium">{appName.get(e.application_id as string)}</span>: {e.claim} (<a className="font-mono text-[12px] underline" href={e.url as string} target="_blank" rel="noreferrer">{String(e.subject).slice(0, 14)}…</a>, checked {new Date(e.retrieved_at as string).toLocaleString()})</li>)}</ul> : <p>No application has QoreChain evidence classified as verified. Run an investigation first, or no contracts or transactions were supplied.</p>;

@@ -45,7 +45,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
   let rows = live;
   if (sp.status) rows = rows.filter((a) => a.status === sp.status);
   if (sp.category) rows = rows.filter((a) => a.category === sp.category);
-  if (sp.sort === "amount::text") rows = [...rows].sort((x, y) => (BigInt(wei(y.requested_amount)) > BigInt(wei(x.requested_amount)) ? 1 : -1));
+  if (sp.sort === "amount") rows = [...rows].sort((x, y) => (BigInt(wei(y.requested_amount)) > BigInt(wei(x.requested_amount)) ? 1 : -1));
   const qs = (patch: Record<string, string | undefined>) => {
     const p = new URLSearchParams(Object.entries({ status: sp.status, category: sp.category, sort: sp.sort, ...patch }).filter(([, v]) => v) as Array<[string, string]>);
     return `?${p.toString()}`;
@@ -84,8 +84,8 @@ export default async function Round({ params, searchParams }: { params: Promise<
                 <Link className={!sp.category ? "font-semibold" : "text-muted hover:underline"} href={qs({ category: undefined })}>All</Link>
                 {(round.categories ?? CATS).map((c) => <Link key={c} className={sp.category === c ? "font-semibold" : "text-muted hover:underline"} href={qs({ category: c })}>{CATEGORY_LABEL[c]}</Link>)}
                 <span className="ml-3 text-muted">Sort:</span>
-                <Link className={sp.sort !== "amount::text" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: undefined })}>Oldest first</Link>
-                <Link className={sp.sort === "amount::text" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: "amount::text" })}>Largest request</Link>
+                <Link className={sp.sort !== "amount" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: undefined })}>Oldest first</Link>
+                <Link className={sp.sort === "amount" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: "amount" })}>Largest request</Link>
               </div>
               {rows.length === 0 ? <p className="px-5 py-8 text-center text-[13.5px] text-muted">{live.length ? "No application matches these filters." : "No applications submitted yet."}</p> : (
                 <div className="overflow-x-auto">

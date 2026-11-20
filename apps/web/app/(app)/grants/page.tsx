@@ -151,7 +151,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                 <div><label htmlFor="g-desc" className={labelCls}>Description</label><textarea id="g-desc" name="description" rows={2} maxLength={4000} className={inputCls} /></div>
                 <div><label htmlFor="g-req" className={labelCls}>Requirements (published to applicants)</label><textarea id="g-req" name="requirements" rows={3} maxLength={4000} className={inputCls} /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label htmlFor="g-budget" className={labelCls}>Budget (QOR)</label><input id="g-budget" name="budget::text" required inputMode="decimal" className={inputCls} placeholder="20000" /></div>
+                  <div><label htmlFor="g-budget" className={labelCls}>Budget (QOR)</label><input id="g-budget" name="budget" required inputMode="decimal" className={inputCls} placeholder="20000" /></div>
                   <div><label htmlFor="g-max" className={labelCls}>Max per application</label><input id="g-max" name="max" inputMode="decimal" className={inputCls} placeholder="optional" /></div>
                 </div>
                 <div><label htmlFor="g-deadline" className={labelCls}>Deadline (optional)</label><input id="g-deadline" name="deadline" type="date" className={inputCls} /></div>
