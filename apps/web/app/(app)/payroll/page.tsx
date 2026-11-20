@@ -20,7 +20,7 @@ export default async function Payroll() {
   if (!s.user) redirect("/login?next=/payroll");
   if (!s.org) redirect("/onboarding");
   const sb = await supabaseServer();
-  const { data, error } = await sb!.from("payroll_batches").select("id,period,total,status,items,created_at").eq("organization_id", s.org.id).order("period", { ascending: false }).limit(24);
+  const { data, error } = await sb!.from("payroll_batches").select("id,period,total::text,status,items,created_at").eq("organization_id", s.org.id).order("period", { ascending: false }).limit(24);
   const internal = ["owner", "administrator", "finance_manager", "procurement_manager", "security_reviewer", "auditor"].includes(s.org.role);
   const batches = (data ?? []) as Array<{ id: string; period: string; total: string; status: string; items: PayrollItem[]; created_at: string }>;
   const waiting = batches.filter((b) => b.status === "awaiting_approval");

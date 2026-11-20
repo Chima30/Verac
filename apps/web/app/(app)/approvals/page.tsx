@@ -65,7 +65,7 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
   if (!s.org) redirect("/onboarding");
   const sp = await searchParams;
   const sb = await supabaseServer();
-  const { data: txs, error } = await sb!.from("transactions").select("id,state,recipient,amount,payment_hash,required_approvals,expires_at,requested_by,evaluation,source,created_at").eq("organization_id", s.org.id).is("calldata_hash", null).order("created_at", { ascending: false }).limit(50); // live operations (which carry a calldata hash) are decided in the Live payments card, never here
+  const { data: txs, error } = await sb!.from("transactions").select("id,state,recipient,amount::text,payment_hash,required_approvals,expires_at,requested_by,evaluation,source,created_at").eq("organization_id", s.org.id).is("calldata_hash", null).order("created_at", { ascending: false }).limit(50); // live operations (which carry a calldata hash) are decided in the Live payments card, never here
   const list = (txs ?? []) as unknown as Tx[];
   const live = await liveOperations();
   const { data: ap } = list.length ? await sb!.from("approvals").select("subject_id,approver,decision").in("subject_id", list.map((t) => t.id)) : { data: [] };

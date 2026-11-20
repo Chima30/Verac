@@ -23,7 +23,7 @@ export default async function Procurement({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const sb = await supabaseServer();
   const reviewer = REVIEWER_ROLES.includes(s.org.role);
-  const { data: tenders, error } = await sb!.from("procurements").select("id,title,status,budget,bids_open_at,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false }).limit(50);
+  const { data: tenders, error } = await sb!.from("procurements").select("id,title,status,budget::text,bids_open_at,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false }).limit(50);
   let published: string | null = null;
   if (reviewer) {
     const { data } = await sb!.from("org_seal_keys").select("mlkem_public,x25519_public").eq("organization_id", s.org.id).eq("user_id", s.user.id).maybeSingle();

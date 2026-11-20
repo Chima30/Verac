@@ -46,7 +46,7 @@ export default async function Revenue({ searchParams }: { searchParams: Promise<
   const finance = FINANCE.includes(s.org.role);
   const today = new Date().toISOString().slice(0, 10);
 
-  const { data, error } = await sb.from("revenue_records").select("id,customer,reference,amount,due_date,status,matched_tx_hash,description,void_reason").eq("organization_id", s.org.id).order("due_date");
+  const { data, error } = await sb.from("revenue_records").select("id,customer,reference,amount::text,due_date,status,matched_tx_hash,description,void_reason").eq("organization_id", s.org.id).order("due_date");
   const rows = (data ?? []) as unknown as Array<RevenueRow & { description: string | null; void_reason: string | null }>;
   const { data: tr } = await sb.from("treasuries").select("vault_address").eq("organization_id", s.org.id).limit(1).maybeSingle();
   const treasury = (tr?.vault_address as string | undefined) ?? null;

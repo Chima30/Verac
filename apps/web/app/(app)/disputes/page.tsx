@@ -40,7 +40,7 @@ export default async function Disputes({ searchParams }: { searchParams: Promise
   const { data: nd } = ids.length ? await sb.from("dispute_notes").select("dispute_id,author_role,body,created_at").in("dispute_id", ids).order("created_at") : { data: [] };
   const notes = (nd ?? []) as unknown as N[];
 
-  const { data: ms } = await sb.from("milestones").select("id,idx,title,amount,status,parent_id").eq("organization_id", s.org.id).eq("parent_type", "procurement");
+  const { data: ms } = await sb.from("milestones").select("id,idx,title,amount::text,status,parent_id").eq("organization_id", s.org.id).eq("parent_type", "procurement");
   const msById = new Map((ms ?? []).map((m) => [m.id as string, m]));
   const openable = (ms ?? []).filter((m) => OPENABLE.includes(m.status as string));
 

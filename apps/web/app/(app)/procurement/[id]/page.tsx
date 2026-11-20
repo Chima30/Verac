@@ -31,7 +31,7 @@ export default async function Tender({ params, searchParams }: { params: Promise
   if (!s.org) redirect("/onboarding");
   if (!UUID.test(id)) notFound();
   const sb = (await supabaseServer())!;
-  const { data: t } = await sb.from("procurements").select("id,title,requirements,budget,status,bids_open_at,award_bid_id,created_by").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
+  const { data: t } = await sb.from("procurements").select("id,title,requirements,budget::text,status,bids_open_at,award_bid_id,created_by").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
   if (!t) notFound();
 
   const reviewer = REVIEWER_ROLES.includes(s.org.role);
@@ -41,7 +41,7 @@ export default async function Tender({ params, searchParams }: { params: Promise
   const { count: bidCount } = reviewer ? await sb.from("bids").select("id", { count: "exact", head: true }).eq("procurement_id", t.id) : { count: null };
   const { data: keys } = isVendor && t.status === "open" && !own ? await sb.rpc("procurement_reviewer_keys", { p_proc: t.id }) : { data: null };
   const { data: sealed } = reviewer && ["review", "awarded", "closed"].includes(t.status) ? await sb.rpc("procurement_bids", { p_proc: t.id }) : { data: null };
-  const { data: milestones } = t.status === "awarded" ? await sb.from("milestones").select("idx,title,amount,status").eq("parent_id", t.id).eq("parent_type", "procurement").order("idx") : { data: null };
+  const { data: milestones } = t.status === "awarded" ? await sb.from("milestones").select("idx,title,amount::text,status").eq("parent_id", t.id).eq("parent_type", "procurement").order("idx") : { data: null };
 
   return (
     <>

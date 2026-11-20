@@ -30,10 +30,10 @@ export async function orgData(): Promise<OrgData> {
   const org = session.org.id;
 
   const [pend, tasks, tenders, grants, ms, disputes, props, live, members, key] = await Promise.all([
-    sb.from("transactions").select("id,agent_id,recipient,amount,evaluation,policy_version,required_approvals,created_at,expires_at,calldata_hash").eq("organization_id", org).eq("state", "AWAITING_APPROVAL").order("created_at", { ascending: true }).limit(8),
+    sb.from("transactions").select("id,agent_id,recipient,amount::text,evaluation,policy_version,required_approvals,created_at,expires_at,calldata_hash").eq("organization_id", org).eq("state", "AWAITING_APPROVAL").order("created_at", { ascending: true }).limit(8),
     sb.from("agent_tasks").select("id,agent_id,intent,state,error,result,updated_at").eq("organization_id", org).order("updated_at", { ascending: false }).limit(8),
-    sb.from("procurements").select("status,budget").eq("organization_id", org),
-    sb.from("grants").select("status,budget").eq("organization_id", org),
+    sb.from("procurements").select("status,budget::text").eq("organization_id", org),
+    sb.from("grants").select("status,budget::text").eq("organization_id", org),
     sb.from("milestones").select("id", { count: "exact", head: true }).eq("organization_id", org).eq("status", "evidence_submitted"),
     sb.from("disputes").select("id", { count: "exact", head: true }).eq("organization_id", org).neq("status", "resolved"),
     sb.from("governance_proposals").select("id", { count: "exact", head: true }).eq("organization_id", org).eq("status", "voting"),

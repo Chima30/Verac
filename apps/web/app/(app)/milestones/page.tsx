@@ -31,7 +31,7 @@ export default async function Milestones({ searchParams }: { searchParams: Promi
   const finance = FINANCE.includes(s.org.role);
   const isVendor = s.org.role === "vendor";
 
-  const { data: ms, error } = await sb.from("milestones").select("id,parent_id,idx,title,amount,status,review").eq("organization_id", s.org.id).eq("parent_type", "procurement").order("parent_id").order("idx");
+  const { data: ms, error } = await sb.from("milestones").select("id,parent_id,idx,title,amount::text,status,review").eq("organization_id", s.org.id).eq("parent_type", "procurement").order("parent_id").order("idx");
   const list = (ms ?? []) as unknown as M[];
   const parents = [...new Set(list.map((m) => m.parent_id))];
   const { data: procs } = parents.length ? await sb.from("procurements").select("id,title").in("id", parents) : { data: [] };
