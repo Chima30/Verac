@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { AiError, AiProvider, untrustedBlock } from "@qoreops/ai-provider";
 import { getSession } from "@/lib/session";
 import { ASK_INSTRUCTIONS, AskDraftSchema, checkAskDraft } from "@/lib/live/ask";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -25,6 +26,8 @@ function limited(user: string): boolean {
  * nothing, signs nothing and sends nothing; it returns a draft the person must still review, request, and have approved by someone else.
  */
 export async function POST(req: Request) {
+  const tooMany = await rateLimit(req, "ai");
+  if (tooMany) return tooMany;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!["owner", "administrator", "finance_manager"].includes(s.org.role)) return NextResponse.json({ error: "Only finance roles can draft a live payment." }, { status: 403 });

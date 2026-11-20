@@ -5,12 +5,15 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { liveStatusFlags } from "@/lib/live/config";
 import { runLiveExecution } from "@/lib/live/service";
 import { runLiveExecutionV2, v2Flags } from "@/lib/live/v2";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 /** Executes ONE already-approved live operation. The explicit click that calls this is the last human step. */
 export async function POST(req: Request) {
+  const tooMany = await rateLimit(req, "money");
+  if (tooMany) return tooMany;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!["owner", "administrator", "finance_manager"].includes(s.org.role)) return NextResponse.json({ error: "Only finance roles can execute." }, { status: 403 });

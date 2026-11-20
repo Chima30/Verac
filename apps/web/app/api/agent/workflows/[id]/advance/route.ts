@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 import { advanceWorkflow, nextStep, STEP_LABEL } from "@/lib/workflows/engine";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -9,7 +10,9 @@ export const maxDuration = 60;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Runs ONE step of a workflow the signed-in user can see. Safe to call repeatedly: the lease makes concurrent calls no-ops. */
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const tooMany = await rateLimit(req, "poll");
+  if (tooMany) return tooMany;
   const { id } = await ctx.params;
   if (!UUID.test(id)) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const s = await getSession();

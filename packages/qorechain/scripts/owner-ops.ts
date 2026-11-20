@@ -5,6 +5,9 @@
  *
  *   tsx owner-ops.ts set-agent-limits [--days N] [--broadcast]   perTx 10 QOR, daily 20 QOR, no auto-approval, valid N days (default 7, max 30)
  *   tsx owner-ops.ts set-approver <0x address> [--broadcast]
+ *   tsx owner-ops.ts pause [--broadcast]           EMERGENCY: freeze every payment from the vault (a guardian can also do this)
+ *   tsx owner-ops.ts unpause [--broadcast]         resume payments (owner only)
+ *   tsx owner-ops.ts revoke-agent [--broadcast]    EMERGENCY: switch the agent's spending rights off (AGENT=0x… to choose)
  *
  * To send, it opens a SHORT EVM window that admits only the vault (120 blocks, 3 txs, 2 QOR cap), sends the one call,
  * reads the result back from the chain, and closes the window again even if something fails.
@@ -41,7 +44,7 @@ if (owner.toLowerCase() !== account.address.toLowerCase()) throw new Error(`This
 
 let data: Hex, label: string, check: () => Promise<string>;
 if (cmd === "set-agent-limits") {
-  const agent = getAddress(process.env.AGENT ?? "0x7615DAb4651b47f69F80305f89F39B211F829dd7");
+  const agent = getAddress(process.env.AGENT?.trim() || "0x7615DAb4651b47f69F80305f89F39B211F829dd7");
   const di = rest.indexOf("--days");
   const days = di >= 0 ? Number(rest[di + 1]) : 7;
   if (!Number.isInteger(days) || days < 1 || days > 30) throw new Error("--days must be a whole number from 1 to 30");
@@ -60,8 +63,17 @@ if (cmd === "set-agent-limits") {
   data = encodeFunctionData({ abi: treasuryVaultAbi, functionName: "setApprover", args: [who, true] });
   label = `TreasuryVault.setApprover(${who}, true)`;
   check = async () => `on-chain now: isApprover(${who}) = ${await evm.readContract({ address: DEPLOYED.TreasuryVault, abi: treasuryVaultAbi, functionName: "isApprover", args: [who] })}, approverCount = ${await evm.readContract({ address: DEPLOYED.TreasuryVault, abi: treasuryVaultAbi, functionName: "approverCount" })}`;
+} else if (cmd === "pause" || cmd === "unpause") {
+  data = encodeFunctionData({ abi: treasuryVaultAbi, functionName: cmd });
+  label = `TreasuryVault.${cmd}()  ${cmd === "pause" ? "FREEZES every payment until unpaused" : "resumes payments"}`;
+  check = async () => `on-chain now: paused = ${await evm.readContract({ address: DEPLOYED.TreasuryVault, abi: treasuryVaultAbi, functionName: "paused" })}`;
+} else if (cmd === "revoke-agent") {
+  const agent = getAddress(process.env.AGENT?.trim() || "0x7615DAb4651b47f69F80305f89F39B211F829dd7");
+  data = encodeFunctionData({ abi: treasuryVaultAbi, functionName: "revokeAgent", args: [agent, NATIVE] });
+  label = `TreasuryVault.revokeAgent(${agent}, native QOR)  the agent can no longer pay until set-agent-limits is run again`;
+  check = async () => `on-chain now: active = ${((await evm.readContract({ address: DEPLOYED.TreasuryVault, abi: treasuryVaultAbi, functionName: "limits", args: [agent, NATIVE] })))[0]}`;
 } else {
-  console.error("usage: owner-ops.ts set-agent-limits | set-approver <0x address>   [--broadcast]");
+  console.error("usage: owner-ops.ts set-agent-limits [--days N] | set-approver <0x address> | pause | unpause | revoke-agent   [--broadcast]");
   process.exit(2);
 }
 

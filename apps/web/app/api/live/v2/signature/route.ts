@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/session";
 import { submitSignatureV2 } from "@/lib/live/v2";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -12,6 +13,8 @@ export const maxDuration = 30;
  * Whoever uploads the file does not matter for authority: the signature does.
  */
 export async function POST(req: Request) {
+  const tooMany = await rateLimit(req, "money");
+  if (tooMany) return tooMany;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!["owner", "administrator", "finance_manager"].includes(s.org.role)) return NextResponse.json({ error: "Not allowed." }, { status: 403 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/session";
 import { signingRequest } from "@/lib/live/v2";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,8 @@ export const dynamic = "force-dynamic";
  * fields; the tool recomputes the digest from them and shows the payment before anything is signed.
  */
 export async function GET(req: Request) {
+  const tooMany = await rateLimit(req, "read");
+  if (tooMany) return tooMany;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!["owner", "administrator", "finance_manager", "security_reviewer"].includes(s.org.role)) return NextResponse.json({ error: "Not allowed." }, { status: 403 });

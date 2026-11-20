@@ -3,6 +3,7 @@ import { z } from "zod";
 import { receipt } from "@/lib/grants/portfolio";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,8 @@ export const dynamic = "force-dynamic";
  * only its hash. Read through the signed-in user's row-level security.
  */
 export async function GET(req: Request) {
+  const tooMany = await rateLimit(req, "read");
+  if (tooMany) return tooMany;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!["owner", "administrator", "security_reviewer"].includes(s.org.role)) return NextResponse.json({ error: "Reviewers only." }, { status: 403 });

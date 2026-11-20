@@ -19,6 +19,7 @@ export function InvestigationControls({ grantId, activeTaskId, activeState }: { 
     for (let i = 0; i < 80 && !stop.current; i++) {
       const r = await fetch("/api/grants/investigate/advance", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ taskId }) });
       const j = (await r.json().catch(() => ({}))) as { state?: string; ran?: string | null; error?: string };
+      if (r.status === 429) { await new Promise((res) => setTimeout(res, 1000 * (Number(r.headers.get("retry-after")) || 5))); continue; }
       if (!r.ok) { setErr(j.error ?? "The investigation could not continue."); break; }
       if (j.ran) setProgress(`Last step: ${j.ran.replace(/^research:/, "evidence for ").replace(/^assess:/, "assessment of ")}`);
       router.refresh();

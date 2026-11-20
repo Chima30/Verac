@@ -3,12 +3,15 @@ import { z } from "zod";
 import { advanceGrantWorkflow } from "@/lib/grants/engine";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /** Advances a grant investigation by one unit of work. Safe to call repeatedly: the lease and per-application keys prevent duplicates. */
 export async function POST(req: Request) {
+  const tooMany = await rateLimit(req, "poll");
+  if (tooMany) return tooMany;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   if (!["owner", "administrator"].includes(s.org.role)) return NextResponse.json({ error: "Not allowed." }, { status: 403 });

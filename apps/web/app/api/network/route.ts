@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { reader } from "@/lib/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 /** Public, read-only: is Diana testnet reachable, and what is the latest EVM block. Used by the status pill in the top bar. */
-export async function GET() {
+export async function GET(req: Request) {
+  const tooMany = await rateLimit(req, "read");
+  if (tooMany) return tooMany;
   const at = new Date().toISOString();
   try {
     const q = reader();

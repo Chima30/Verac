@@ -58,6 +58,7 @@ export function WorkflowRunner({ id, active }: { id: string; active: boolean }) 
         try {
           const r = await fetch(`/api/agent/workflows/${id}/advance`, { method: "POST" });
           const j = (await r.json().catch(() => ({}))) as { state?: string; ran?: string | null; next?: string | null; waiting?: string | null; error?: string | null };
+          if (r.status === 429) { await new Promise((res) => setTimeout(res, 1000 * (Number(r.headers.get("retry-after")) || 5))); continue; }
           if (!r.ok) { setErr(j.error ?? "The step failed."); break; }
           router.refresh();
           if (j.waiting) { setWaiting(j.waiting); break; }

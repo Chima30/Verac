@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 /** Cancels a workflow. The database allows the requester or an administrator, and refuses once a payment is executing. */
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const tooMany = await rateLimit(req, "money");
+  if (tooMany) return tooMany;
   const { id } = await ctx.params;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });

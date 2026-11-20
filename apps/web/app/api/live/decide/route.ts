@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getSession } from "@/lib/session";
 import { supabaseEnv } from "@/lib/supabase/config";
 import { supabaseServer } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,8 @@ export const dynamic = "force-dynamic";
  * exact payment hash, and refuses a decision from the person who made the request.
  */
 export async function POST(req: Request) {
+  const tooMany = await rateLimit(req, "money");
+  if (tooMany) return tooMany;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   const body = z.object({ id: z.string().uuid(), decision: z.enum(["approve", "reject"]), note: z.string().max(280).optional(), password: z.string().min(1).max(200).optional() }).safeParse(await req.json().catch(() => null));

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { AiError, AiProvider, untrustedBlock } from "@qoreops/ai-provider";
 import { PolicyDraftSchema, describePolicy, policyFromDraft, validatePolicy } from "@qoreops/policy-engine";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -34,6 +35,8 @@ Use the numbers the user gives EXACTLY as written, even if they look inconsisten
 If the user gives no numbers for a field, choose a conservative small value and say so in the summary. You only draft; a human reviews and approves everything.`;
 
 export async function POST(req: Request) {
+  const tooMany = await rateLimit(req, "ai");
+  if (tooMany) return tooMany;
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (limited(ip)) return NextResponse.json({ error: "Too many drafts. Try again in a minute." }, { status: 429 });
 

@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { supabaseServer } from "@/lib/supabase/server";
 import { buildReceipt, receiptText } from "@/lib/workflows/receipt";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 /** Decision receipt as JSON (default) or plain text (?format=text). Only for internal members of the workflow's organisation. */
 export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const tooMany = await rateLimit(req, "read");
+  if (tooMany) return tooMany;
   const { id } = await ctx.params;
   const s = await getSession();
   if (!s.user || !s.org) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
