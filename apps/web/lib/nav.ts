@@ -4,6 +4,9 @@ export type Tile = "blue" | "green" | "teal" | "violet" | "orange" | "pink" | "a
 export interface NavItem { href: string; label: string; icon: LucideIcon; keywords?: string; tile?: Tile }
 export interface NavSection { title: string; items: NavItem[] }
 
+/** The section for modules outside the agent-driven, live-proven core. */
+export const LABS = "Labs";
+
 export const NAV: NavSection[] = [
   { title: "Overview", items: [
     { href: "/dashboard", label: "Dashboard", icon: Gauge, keywords: "home overview command centre" },
@@ -16,23 +19,26 @@ export const NAV: NavSection[] = [
   { title: "Finance", items: [
     { href: "/treasury", label: "Treasury", icon: Landmark, keywords: "vault balance funds spending limits" },
     { href: "/invoices", label: "Bills & Invoices", icon: Receipt, keywords: "bills invoices fraud check" },
-    { href: "/payroll", label: "Payroll", icon: Banknote, keywords: "contributors salary batch" },
-    { href: "/revenue", label: "Revenue", icon: HandCoins, keywords: "receivables collection incoming" },
-    { href: "/strategies", label: "DCA & Rebalancing", icon: TrendingUp, keywords: "dca rebalancing allocation strategy" },
-    { href: "/arbitrage", label: "Arbitrage Lab", icon: FlaskConical, keywords: "arbitrage market simulation" },
   ] },
   { title: "Operations", items: [
-    { href: "/procurement", label: "Procurement", icon: Boxes, keywords: "tenders bids vendors suppliers" },
     { href: "/grants", label: "Grants", icon: Flag, keywords: "funding programme applications awards" },
     { href: "/milestones", label: "Milestones", icon: Waypoints, keywords: "escrow evidence release" },
-    { href: "/governance", label: "DAO Governance", icon: Vote, keywords: "proposals votes dao" },
-    { href: "/disputes", label: "Disputes", icon: Gavel, keywords: "cases evidence counterparty" },
   ] },
   { title: "Security", items: [
-    { href: "/vault", label: "Document Vault", icon: FileLock2, keywords: "documents encrypted files" },
     { href: "/policies", label: "Policies", icon: ScrollText, keywords: "rules policy builder limits" },
-    { href: "/threats", label: "Threat Center", icon: ShieldAlert, keywords: "security incidents posture risk" },
     { href: "/simulator", label: "Quantum Simulator", icon: Atom, keywords: "post-quantum attack scenario pqc" },
+  ] },
+  // Working modules that agents do not drive and that have no live on-chain proof yet. Kept, but out of the main flow.
+  { title: LABS, items: [
+    { href: "/payroll", label: "Payroll", icon: Banknote, keywords: "contributors salary batch labs" },
+    { href: "/revenue", label: "Revenue", icon: HandCoins, keywords: "receivables collection incoming labs" },
+    { href: "/strategies", label: "DCA & Rebalancing", icon: TrendingUp, keywords: "dca rebalancing allocation strategy labs" },
+    { href: "/arbitrage", label: "Arbitrage Lab", icon: FlaskConical, keywords: "arbitrage market simulation labs" },
+    { href: "/procurement", label: "Procurement", icon: Boxes, keywords: "tenders bids vendors suppliers labs" },
+    { href: "/governance", label: "DAO Governance", icon: Vote, keywords: "proposals votes dao labs" },
+    { href: "/disputes", label: "Disputes", icon: Gavel, keywords: "cases evidence counterparty labs" },
+    { href: "/vault", label: "Document Vault", icon: FileLock2, keywords: "documents encrypted files labs" },
+    { href: "/threats", label: "Threat Center", icon: ShieldAlert, keywords: "security incidents posture risk labs" },
   ] },
   { title: "Settings", items: [
     { href: "/settings/organization", label: "Organisation", icon: Building2, keywords: "organization org settings" },
@@ -85,7 +91,7 @@ export interface QuickAction { id: string; label: string; href: string; keywords
 export const ACTIONS: QuickAction[] = [
   { id: "pay", label: "Request a payment", href: "/approvals#request", keywords: "create payment send pay new", allowed: (r) => hasRole(r, "finance") },
   { id: "review", label: "Review approvals", href: "/approvals", keywords: "approve reject pending queue", allowed: (r) => !!r },
-  { id: "tender", label: "Create a tender", href: "/procurement#create", keywords: "new procurement tender rfp", allowed: (r) => hasRole(r, "reviewer") },
+  { id: "tender", label: "Create a tender (Labs)", href: "/procurement#create", keywords: "new procurement tender rfp", allowed: (r) => hasRole(r, "reviewer") },
   { id: "grant", label: "Open a grant round", href: "/grants#create", keywords: "new grant programme funding", allowed: (r) => hasRole(r, "admin") },
   { id: "invoice", label: "Check an invoice for fraud", href: "/invoices", keywords: "invoice bill create check", allowed: (r) => !!r },
   { id: "doc", label: "Upload an encrypted document", href: "/vault", keywords: "upload file document", allowed: (r) => !!r && !hasRole(r, "external") },

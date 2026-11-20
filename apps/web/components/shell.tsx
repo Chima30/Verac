@@ -3,7 +3,7 @@ import { Bell, Building2, ChevronDown, ChevronRight, LogIn, LogOut, Menu, PanelL
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { NAV, locate } from "@/lib/nav";
+import { LABS, NAV, locate } from "@/lib/nav";
 import { CommandPalette } from "./command-palette";
 import { Constellation } from "./constellation";
 import { ThemeToggle } from "./theme-toggle";
@@ -87,13 +87,13 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
   const [mobile, setMobile] = useState(false);
   const [palette, setPalette] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [closed, setClosed] = useState<string[]>([]);
+  const [closed, setClosed] = useState<string[]>([LABS]);
   const [tip, setTip] = useState<{ label: string; top: number } | null>(null);
   const drawer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCollapsed(document.documentElement.dataset.sidebar === "collapsed");
-    try { setClosed(JSON.parse(localStorage.getItem(GROUPS_KEY) ?? "[]")); } catch { /* ignore */ }
+    try { setClosed(JSON.parse(localStorage.getItem(GROUPS_KEY) ?? JSON.stringify([LABS]))); } catch { setClosed([LABS]); }
   }, []);
   useEffect(() => { setMobile(false); setTip(null); }, [path]);
 
@@ -288,7 +288,14 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
             </div>
           </div>
         </header>
-        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[88rem] px-4 pb-16 pt-7 sm:pt-9 lg:px-8">{children}</main>
+        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[88rem] px-4 pb-16 pt-7 sm:pt-9 lg:px-8">
+          {here?.section.title === LABS && (
+            <p role="note" className="mb-5 rounded-lg border border-line bg-surface-2 px-3.5 py-2.5 text-[13px] leading-relaxed text-muted">
+              <span className="font-semibold text-ink">Labs.</span> This module works, but agents do not run it and it has no live on-chain proof yet. The proven core is Invoices, Approvals, Grants, Treasury and Live Proof.
+            </p>
+          )}
+          {children}
+        </main>
       </div>
       <CommandPalette open={palette} onClose={closePalette} role={org?.role ?? null} />
     </div>

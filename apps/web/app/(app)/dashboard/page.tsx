@@ -1,5 +1,5 @@
 import { AGENTS } from "@qoreops/agent-coordinator";
-import { Activity, ArrowRight, Bot, Boxes, ClipboardCheck, Flag, Gauge, Landmark, Plus, ShieldAlert, ShieldCheck, Waypoints } from "lucide-react";
+import { Activity, ArrowRight, Bot, ClipboardCheck, Flag, Gauge, Landmark, Plus, ShieldAlert, ShieldCheck, Waypoints } from "lucide-react";
 import Link from "next/link";
 import { Suspense, cache } from "react";
 import { InteractiveAreaChart } from "@/components/ui/interactive-area-chart";
@@ -216,26 +216,18 @@ function Operations({ d }: { d: OrgData }) {
   const stages: Array<[string, string]> = [["draft", "Draft"], ["open", "Open for bids"], ["review", "Reviewing bids"], ["awarded", "Awarded"], ["closed", "Closed"]];
   const totalT = Object.values(t).reduce((a, b) => a + b, 0);
   return (
-    <Card icon={Waypoints} tile="orange" title="Operations" description="Projects and decisions in progress in this organisation.">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div>
-          <div className="flex items-baseline justify-between"><h3 className="text-[13px] font-medium">Procurement pipeline</h3><Link href="/procurement" className="text-[12.5px] text-accent-text hover:underline">{totalT} tender{totalT === 1 ? "" : "s"}</Link></div>
-          <ol className="mt-3 grid grid-cols-5 gap-1.5">
-            {stages.map(([k, label]) => (
-              <li key={k} className="min-w-0 rounded-md bg-surface-2 px-2 py-2.5">
-                <p className={`text-[20px] font-semibold tabular-nums leading-none ${t[k] ? "" : "text-subtle"}`}>{t[k] ?? 0}</p>
-                <p className="mt-1.5 truncate text-[11.5px] text-muted" title={label}>{label}</p>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-2 text-[12px] text-muted">{formatQor(d.ops.tenderBudgetWei.toString())} QOR budgeted on tenders not yet closed.</p>
-        </div>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-          <Metric label={<Link href="/grants" className="hover:text-ink">Open grant rounds</Link>} value={d.ops.grantsOpen} sub={d.ops.grantsOpen ? `${formatQor(d.ops.grantsBudgetWei.toString())} QOR budget` : undefined} />
-          <Metric label={<Link href="/milestones" className="hover:text-ink">Milestones to review</Link>} value={d.ops.milestonesToReview} tone={d.ops.milestonesToReview ? "warn" : undefined} />
-          <Metric label={<Link href="/governance" className="hover:text-ink">Proposals in voting</Link>} value={d.ops.proposalsVoting} />
-          <Metric label={<Link href="/disputes" className="hover:text-ink">Open disputes</Link>} value={d.ops.disputesOpen} tone={d.ops.disputesOpen ? "warn" : undefined} />
-        </dl>
+    <Card icon={Waypoints} tile="orange" title="Operations" description="Grant rounds and milestones in progress in this organisation.">
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+        <Metric label={<Link href="/grants" className="hover:text-ink">Open grant rounds</Link>} value={d.ops.grantsOpen} sub={d.ops.grantsOpen ? `${formatQor(d.ops.grantsBudgetWei.toString())} QOR budget` : undefined} />
+        <Metric label={<Link href="/milestones" className="hover:text-ink">Milestones to review</Link>} value={d.ops.milestonesToReview} tone={d.ops.milestonesToReview ? "warn" : undefined} />
+      </dl>
+      <div className="mt-5 border-t border-line pt-4">
+        <h3 className="text-[12px] font-semibold text-subtle">Labs <span className="font-normal">· not agent-driven, no live proof yet</span></h3>
+        <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-muted">
+          <li><Link href="/procurement" className="hover:text-ink">{totalT} tender{totalT === 1 ? "" : "s"}</Link>{totalT ? ` (${stages.filter(([k]) => t[k]).map(([k, l]) => `${t[k]} ${l.toLowerCase()}`).join(", ")})` : ""}</li>
+          <li><Link href="/governance" className="hover:text-ink">{d.ops.proposalsVoting} proposal{d.ops.proposalsVoting === 1 ? "" : "s"} in voting</Link></li>
+          <li><Link href="/disputes" className="hover:text-ink">{d.ops.disputesOpen} open dispute{d.ops.disputesOpen === 1 ? "" : "s"}</Link></li>
+        </ul>
       </div>
     </Card>
   );
@@ -352,8 +344,7 @@ async function Header() {
   const role = d.session.org?.role ?? null;
   const actions = [
     hasRole(role, "finance") && <Link key="pay" href="/approvals#request" className={btnCls}><Plus size={15} aria-hidden />Request payment</Link>,
-    hasRole(role, "reviewer") && <Link key="t" href="/procurement#create" className={btnSecondaryCls}><Boxes size={15} aria-hidden />New tender</Link>,
-    hasRole(role, "admin") && <Link key="g" href="/grants#create" className={`${btnSecondaryCls} hidden sm:inline-flex`}><Flag size={15} aria-hidden />New grant round</Link>,
+    hasRole(role, "admin") && <Link key="g" href="/grants#create" className={btnSecondaryCls}><Flag size={15} aria-hidden />New grant round</Link>,
     <Link key="ai" href="/command-center" className={btnSecondaryCls}><Bot size={15} aria-hidden />Ask Verac AI</Link>,
   ].filter(Boolean);
   const greeting = d.session.org ? d.session.org.name : "Dashboard";
