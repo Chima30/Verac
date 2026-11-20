@@ -29,11 +29,11 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
   const applicant = s.org.role === "grant_applicant";
 
   // Newer columns first; fall back to the original ones if migration 0019 has not been applied yet.
-  let { data: gd, error } = await sb.from("grants").select("id,title,budget,status,description,requirements,categories,deadline,max_request,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false });
+  let { data: gd, error } = await sb.from("grants").select("id,title,budget::text,status,description,requirements,categories,deadline,max_request::text,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false });
   const migrated = !error;
-  if (error) ({ data: gd, error } = (await sb.from("grants").select("id,title,budget,status,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false })) as unknown as { data: typeof gd; error: typeof error });
+  if (error) ({ data: gd, error } = (await sb.from("grants").select("id,title,budget::text,status,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false })) as unknown as { data: typeof gd; error: typeof error });
   const rounds = (gd ?? []) as unknown as RoundRow[];
-  const { data: ad } = await sb.from("grant_applications").select(migrated ? "id,grant_id,applicant_user_id,applicant_name,requested_amount,status,category,version,submitted_at,amendment_open,recommended_by,created_at" : "id,grant_id,applicant_user_id,applicant_name,requested_amount,status,recommended_by,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false });
+  const { data: ad } = await sb.from("grant_applications").select(migrated ? "id,grant_id,applicant_user_id,applicant_name,requested_amount::text,status,category,version,submitted_at,amendment_open,recommended_by,created_at" : "id,grant_id,applicant_user_id,applicant_name,requested_amount::text,status,recommended_by,created_at").eq("organization_id", s.org.id).order("created_at", { ascending: false });
   const apps = (ad ?? []) as unknown as AppRow[];
   const live = apps.filter((a) => a.status !== "draft");
 
@@ -50,9 +50,9 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
   let pf: ReturnType<typeof portfolio> | null = null, al: ReturnType<typeof buildAlerts> = [];
   if (admin && migrated) {
     const awardedIds = live.filter((a) => a.status === "awarded").map((a) => a.id);
-    const { data: full } = await sb.from("grant_applications").select("id,applicant_name,status,requested_amount,grant_id,applicant_user_id,content").eq("organization_id", s.org.id).in("status", ["recommended", "awarded"]);
+    const { data: full } = await sb.from("grant_applications").select("id,applicant_name,status,requested_amount::text,grant_id,applicant_user_id,content").eq("organization_id", s.org.id).in("status", ["recommended", "awarded"]);
     const pApps: PApp[] = (full ?? []).map((a) => ({ id: a.id as string, name: a.applicant_name as string, status: a.status as string, requested: String(a.requested_amount), grantId: a.grant_id as string, applicantUserId: a.applicant_user_id as string, content: a.content as PApp["content"] }));
-    const { data: msd } = awardedIds.length ? await sb.from("milestones").select("id,parent_id,idx,title,amount,status").eq("parent_type", "grant").in("parent_id", awardedIds) : { data: [] };
+    const { data: msd } = awardedIds.length ? await sb.from("milestones").select("id,parent_id,idx,title,amount::text,status").eq("parent_type", "grant").in("parent_id", awardedIds) : { data: [] };
     const msIds = (msd ?? []).map((m) => m.id as string);
     const [{ data: fdd }, { data: sdd }, { data: fld }, { data: act }] = await Promise.all([
       msIds.length ? sb.from("grant_funding_records").select("milestone_id,status,created_at").in("milestone_id", msIds) : Promise.resolve({ data: [] }),
@@ -151,7 +151,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                 <div><label htmlFor="g-desc" className={labelCls}>Description</label><textarea id="g-desc" name="description" rows={2} maxLength={4000} className={inputCls} /></div>
                 <div><label htmlFor="g-req" className={labelCls}>Requirements (published to applicants)</label><textarea id="g-req" name="requirements" rows={3} maxLength={4000} className={inputCls} /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label htmlFor="g-budget" className={labelCls}>Budget (QOR)</label><input id="g-budget" name="budget" required inputMode="decimal" className={inputCls} placeholder="20000" /></div>
+                  <div><label htmlFor="g-budget" className={labelCls}>Budget (QOR)</label><input id="g-budget" name="budget::text" required inputMode="decimal" className={inputCls} placeholder="20000" /></div>
                   <div><label htmlFor="g-max" className={labelCls}>Max per application</label><input id="g-max" name="max" inputMode="decimal" className={inputCls} placeholder="optional" /></div>
                 </div>
                 <div><label htmlFor="g-deadline" className={labelCls}>Deadline (optional)</label><input id="g-deadline" name="deadline" type="date" className={inputCls} /></div>

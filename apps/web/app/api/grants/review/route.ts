@@ -24,10 +24,10 @@ export async function POST(req: Request) {
   if (!body.success) return NextResponse.json({ error: "Invalid input." }, { status: 400 });
 
   const sb = (await supabaseServer())!;
-  const { data: a } = await sb.from("grant_applications").select("id,grant_id,applicant_name,requested_amount,pitch,status").eq("id", body.data.id).eq("organization_id", s.org.id).maybeSingle();
+  const { data: a } = await sb.from("grant_applications").select("id,grant_id,applicant_name,requested_amount::text,pitch,status").eq("id", body.data.id).eq("organization_id", s.org.id).maybeSingle();
   if (!a) return NextResponse.json({ error: "Application not found." }, { status: 404 });
-  const { data: g } = await sb.from("grants").select("title,budget").eq("id", a.grant_id).maybeSingle();
-  const { data: others } = await sb.from("grant_applications").select("id,pitch,requested_amount,status").eq("grant_id", a.grant_id);
+  const { data: g } = await sb.from("grants").select("title,budget::text").eq("id", a.grant_id).maybeSingle();
+  const { data: others } = await sb.from("grant_applications").select("id,pitch,requested_amount::text,status").eq("grant_id", a.grant_id);
   const awarded = (others ?? []).filter((o) => o.status === "awarded").reduce((t, o) => t + BigInt(String(o.requested_amount).split(".")[0]!), 0n);
 
   const { aiEligible } = checkApplication(

@@ -30,13 +30,13 @@ export default async function Intelligence({ params, searchParams }: { params: P
   if (!["owner", "administrator", "security_reviewer"].includes(s.org.role)) return <EmptyState title="Reviewers only">Grant investigations are visible to owners, administrators and security reviewers.</EmptyState>;
   const admin = ["owner", "administrator"].includes(s.org.role);
   const sb = (await supabaseServer())!;
-  const { data: g } = await sb.from("grants").select("id,title,budget").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
+  const { data: g } = await sb.from("grants").select("id,title,budget::text").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
   if (!g) return <EmptyState title="Round not found" />;
   const { data: td, error: te } = await sb.from("agent_tasks").select("id,state,instruction,steps,result,error,created_at,updated_at").eq("organization_id", s.org.id).eq("kind", "grant_review").filter("result->>grant_id", "eq", id).order("created_at", { ascending: false }).limit(20);
   const tasks = (td ?? []) as Array<{ id: string; state: string; instruction: string | null; steps: GStep[]; result: GResult; error: string | null; created_at: string; updated_at: string }>;
   const task = tasks.find((t) => t.id === sp.task) ?? tasks[0];
 
-  const { data: apps } = await sb.from("grant_applications").select("id,applicant_name,category,requested_amount,status").eq("grant_id", id).neq("status", "draft");
+  const { data: apps } = await sb.from("grant_applications").select("id,applicant_name,category,requested_amount::text,status").eq("grant_id", id).neq("status", "draft");
   const appName = new Map((apps ?? []).map((a) => [a.id as string, a.applicant_name as string]));
   const { data: rv } = await sb.from("grant_reviews").select("id,application_id,recommendation,scored_points,scored_max,applicable_max,scores,report,created_at,rubric_version").in("application_id", (apps ?? []).map((a) => a.id as string)).order("created_at", { ascending: false });
   const latest = new Map<string, Rev>();
@@ -59,14 +59,14 @@ export default async function Intelligence({ params, searchParams }: { params: P
   const kind = sp.q ? classify(sp.q) : null;
   let answer: React.ReactNode = null;
   if (kind === "incomplete_budgets") {
-    const hits = [...latest.values()].filter((r) => (r.report.missing ?? []).some((m) => m.about === "budget"));
-    answer = hits.length ? <ul className="list-disc space-y-1 pl-5">{hits.map((r) => <li key={r.id}><Link className="underline" href={`/grants/applications/${r.application_id}`}>{appName.get(r.application_id)}</Link>: {(r.report.missing ?? []).filter((m) => m.about === "budget").map((m) => m.question).join(" ")}</li>)}</ul> : <p>No application's latest report has a budget question.</p>;
+    const hits = [...latest.values()].filter((r) => (r.report.missing ?? []).some((m) => m.about === "budget::text"));
+    answer = hits.length ? <ul className="list-disc space-y-1 pl-5">{hits.map((r) => <li key={r.id}><Link className="underline" href={`/grants/applications/${r.application_id}`}>{appName.get(r.application_id)}</Link>: {(r.report.missing ?? []).filter((m) => m.about === "budget::text").map((m) => m.question).join(" ")}</li>)}</ul> : <p>No application's latest report has a budget question.</p>;
   } else if (kind === "verified_deployments") {
     const { data: ev } = await sb.from("grant_evidence").select("application_id,subject,claim,url,status,retrieved_at").eq("source", "qorechain").eq("status", "VERIFIED").in("application_id", (apps ?? []).map((a) => a.id as string));
     answer = ev?.length ? <ul className="list-disc space-y-1 pl-5">{ev.map((e, i) => <li key={i}><span className="font-medium">{appName.get(e.application_id as string)}</span>: {e.claim} (<a className="font-mono text-[12px] underline" href={e.url as string} target="_blank" rel="noreferrer">{String(e.subject).slice(0, 14)}…</a>, checked {new Date(e.retrieved_at as string).toLocaleString()})</li>)}</ul> : <p>No application has QoreChain evidence classified as verified. Run an investigation first, or no contracts or transactions were supplied.</p>;
   } else if (kind === "milestones") {
     const funded = (apps ?? []).filter((a) => a.status === "awarded");
-    const { data: ms } = await sb.from("milestones").select("parent_id,idx,title,status,amount").eq("parent_type", "grant").in("parent_id", funded.map((a) => a.id as string)).order("idx");
+    const { data: ms } = await sb.from("milestones").select("parent_id,idx,title,status,amount::text").eq("parent_type", "grant").in("parent_id", funded.map((a) => a.id as string)).order("idx");
     answer = funded.length ? <ul className="space-y-1">{funded.map((a) => <li key={a.id}><span className="font-medium">{a.applicant_name}</span>: {(ms ?? []).filter((m) => m.parent_id === a.id).map((m) => `${m.idx}. ${m.title} (${m.status})`).join("; ") || "no milestones"}</li>)}</ul> : <p>No application in this round has been awarded.</p>;
   } else if (kind === "shortlist" || kind === "compare") {
     answer = <p>See the {kind === "shortlist" ? "allocation scenarios" : "comparison"} below; they use the latest report of each application.</p>;

@@ -25,13 +25,13 @@ export default async function Round({ params, searchParams }: { params: Promise<
   const admin = ADMIN.includes(s.org.role);
   const applicant = s.org.role === "grant_applicant";
 
-  const { data: g, error } = await sb.from("grants").select("id,title,budget,status,description,requirements,categories,deadline,max_request,created_at,rules").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
+  const { data: g, error } = await sb.from("grants").select("id,title,budget::text,status,description,requirements,categories,deadline,max_request::text,created_at,rules").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
   if (!g) return <EmptyState title="Round not found">{error?.message ?? "It may belong to another organisation."}</EmptyState>;
   const round = g as unknown as RoundRow;
   const { data: rd } = await sb.from("grant_rubrics").select("id,version,criteria,locked_at,created_at").eq("grant_id", id).order("version", { ascending: false });
   const rubrics = (rd ?? []) as unknown as RubricRow[];
   const rubric = rubrics[0];
-  const { data: ad } = await sb.from("grant_applications").select("*").eq("grant_id", id).order("created_at");
+  const { data: ad } = await sb.from("grant_applications").select("id,grant_id,applicant_user_id,applicant_name,requested_amount::text,status,category,content,recipient_address,version,submitted_at,amendment_open,recommended_by,pitch,created_at,updated_at,review").eq("grant_id", id).order("created_at");
   const apps = (ad ?? []) as unknown as AppRow[];
   const mine = apps.find((a) => a.applicant_user_id === s.user!.id);
   const live = apps.filter((a) => a.status !== "draft");
@@ -45,7 +45,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
   let rows = live;
   if (sp.status) rows = rows.filter((a) => a.status === sp.status);
   if (sp.category) rows = rows.filter((a) => a.category === sp.category);
-  if (sp.sort === "amount") rows = [...rows].sort((x, y) => (BigInt(wei(y.requested_amount)) > BigInt(wei(x.requested_amount)) ? 1 : -1));
+  if (sp.sort === "amount::text") rows = [...rows].sort((x, y) => (BigInt(wei(y.requested_amount)) > BigInt(wei(x.requested_amount)) ? 1 : -1));
   const qs = (patch: Record<string, string | undefined>) => {
     const p = new URLSearchParams(Object.entries({ status: sp.status, category: sp.category, sort: sp.sort, ...patch }).filter(([, v]) => v) as Array<[string, string]>);
     return `?${p.toString()}`;
@@ -84,8 +84,8 @@ export default async function Round({ params, searchParams }: { params: Promise<
                 <Link className={!sp.category ? "font-semibold" : "text-muted hover:underline"} href={qs({ category: undefined })}>All</Link>
                 {(round.categories ?? CATS).map((c) => <Link key={c} className={sp.category === c ? "font-semibold" : "text-muted hover:underline"} href={qs({ category: c })}>{CATEGORY_LABEL[c]}</Link>)}
                 <span className="ml-3 text-muted">Sort:</span>
-                <Link className={sp.sort !== "amount" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: undefined })}>Oldest first</Link>
-                <Link className={sp.sort === "amount" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: "amount" })}>Largest request</Link>
+                <Link className={sp.sort !== "amount::text" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: undefined })}>Oldest first</Link>
+                <Link className={sp.sort === "amount::text" ? "font-semibold" : "text-muted hover:underline"} href={qs({ sort: "amount::text" })}>Largest request</Link>
               </div>
               {rows.length === 0 ? <p className="px-5 py-8 text-center text-[13.5px] text-muted">{live.length ? "No application matches these filters." : "No applications submitted yet."}</p> : (
                 <div className="overflow-x-auto">

@@ -20,10 +20,10 @@ export default async function Apply({ params, searchParams }: { params: Promise<
   const sb = (await supabaseServer())!;
   if (s.org.role !== "grant_applicant") return <EmptyState title="Applicants only">Only members with the grant applicant role can apply. <Link className="underline" href={`/grants/${id}`}>Back to the round</Link>.</EmptyState>;
 
-  const { data: g } = await sb.from("grants").select("id,title,budget,status,description,requirements,categories,deadline,max_request").eq("id", id).maybeSingle();
+  const { data: g } = await sb.from("grants").select("id,title,budget::text,status,description,requirements,categories,deadline,max_request::text").eq("id", id).maybeSingle();
   if (!g) return <EmptyState title="Round not found">It may have been closed, or it belongs to another organisation.</EmptyState>;
   const round = g as unknown as RoundRow;
-  const { data: mine } = await sb.from("grant_applications").select("*").eq("grant_id", id).eq("applicant_user_id", s.user.id).maybeSingle();
+  const { data: mine } = await sb.from("grant_applications").select("id,grant_id,applicant_user_id,applicant_name,requested_amount::text,status,category,content,recipient_address,version,submitted_at,amendment_open,recommended_by,pitch,created_at,updated_at,review").eq("grant_id", id).eq("applicant_user_id", s.user.id).maybeSingle();
   const a = mine as unknown as AppRow | null;
   if (a && a.status !== "draft" && !a.amendment_open) redirect(`/grants/applications/${a.id}`);
   const closed = round.status !== "open" || (round.deadline && new Date(round.deadline) <= new Date());

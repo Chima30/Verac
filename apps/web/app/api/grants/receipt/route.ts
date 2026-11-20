@@ -18,14 +18,14 @@ export async function GET(req: Request) {
   const id = z.string().uuid().safeParse(new URL(req.url).searchParams.get("app"));
   if (!id.success) return NextResponse.json({ error: "Invalid id." }, { status: 400 });
   const sb = (await supabaseServer())!;
-  const { data: a } = await sb.from("grant_applications").select("id,grant_id,status,version,requested_amount,recipient_address").eq("id", id.data).eq("organization_id", s.org.id).maybeSingle();
+  const { data: a } = await sb.from("grant_applications").select("id,grant_id,status,version,requested_amount::text,recipient_address").eq("id", id.data).eq("organization_id", s.org.id).maybeSingle();
   if (!a) return NextResponse.json({ error: "Application not found." }, { status: 404 });
   const [{ data: v }, { data: rv }, { data: fl }, { data: au }, { data: ms }, { data: fd }] = await Promise.all([
     sb.from("grant_application_versions").select("content").eq("application_id", a.id).eq("version", a.version || 1).maybeSingle(),
     sb.from("grant_reviews").select("id,task_id,recommendation,scored_points,scored_max,scores,model,created_at,rubric_version").eq("application_id", a.id).order("created_at", { ascending: false }).limit(1),
     sb.from("grant_risk_flags").select("code,severity,status,decided_reason").eq("application_id", a.id),
     sb.from("audit_events").select("action,actor,created_at,detail").eq("organization_id", s.org.id).eq("subject", a.id).like("action", "grant.%").order("created_at"),
-    sb.from("milestones").select("id,idx,title,amount,status,release_tx_hash").eq("parent_type", "grant").eq("parent_id", a.id).order("idx"),
+    sb.from("milestones").select("id,idx,title,amount::text,status,release_tx_hash").eq("parent_type", "grant").eq("parent_id", a.id).order("idx"),
     sb.from("grant_funding_records").select("milestone_id,status,route,tx_hash,block_number").eq("application_id", a.id),
   ]);
   const review = (rv ?? [])[0];

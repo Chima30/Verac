@@ -31,7 +31,16 @@ export interface AppRow {
 }
 export interface VersionRow { version: number; requested_amount: string; category: string; recipient_address: string; content: AppContent; reason: string | null; created_at: string; changed_by: string }
 
-export const wei = (v: unknown) => String(v ?? "0").split(".")[0]!;
+/**
+ * A base-unit amount as a whole-number string. Queries read amounts as text (`::text`), which is exact. As a safeguard, a
+ * JSON number such as 2e+22 (how PostgREST sends numeric, and how JavaScript prints it from 10^21 up) is converted
+ * instead of crashing BigInt; such a value may already have lost precision, so always prefer reading it as text.
+ */
+export function wei(v: unknown): string {
+  const s = String(v ?? "0");
+  if (/e/i.test(s) && Number.isFinite(Number(s))) return BigInt(Math.trunc(Number(s))).toString();
+  return s.split(".")[0]!;
+}
 /** Base units to a plain QOR decimal string (up to 6 places) for form fields. */
 export function weiToQorInput(v: unknown): string {
   const n = BigInt(wei(v));

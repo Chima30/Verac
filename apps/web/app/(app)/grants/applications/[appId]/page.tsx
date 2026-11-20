@@ -34,15 +34,15 @@ export default async function Application({ params, searchParams }: { params: Pr
   const admin = ADMIN.includes(s.org.role);
 
   // Row-level security decides visibility: an applicant sees only their own; administrators see submitted applications.
-  const { data: ad } = await sb.from("grant_applications").select("*").eq("id", appId).maybeSingle();
+  const { data: ad } = await sb.from("grant_applications").select("id,grant_id,applicant_user_id,applicant_name,requested_amount::text,status,category,content,recipient_address,version,submitted_at,amendment_open,recommended_by,pitch,created_at,updated_at,review").eq("id", appId).maybeSingle();
   if (!ad) return <EmptyState title="Application not found">It does not exist, or you are not allowed to see it.</EmptyState>;
   const a = ad as unknown as AppRow;
   const mine = a.applicant_user_id === s.user.id;
-  const { data: gd } = await sb.from("grants").select("id,title,budget,status,description,requirements,categories,deadline,max_request").eq("id", a.grant_id).maybeSingle();
+  const { data: gd } = await sb.from("grants").select("id,title,budget::text,status,description,requirements,categories,deadline,max_request::text").eq("id", a.grant_id).maybeSingle();
   const round = gd as unknown as RoundRow;
-  const { data: vd } = await sb.from("grant_application_versions").select("version,requested_amount,category,recipient_address,content,reason,created_at,changed_by").eq("application_id", appId).order("version");
+  const { data: vd } = await sb.from("grant_application_versions").select("version,requested_amount::text,category,recipient_address,content,reason,created_at,changed_by").eq("application_id", appId).order("version");
   const versions = (vd ?? []) as unknown as VersionRow[];
-  const { data: md } = await sb.from("milestones").select("id,idx,title,amount,status,release_tx_hash,review").eq("parent_type", "grant").eq("parent_id", appId).order("idx");
+  const { data: md } = await sb.from("milestones").select("id,idx,title,amount::text,status,release_tx_hash,review").eq("parent_type", "grant").eq("parent_id", appId).order("idx");
   const milestones = (md ?? []) as unknown as MsRow[];
   // Phase 6 records (migration 0021). RLS limits them to reviewers, finance and the recipient.
   const msIds = milestones.map((m) => m.id);
@@ -56,7 +56,7 @@ export default async function Application({ params, searchParams }: { params: Pr
 
   let flags: ReturnType<typeof checkApplication> | null = null;
   if (admin && round) {
-    const { data: others } = await sb.from("grant_applications").select("id,pitch,requested_amount,status").eq("grant_id", a.grant_id).neq("status", "draft");
+    const { data: others } = await sb.from("grant_applications").select("id,pitch,requested_amount::text,status").eq("grant_id", a.grant_id).neq("status", "draft");
     const awarded = sumWei((others ?? []).filter((o) => o.status === "awarded").map((o) => o.requested_amount));
     flags = checkApplication({ requested: wei(a.requested_amount), pitch: a.pitch ?? "", name: a.applicant_name }, { budget: wei(round.budget), awarded: awarded.toString(), otherPitches: (others ?? []).filter((o) => o.id !== a.id).map((o) => o.pitch ?? "") });
   }
@@ -79,9 +79,9 @@ export default async function Application({ params, searchParams }: { params: Pr
   }
   let previous: ReturnType<typeof grantHistory> = [];
   if (reviewer) {
-    const { data: others } = await sb.from("grant_applications").select("id,applicant_name,status,requested_amount,grant_id,applicant_user_id,content").eq("organization_id", s.org.id).eq("applicant_user_id", a.applicant_user_id).eq("status", "awarded").neq("id", a.id);
+    const { data: others } = await sb.from("grant_applications").select("id,applicant_name,status,requested_amount::text,grant_id,applicant_user_id,content").eq("organization_id", s.org.id).eq("applicant_user_id", a.applicant_user_id).eq("status", "awarded").neq("id", a.id);
     if (others?.length) {
-      const { data: oms } = await sb.from("milestones").select("id,parent_id,idx,title,amount,status").eq("parent_type", "grant").in("parent_id", others.map((o) => o.id as string));
+      const { data: oms } = await sb.from("milestones").select("id,parent_id,idx,title,amount::text,status").eq("parent_type", "grant").in("parent_id", others.map((o) => o.id as string));
       previous = grantHistory({ id: a.id, name: a.applicant_name, status: a.status, requested: String(a.requested_amount), grantId: a.grant_id, applicantUserId: a.applicant_user_id, content: null },
         others.map((o) => ({ id: o.id as string, name: o.applicant_name as string, status: o.status as string, requested: String(o.requested_amount), grantId: o.grant_id as string, applicantUserId: o.applicant_user_id as string, content: null })),
         (oms ?? []).map((m) => ({ id: m.id as string, parentId: m.parent_id as string, idx: m.idx as number, title: m.title as string, amount: String(m.amount), status: m.status as string })));
