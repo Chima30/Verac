@@ -12,9 +12,8 @@
 import { createHash, randomUUID } from "node:crypto";
 import { AiError, AiProvider, untrustedBlock } from "@qoreops/ai-provider";
 import {
-  AiAssessmentSchema, COORDINATOR, MessageBus, allocate, applicable, budgetReview, buildScores, chainEvidence, eligibility, githubEvidence, githubGetter,
-  milestoneReview, recommend, riskFlags, technicalFacts, webEvidence, type AiAssessment, type Criterion, type Evidence, type EvidenceRef, type GrantFinding,
-  type Flag, type GrantApp, type Question, type Round, type Score,
+  AiAssessmentSchema, COORDINATOR, MessageBus, allocate, applicable, chainEvidence, githubEvidence, githubGetter, reviewApplication, webEvidence,
+  type AiAssessment, type Criterion, type Evidence, type EvidenceRef, type GrantFinding, type GrantApp, type Round, type Score,
 } from "@qoreops/agent-coordinator";
 import { ChainExecution } from "@qoreops/qorechain";
 // Server only: uses node:dns and node:https. Not re-exported from the package index, so browser bundles never include it.
@@ -124,23 +123,15 @@ async function assess(task: GTaskRow, app: GrantApp, all: GrantApp[], round: Rou
   const { data: evRows } = await sb.from("grant_evidence").select("source,subject,claim,status,reason,observed,url,retrieved_at").eq("task_id", task.id).eq("application_id", app.id).order("id");
   const ev: EvidenceRef[] = (evRows ?? []).map((e, i) => ({ ref: `E${i + 1}`, source: e.source, subject: e.subject, claim: e.claim, status: e.status, reason: e.reason, observed: e.observed as Record<string, unknown>, url: e.url, retrievedAt: e.retrieved_at }));
   // Untrusted text is not stored; re-read README/page text only for the AI prompt is unnecessary: the facts suffice.
-  const elig = eligibility(app, round);
-  const bud = budgetReview(app, round);
-  const ms = milestoneReview(app);
-  const tech = technicalFacts(app, ev);
-  const flags: Flag[] = riskFlags(app, all, ev);
-  const rules: GrantFinding[] = [...elig.findings, ...bud.findings, ...ms.findings, ...tech.findings];
+  // The AI sees the rule results first; then the same pure function the evaluation set runs decides everything else.
+  const pre = reviewApplication(app, all, round, rubric.criteria, ev, null);
   const criteria = applicable(rubric.criteria, app.category);
-  const aiRes = await assessWithAi(task.organization_id, app, round, criteria, ev, rules);
+  const aiRes = await assessWithAi(task.organization_id, app, round, criteria, ev, pre.rules);
   const assessment = "data" in aiRes ? aiRes.data : null;
-  const scores: Score[] = buildScores(rubric.criteria, app.category, { budget: bud, milestones: ms }, assessment, ev.map((e) => e.ref), tech.state);
-  const ruleQuestions: Question[] = [...elig.missing, ...bud.questions, ...ms.questions];
-  const questions: Question[] = [...ruleQuestions, ...(assessment?.questions ?? []).map((q) => ({ question: q, about: "AI-drafted (optional)" }))].slice(0, 10);
-  const rec = recommend(scores, flags, ruleQuestions, elig.eligible);
-  const scored = scores.filter((s) => s.state === "scored");
-  const scoredPoints = Math.round(scored.reduce((t, s) => t + (s.score ?? 0), 0) * 10) / 10;
-  const scoredMax = scored.reduce((t, s) => t + s.max, 0);
-  const applicableMax = applicable(rubric.criteria, app.category).reduce((t, c) => t + c.max, 0);
+  const r = reviewApplication(app, all, round, rubric.criteria, ev, assessment);
+  const { flags, scores, questions, scoredPoints, scoredMax, applicableMax } = r;
+  const elig = { eligible: r.eligible, findings: r.eligibilityFindings }, bud = r.budget, ms = r.milestones, tech = r.technical;
+  const rec = { recommendation: r.recommendation, why: r.why };
 
   // Signed messages: the coordinator hands the application to each specialist; each reports back with a digest of its findings.
   let messages = 0;

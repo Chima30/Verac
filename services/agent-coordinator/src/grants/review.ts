@@ -126,7 +126,18 @@ export function jaccard(a: Set<string>, b: Set<string>): number {
   return inter / (a.size + b.size - inter);
 }
 const proposalText = (a: GrantApp) => [a.content.overview, a.content.problem, a.content.solution, a.content.technical].filter(Boolean).join("\n");
-const INJECTION = /\b(ignore (all |the )?(previous|prior|above) (instructions|rules)|disregard (the )?(rules|instructions)|you are (now )?an? (ai|assistant|model)|system prompt|score (this|it|me) (100|10\/10|highly)|approve (this|it) (application|grant|payment))\b/i;
+const INJECTION = /\b(ignore (all |any |the )?(previous|prior|above|earlier|other) (instructions|rules|guidance|prompts?)|disregard (all |the |any )?(previous |prior )?(rules|instructions|guidance)|forget (all |your |the )?(previous |prior )?(instructions|rules)|you are (now )?an? (ai|assistant|model|language model)|(as|to) (the|an?) (ai|automated|llm) (reviewer|assessor|evaluator|model)|system prompt|(follow|obey) (these|the following|my) (new )?instructions|developer mode|score (this|it|me|us|the application) (100|10\/10|full marks|the maximum|highly|max)|give (this|it|us|me) (full|maximum|max|perfect) (marks|scores?|points)|(approve|fund|award) (this|it) (application|grant|payment|proposal)|return (a )?(score|scores) of)\b/i;
+/** Text normalised before the instruction check: no zero-width or control characters, look-alike letters folded, one space between words. */
+export function normaliseForScreening(s: string): string {
+  return s.normalize("NFKC").replace(/[​-‏⁠-⁤﻿­]/g, "").replace(/[аеорсухі]/g, (c) => ({ "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x", "і": "i" })[c]!).replace(/[\s_*`~|>#-]+/g, " ");
+}
+/** True when the application text addresses an automated reviewer (an attempted prompt injection). */
+/** Prompt-format markers and role labels that only make sense addressed to a model; checked before normalising punctuation. */
+const MARKERS = /(<\/?\s*untrusted\b|<\|?\s*im_(start|end)\s*\|?>|\[\/?INST\]|<<\/?SYS>>|(^|\n)\s*(system|assistant|developer)\s*:|\brubric is (suspended|waived|disabled|overridden)\b|\breturn \d+(\.\d+)? (for|on) (relevance|technical|feasibility|impact|capability|every|all)\b)/i;
+export const addressesAutomatedReviewer = (text: string) => {
+  const plain = text.normalize("NFKC").replace(/[​-‏⁠-⁤﻿­]/g, "");
+  return MARKERS.test(plain) || INJECTION.test(normaliseForScreening(text));
+};
 
 export function riskFlags(app: GrantApp, all: GrantApp[], evidence: EvidenceRef[]): Flag[] {
   const flags: Flag[] = [];
@@ -154,7 +165,8 @@ export function riskFlags(app: GrantApp, all: GrantApp[], evidence: EvidenceRef[
   for (const e of evidence.filter((x) => x.status === "CONTRADICTED")) flags.push({ code: "CONTRADICTED_CLAIM", severity: "medium", message: `${e.claim}: ${e.reason}`, evidence: { ref: e.ref, url: e.url, subject: e.subject } });
   const forks = evidence.filter((e) => e.source === "github" && (e.observed as { fork?: boolean }).fork);
   for (const e of forks) flags.push({ code: "FORKED_REPOSITORY", severity: "low", message: `${e.subject} is a fork of ${(e.observed as { parent?: string }).parent ?? "another repository"}. Reusing open source is legitimate; check which work is the applicant's own.`, evidence: { ref: e.ref, url: e.url } });
-  if (INJECTION.test(JSON.stringify(app.content))) flags.push({ code: "INSTRUCTION_IN_TEXT", severity: "high", message: "The application contains text addressed to an automated reviewer. It was treated as data; a human should read it.", evidence: {} });
+  const screened = Object.values(app.content).map((v) => (typeof v === "string" ? v : JSON.stringify(v))).join("\n");
+  if (addressesAutomatedReviewer(screened)) flags.push({ code: "INSTRUCTION_IN_TEXT", severity: "high", message: "The application contains text addressed to an automated reviewer. It was treated as data; a human should read it.", evidence: {} });
   return flags;
 }
 
@@ -238,4 +250,34 @@ export function allocate(items: Array<{ id: string; name: string; requestedWei: 
     else skipped.push({ id: it.id, reason: `needs ${fmt(it.requestedWei)} QOR; ${fmt(left)} QOR left` });
   }
   return { funded, totalWei: budgetWei - left, leftWei: left, skipped };
+}
+
+// ------------------------------------------------------------------ the whole review of one application (pure)
+export interface ApplicationReview {
+  eligible: boolean; rules: GrantFinding[]; flags: Flag[]; scores: Score[]; ruleQuestions: Question[]; questions: Question[];
+  recommendation: Recommendation; why: string; scoredPoints: number; scoredMax: number; applicableMax: number;
+  budget: ReturnType<typeof budgetReview>; milestones: ReturnType<typeof milestoneReview>; technical: ReturnType<typeof technicalFacts>; eligibilityFindings: GrantFinding[];
+}
+/**
+ * Everything the grants workflow decides about one application, given its evidence and the (already validated) AI
+ * assessment or null. No I/O: the website's engine and the evaluation set both run exactly this.
+ */
+export function reviewApplication(app: GrantApp, all: GrantApp[], round: Round, criteria: Criterion[], ev: EvidenceRef[], ai: AiAssessment | null, today = new Date()): ApplicationReview {
+  const elig = eligibility(app, round);
+  const bud = budgetReview(app, round);
+  const ms = milestoneReview(app, today);
+  const tech = technicalFacts(app, ev);
+  const flags = riskFlags(app, all, ev);
+  const scores = buildScores(criteria, app.category, { budget: bud, milestones: ms }, ai, ev.map((e) => e.ref), tech.state);
+  const ruleQuestions: Question[] = [...elig.missing, ...bud.questions, ...ms.questions];
+  const questions: Question[] = [...ruleQuestions, ...(ai?.questions ?? []).map((q) => ({ question: q, about: "AI-drafted (optional)" }))].slice(0, 10);
+  const rec = recommend(scores, flags, ruleQuestions, elig.eligible);
+  const scored = scores.filter((s) => s.state === "scored");
+  return {
+    eligible: elig.eligible, eligibilityFindings: elig.findings, rules: [...elig.findings, ...bud.findings, ...ms.findings, ...tech.findings], flags, scores, ruleQuestions, questions,
+    recommendation: rec.recommendation, why: rec.why,
+    scoredPoints: Math.round(scored.reduce((t, s) => t + (s.score ?? 0), 0) * 10) / 10, scoredMax: scored.reduce((t, s) => t + s.max, 0),
+    applicableMax: applicable(criteria, app.category).reduce((t, c) => t + c.max, 0),
+    budget: bud, milestones: ms, technical: tech,
+  };
 }
