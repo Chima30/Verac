@@ -100,3 +100,5 @@ holds no administrator key and cannot approve. The original vault and its passwo
 4. Each administrator signs on their own computer: download the signing request from Approvals, run
    `pnpm v2:admin sign <their key folder> <request file>`, check the payment it shows, type yes, and upload the signature file.
 5. A recipient must be approved on V2 by two administrators before it can be paid (the website cannot add one).
+6. Administrator keys are replaced, and recipients approved, with signing requests each administrator signs on their own
+   computer (`pnpm v2:admin-action prepare …`, `pnpm v2:admin sign …`, `pnpm v2:admin-action relay …`). See docs/RUNBOOK.md, section 2a.

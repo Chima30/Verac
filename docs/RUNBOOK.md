@@ -25,10 +25,30 @@ Pausing and revoking only reduce risk: none of them can move funds. A compromise
 | V1 approver (`APPROVER_*`) | Can approve, not pay; payments still need the agent and the caps | `owner-ops.ts set-approver` for a new key; remove the old one; update Vercel |
 | V1 owner (`.secrets/testnet-account.json`, never on the server) | Full control of V1 | Pause V1, move remaining QOR out, retire V1; V2 has no owner |
 | V2 agent (`V2_AGENT_*`) | Cannot pay at all without two administrators' ML-DSA-87 signatures | Guardian revoke; administrators set limits for a new agent |
-| One V2 administrator key | None alone (threshold 2 of 3) | The other two replace it with a RemoveAdmin and AddAdmin action |
+| One V2 administrator key | None alone (threshold 2 of 3) | Replace it (section 2a). The exposed key cannot stop the replacement |
 | Supabase service role key | Database rows, not funds: the chain enforces caps and approvals | Rotate it in Supabase, update Vercel, redeploy; review `audit_logs` |
 | `GEMINI_API_KEY` | AI quota and cost only; the AI has no payment tools | Rotate in Google AI Studio, update Vercel |
 | `CRON_SECRET` | Can trigger the daily grants monitor early | Rotate in Vercel |
+
+### 2a. Replacing a V2 administrator key (lost, exposed, or moving to a new device)
+
+Add the new key first, then remove the old one, so the vault never has fewer administrators than its threshold.
+Each step is signed by two administrators **on their own computers**; no computer ever holds two keys.
+
+1. **New administrator, on their own computer:** `pnpm v2:admin-key create <folder>`. It prints an EVM address
+   (to share) and a qor1… address. Send about 1 testnet QOR to the qor1… address for the fee, then
+   `pnpm v2:admin-key register <folder> --broadcast` registers the ML-DSA-87 key with proof of possession.
+   `pnpm v2:admin-key status <folder>` shows what the vault will see.
+2. **Anyone:** `pnpm v2:admin-action prepare add-admin <new 0x> --out add.json`. It refuses a key that is not
+   registered and proven, and refuses the agent or relayer key.
+3. **Two current administrators, each on their own computer:** `pnpm v2:admin sign <their folder> add.json`. The tool
+   decodes the change from the request itself ("Add administrator 0x…"), checks it against the live vault and asks for yes.
+4. **Whoever holds the relayer key:** `pnpm v2:admin-action relay add.json add.signature-*.json --broadcast`. It checks
+   every signature against the signer's registered key before sending; the vault checks again on chain.
+5. Repeat 2 to 4 with `remove-admin <old 0x>`. It refuses if that would leave fewer administrators than the threshold.
+
+Without `--broadcast` every step simulates against the live vault and sends nothing. A request is valid for 24 hours and
+only until any other administrative change is made (the admin nonce moves on).
 
 ## 3. The site is down or misbehaving
 
