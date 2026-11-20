@@ -1,0 +1,841 @@
+{
+  "checkedAt": "2026-11-20T12:16:01.414Z",
+  "evmRpc": "https://evm-testnet.qore.host",
+  "rpc": "https://rpc-testnet.qore.host",
+  "failures": 0,
+  "rows": [
+    {
+      "hash": "0x0048eff44d50f3b531ed5227f84768d42cca000063331c6317f2d5aba87827e9",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082417",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x03c0051338ad36bcc3226cb635f2591b3b26d17a8623d3f75e5809defb12bba7",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10394701",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x05e7c3faa29365753c310fec1a36a54bd9b7443bb046305255ea614b63f42e16",
+      "kind": "evm",
+      "result": "mined, reverted",
+      "detail": "block 10082180",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x1bd9aa176131f7486eca60e0291837f290f58f3f4995cd1fd6c1c9b8453000ac",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10141798",
+      "docs": [
+        "docs/LIVE_PAYMENT_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x3d7a64d19b630afc29949aac0500bc7e1812f810b9e4fea2a912b0636591fd5b",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082174",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x5007c5d6bbde27022f38958d4b6d1a7d78bf48d825e665be7ba04daeeb0a8dd6",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10202342",
+      "docs": [
+        "docs/LIVE_WORKFLOW_2026-11-16.md"
+      ]
+    },
+    {
+      "hash": "0x50dbd924b2a36bc5f77a5e55812bb83d9856120c218d1c5448af7c0789f63afd",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10393451",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x51daf2af7cc8e62916750b50645ffce27bfed9a523df09d2f68970b93d3b2a44",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10132874",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x5c6e8b53572356a3a40f0d5716d4909ff26039f2880b459a92d2c09c480686b5",
+      "kind": "evm",
+      "result": "not a transaction",
+      "detail": "TreasuryVault payment hash (the digest approvals sign), not a transaction; its approval and payment transactions are listed next to it",
+      "docs": [
+        "docs/LIVE_WORKFLOW_2026-11-16.md"
+      ]
+    },
+    {
+      "hash": "0x612aec1b93f27e8a6a6d7989a66bcf3ed0b907c9aa8d6a40e9f6bada64e27450",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082423",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x6a6211fb50920611cd64626fce1165ee9150984a356331ade54589c87bc69ed2",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082158",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x72e1325fb4225f1a3b567339bbf0073495364ee6e32f9a3a975485a594490591",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082155",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x7360e4fa4840be82234716d48233031ccf9b95547182afd51216d5b8a558181c",
+      "kind": "evm",
+      "result": "not a transaction",
+      "detail": "TreasuryVault payment hash (the digest approvals sign), not a transaction; its payment transaction is listed next to it",
+      "docs": [
+        "docs/LIVE_PAYMENT_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x75ac37df6b0f686616559ee4028ca51f101bc75d037d0066426b44fe984c0636",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10141804",
+      "docs": [
+        "docs/LIVE_PAYMENT_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x97c5e55df645681b3b01fe8e6d603c060da3e8b6f359258375fd20ae1b1e3562",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082161",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x99a053ab48231f5cc2b3178572cb09d5235e4c98d754bea4606bd5f30838359d",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10132770",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0xb0fddf24ad2a90524cb7b5a03da209e13e28cfc156c59351c8f33f45d6522119",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082414",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xb1dfefdba9bdfe010bd3f2a561084afbdc7461655a1592f5c30a2ae3b79c5d72",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082150",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xbeb8d5639e5b3fa9e811fd773988cf519b15243a094de535c4e0dc4ec688171e",
+      "kind": "evm",
+      "result": "mined, reverted",
+      "detail": "block 10082177",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xc58c67a3cb9c83b8d9d58240cc32d89b0cb45e33ca224c95a7acc7d75cdd691e",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10202336",
+      "docs": [
+        "docs/LIVE_WORKFLOW_2026-11-16.md"
+      ]
+    },
+    {
+      "hash": "0xc638e78c802f6eb9c456e333f5172f01b46523f56e305678c7c4fce54c2e65fe",
+      "kind": "evm",
+      "result": "mined, reverted",
+      "detail": "block 10082420",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xcdaa77d51577a2cb54d0aa6277ff4595139a77231e12b483120ea2e2a1a78440",
+      "kind": "evm",
+      "result": "mined, reverted",
+      "detail": "block 10082410",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xd2720eb7fd78893644ab89518f54b90fbf795e047aaf73af23a4d0ede90e6609",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10404324",
+      "docs": [
+        "docs/SECURITY_UPGRADE_AUDIT.md"
+      ]
+    },
+    {
+      "hash": "0xe4f370c707589f0e07deeeadc5fabb882faabd0a58a5695679ddfcc8a2c18d8a",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10082426",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "01FFA4EB67E7104C47442C4463D850ED95F813EBB779BC3674F93D776582E533",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10132766",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "070B298989C01145604163E3FCB3612EAFE32A6F0293AEB561DED701354CEDDE",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10132801",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0815A547507889ABA495967A70D5397367B4A6BF89D31867D4ED73F406E04649",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10082126",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0FB3FCB7B34E6F7805AD347A9FCCAFC3B6978D62FACE054F43E40E8FCE5D5BAD",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10132877",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "12E7BA994B9A1147EACE480C36A0D76FDA730B843B78B90E6B4EEA19304E4F15",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10081681",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "21AEAF9698F0C0CA03254708439C5ECEA8C7AE55BE5E877C33EB58FC2C13F3EA",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10081854",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "268BD3F41560BD4408D9528E6BB7F71263797E7CE7D015196071B8FE3F26807E",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10284265",
+      "docs": [
+        "docs/DEMO_SCRIPT.md",
+        "docs/QDAY_DRILL.md"
+      ]
+    },
+    {
+      "hash": "2ADDCECA30636840DB1E04F6EA77323E86A2D8ACD3AEF4806F509DD0F62C920C",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10222882",
+      "docs": [
+        "docs/QDAY_DRILL.md"
+      ]
+    },
+    {
+      "hash": "345038A843D778F5CF19BDB26202B15BB71D3BD2BFC396619401C175DA1B0CE6",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10082224",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "4FD30B565C5434EBAE36001A410D48898AE0FB485B3CA562127B50719993ED16",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10082078",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "6B55DA23C631B09CC9017C89DDE693C4B1279EF6FFE5A07EB6FE668BC3FBF78D",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10082115",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "6D3DE65D289DD9EB7ECC0D393913E088C8D7F7F9BE08CCD4638F4978CA7A203C",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10222912",
+      "docs": [
+        "docs/QDAY_DRILL.md"
+      ]
+    },
+    {
+      "hash": "9EA7D559EF3B857C678C2EDDD2FBBAEC125D8E9191437B9EE1F079EBA34CDA1E",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10082094",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "C3180406886C9ED7325F228679FE21B82E98ACFAC43057617A209C442A10E94B",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10132870",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "DF0770056DF9D618AE2F9517C4F3CF899901024029847D7015D0D4A32E2B9456",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10132773",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "E11E283A7F256347C3B31F4EA99F80B149C9DEF5133C870828D0228A1C6A6FCF",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10132823",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "EA0B3C4D4D5458F3DBDC8FD7F962903E5B387B3C8561D054CADEF452A4EC8F0D",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10082214",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "EC71DA808F2A50F9EA28C317E27EE848C05A7D56B84518B1D995E8C1C4F54699",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10222924",
+      "docs": [
+        "docs/QDAY_DRILL.md"
+      ]
+    },
+    {
+      "hash": "EFDCBBEEADDA81C4B6BF29E78451B036B30AC334DC32D7024B8AB213770C8E75",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10081546",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x03994ae3…7ed5",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x03994ae3562c2a4f8feb65a92ba8bb4306b35b1d89fe24fa6c96156362d57ed5",
+      "docs": [
+        "docs/DEMO_SCRIPT.md",
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x077ba1eb…994e",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x077ba1ebf2f5c00faf2f5ff67824ef7bf5bbeea938300e967063ba5e9156994e",
+      "docs": [
+        "docs/CATEGORY_COMPLIANCE.md"
+      ]
+    },
+    {
+      "hash": "0x0Bc2…Ed33",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x0bc2c79bec67e686eff84628f7a94661882ded33",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x0Db385bB…f91A",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x0db385bba0d24d47f1a73ede8df84face785f91a",
+      "docs": [
+        "docs/LIVE_PAYMENT_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x0Db3…f91A",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x0db385bba0d24d47f1a73ede8df84face785f91a",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x0cec555c…316c",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x0cec555ca6b1b2e0c4066d21bd9f16599d8b7c3b08df79112db725ea1588316c",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x1bd9aa17…00ac",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x1bd9aa176131f7486eca60e0291837f290f58f3f4995cd1fd6c1c9b8453000ac",
+      "docs": [
+        "docs/DEMO_SCRIPT.md"
+      ]
+    },
+    {
+      "hash": "0x200c…F5AF",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x200cad3c9de63d3613a33fc20b1ef31cb4dbf5af",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x2e2e0d6c…be0050",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x2e2e0d6c55042828c93f43bee146a35ffcf00f7925bad9f00a35558257be0050",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x3ccc7984…0fb9",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x3ccc7984587189a7e27389ff8258244ad3dd52ed9090fe9299f8548860030fb9",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x47a9fa6e…4a48",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x47a9fa6e82b7a0719dfcc0d6ffd3863819b318269789654f909b1ad950b64a48",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x484b…C6Df",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x484b045261ca8400615f80b8f078b5da72e7c6df",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x5007c5d6…8dd6",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x5007c5d6bbde27022f38958d4b6d1a7d78bf48d825e665be7ba04daeeb0a8dd6",
+      "docs": [
+        "docs/DEMO_CHECKLIST.md"
+      ]
+    },
+    {
+      "hash": "0x50dbd924…3afd",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x50dbd924b2a36bc5f77a5e55812bb83d9856120c218d1c5448af7c0789f63afd",
+      "docs": [
+        "docs/DEMO_SCRIPT.md"
+      ]
+    },
+    {
+      "hash": "0x589bc977…f302",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x589bc977a5160523d44187e6e883113e06a59b85089597149504f38b44b1f302",
+      "docs": [
+        "docs/QDAY_DRILL.md"
+      ]
+    },
+    {
+      "hash": "0x5B10…70F2",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x5b108321e824faf53aa198fcd1682a07a68970f2",
+      "docs": [
+        "docs/GRANTS_AUDIT.md",
+        "docs/SECURITY_UPGRADE_AUDIT.md"
+      ]
+    },
+    {
+      "hash": "0x6031e32f…091d",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x6031e32fc63a9b7e0a777e730a0b9f55ede3bafba82f4b54b79056007724091d",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x628d79bf…827b",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x628d79bf9faae844a8c7f1ce863d7ab2fc55276461f3391fe4ad105ba625827b",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x64D9…6FE9",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x64d9b87ffebee2723eee437a2d5365c479a26fe9",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x653ad20b…f990c",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x653ad20ba23e11005d64b6f90712a8dc257ad35fa1b6658cdf06fb3cba6f990c",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x6A73…815d",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x6a7354c2b61be31abf7c8cb02feb235054df815d",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x748240e0…ad3a",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x748240e0108ebd1b662467d15ccfc17163904d96f14b30f838fa2c69e09bad3a",
+      "docs": [
+        "docs/CATEGORY_COMPLIANCE.md"
+      ]
+    },
+    {
+      "hash": "0x75ac37df…0636",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x75ac37df6b0f686616559ee4028ca51f101bc75d037d0066426b44fe984c0636",
+      "docs": [
+        "docs/DEMO_SCRIPT.md"
+      ]
+    },
+    {
+      "hash": "0x7615…9dd7",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x7615dab4651b47f69f80305f89f39b211f829dd7",
+      "docs": [
+        "docs/LIVE_SETUP_2026-11-15.md",
+        "docs/LIVE_WORKFLOW_2026-11-16.md"
+      ]
+    },
+    {
+      "hash": "0x7631cd1d…b5d2",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x7631cd1d60432c1bbd24f3eabbe3dd9b824fffaf55f15bbbc5d992c5fd7bb5d2",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x79375c32…43f3",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x79375c327d471fe10f366d91a6345f269e66b199da69cc382406f333e67843f3",
+      "docs": [
+        "docs/QDAY_DRILL.md"
+      ]
+    },
+    {
+      "hash": "0x7db347d2…ca76",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x7db347d2d9a78e226e25b1f05e73766d00ee47430bcd73b78c1823b68372ca76",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x923b65ef…f517",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x923b65ef90a66c8601bd4b4bf544163d060243b3d2e37b8752cdb71c4814f517",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0x9e48b368…9a73",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x9e48b368bafa6c392db97ddfb16b495fd4159d32ce37ee3be9538b082b259a73",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xa38eebe4…d186",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xa38eebe4f97ac7ba54232d1883e7d1176a7f856039a9a1e7793ba6fcdb43d186",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xb875d941…b64f",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xb875d94186f1edd10e90ac9344444bec73479c4d674da250eb3e6692e52cb64f",
+      "docs": [
+        "docs/DEMO_SCRIPT.md",
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xb8b2f1e8…3058",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xb8b2f1e877b9061c32010aefab756ac332f9ccc30cdaa9c397f873619fba3058",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xbb76d5d9…5781",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xbb76d5d9ea4e24b34e82ab73148b507940a00e9375d9cbc9d4574ba346745781",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xbeb8d563…171e",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xbeb8d5639e5b3fa9e811fd773988cf519b15243a094de535c4e0dc4ec688171e",
+      "docs": [
+        "docs/CATEGORY_COMPLIANCE.md"
+      ]
+    },
+    {
+      "hash": "0xc55f62c4…2df6a",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xc55f62c4b2c2a639c6f657fd925f74eb0302c11427b4227e9bf07b99cf72df6a",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xc9eb7628…3286",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xc9eb76289acc2c5ee73b0eeb5a7fbe30312e880bece54b9729c009159a7f3286",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xcec963e9…54ffa",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xcec963e97df2ba586b6d526df015055065e3b17bbd0a7e07bf9681bd07a54ffa",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xd0f6da54…c7e7",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xd0f6da5421f20e0e4844b793295e6a9ed60bc8936f0433e9f74e73886fd1c7e7",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xd2720eb7…6609",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xd2720eb7fd78893644ab89518f54b90fbf795e047aaf73af23a4d0ede90e6609",
+      "docs": [
+        "docs/DEMO_SCRIPT.md"
+      ]
+    },
+    {
+      "hash": "0xd42C…C336",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xd42c50139486a6ba177d0d37fd20135ae1f5c336",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xd5e81b73…f2ce6",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xd5e81b731eed71215dd6f49ef9cc5246d3687309b8f34572ddf042c71e5f2ce6",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xd952ac09…1d3d7",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xd952ac091354163ddcec9b62a4a77b8bb6a33ab86102e84930c11886afb1d3d7",
+      "docs": [
+        "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xd995…F0Df",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xd995513527951c6c48c561f313f2a0e3ac5ff0df",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xdd20af94…72b1",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xdd20af94dabe92ddc0ed7151256a6e3121563063740a435c0c7b64abe8f172b1",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xddafd910…d7b9",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xddafd9106f0816eed2acda35741276a8589d55dffe43210514072e824a06d7b9",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xe595ffda…2e2b",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xe595ffdabfc8e543a986721665ea16cc78435d9991c2811b807db6f204f82e2b",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xed0311d9…1b1c",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xed0311d9d9b9b3a3a9f5087faee66333255fab12fa1b39e4b68acb9ad53f1b1c",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xf25f2bdd…8e62f",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xf25f2bddd7af5a4058c948b3e5fcc4762e0ffa241caecb48b7f08d8856f8e62f",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
+      "hash": "0xf2fecdd5…ca5a",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xf2fecdd5eed98b33ea0bc22376a52bad8cb5b2c22695db142525db2235d2ca5a",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+name: Proof
+
+# Re-reads every transaction quoted in docs/ from Diana testnet: full hashes must be on chain with the outcome the docs
+# state (reverted where the docs say "reverted" or "refused"), and every shortened hash must match one recorded hash.
+# Read-only: sends nothing and needs no secrets. Weekly, on doc changes, and on demand.
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  push:
+    paths: ["docs/**", "deployments/**", "scripts/verify-doc-hashes.mts", ".github/workflows/proof.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hashes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check every quoted transaction on Diana
+        run: pnpm proof:check
