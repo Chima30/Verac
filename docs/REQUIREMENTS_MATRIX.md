@@ -17,7 +17,7 @@ been deployed to the testnet yet.
 | Authenticated agent messaging | ✅ | `messaging.ts`, 6 tests |
 | ML-DSA-87 key registered, hybrid-signed native tx | ⬜ 🔒 | needs funded throwaway account |
 | Q-Day drill (optional, register by 2026-11-17 23:59 UTC) | ⬜ 🔒 | needs account + ECDSA key handed to organisers |
-| `AI_USAGE.md` (special award) | ✅ draft | `docs/AI_USAGE.md` |
+| `AI_USAGE.md` (special award) | ✅ | `AI_USAGE.md` (repository root) |
 
 > Updated 2026-11-16: the category requirements are tracked requirement by requirement, with evidence status, in [CATEGORY_COMPLIANCE.md](CATEGORY_COMPLIANCE.md). That file supersedes the category rows below where they differ.
 

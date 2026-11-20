@@ -209,4 +209,4 @@ The verified website payment is one answer. Connecting invoices, milestones, pro
 
 ## Credits and licence
 
-[MIT licensed](LICENSE). Built with OpenZeppelin Contracts, Foundry/forge-std, viem, Zod, `@qorechain/sdk`, `@qorechain/qoreseal`, `@google/genai` and PGlite. The development process and AI-assisted work are documented in [AI Usage](docs/AI_USAGE.md).
+[MIT licensed](LICENSE). Built with OpenZeppelin Contracts, Foundry/forge-std, viem, Zod, `@qorechain/sdk`, `@qorechain/qoreseal`, `@google/genai` and PGlite. The development process and AI-assisted work are documented in [AI Usage](AI_USAGE.md).
