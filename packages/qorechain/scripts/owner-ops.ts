@@ -3,7 +3,7 @@
  * .secrets/testnet-account.json (never printed). DRY RUN BY DEFAULT: it simulates the call against the chain and prints
  * exactly what would be sent. Add --broadcast to send.
  *
- *   tsx owner-ops.ts set-agent-limits [--broadcast]       perTx 10 QOR, daily 20 QOR, no auto-approval, valid 7 days
+ *   tsx owner-ops.ts set-agent-limits [--days N] [--broadcast]   perTx 10 QOR, daily 20 QOR, no auto-approval, valid N days (default 7, max 30)
  *   tsx owner-ops.ts set-approver <0x address> [--broadcast]
  *
  * To send, it opens a SHORT EVM window that admits only the vault (120 blocks, 3 txs, 2 QOR cap), sends the one call,
@@ -42,7 +42,10 @@ if (owner.toLowerCase() !== account.address.toLowerCase()) throw new Error(`This
 let data: Hex, label: string, check: () => Promise<string>;
 if (cmd === "set-agent-limits") {
   const agent = getAddress(process.env.AGENT ?? "0x7615DAb4651b47f69F80305f89F39B211F829dd7");
-  const validUntil = BigInt(Math.floor(Date.now() / 1000) + 7 * 86_400);
+  const di = rest.indexOf("--days");
+  const days = di >= 0 ? Number(rest[di + 1]) : 7;
+  if (!Number.isInteger(days) || days < 1 || days > 30) throw new Error("--days must be a whole number from 1 to 30");
+  const validUntil = BigInt(Math.floor(Date.now() / 1000) + days * 86_400);
   const args = [agent, NATIVE, 10n * E18, 20n * E18, 0n, validUntil] as const;
   data = encodeFunctionData({ abi: treasuryVaultAbi, functionName: "setAgentLimits", args });
   label = `TreasuryVault.setAgentLimits(agent ${agent}, token native QOR, perTxCap 10 QOR, dailyCap 20 QOR, autoApproveCap 0, validUntil ${new Date(Number(validUntil) * 1000).toISOString()})`;

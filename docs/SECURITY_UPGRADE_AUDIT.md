@@ -27,6 +27,8 @@ row, relay an on-chain approval and execute. What still stops it (read on chain)
 * `perTxCap` 10 QOR, `dailyCap` 20 QOR for the agent; the vault holds 7.75 QOR.
 * The agent's rights expire on chain at **2026-11-22 12:01 UTC** (`validUntil` 1795348892), after which no payment runs
   until the owner renews them. This also stops the website's own payment path before the 2 December deadline.
+  **Renewed on 2026-11-20** with the same caps (10 QOR per payment, 20 per day, no auto-approval) until 2026-12-06:
+  `0xd2720eb7fd78893644ab89518f54b90fbf795e047aaf73af23a4d0ede90e6609` (block 10404324), `owner-ops.ts set-agent-limits --days 16`.
 
 So the evaluation is right that human approval is not independent of the server, and slightly overstated in impact:
 a compromised server can pay **approved recipients only, within the caps**. It can also spend the agent's and approver's
