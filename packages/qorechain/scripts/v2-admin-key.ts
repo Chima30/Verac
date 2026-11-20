@@ -5,20 +5,24 @@
  *   tsx v2-admin-key.ts create <folder>                 new EVM key + ML-DSA-87 key (with a recovery code) in <folder>
  *   tsx v2-admin-key.ts status <folder>                 balance and registration state on QoreChain
  *   tsx v2-admin-key.ts register <folder> [--broadcast] registers the ML-DSA-87 key with proof of possession
+ *   tsx v2-admin-key.ts fund <folder> [--broadcast]     testnet convenience: sends 1 QOR for the fee from the throwaway
+ *                                                       category-proof account (.secrets/category-proof-account.json)
  *
  * After registering, the existing administrators add it and then remove the key it replaces:
  *   v2-admin-action.ts prepare add-admin <new 0x> → each signs with v2-admin.ts → v2-admin-action.ts relay … --broadcast
  *   v2-admin-action.ts prepare remove-admin <old 0x> → the same
  * Registration costs a small native fee: fund the account's qor1… address with about 1 testnet QOR first.
  */
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { msg, unifiedAccountFromSeed, type UnifiedAccount } from "@qorechain/sdk";
 import { parseAbi } from "viem";
 import { QoreReader } from "../src/index";
-import { LocalAccount, assertDiana, pqcRegistered, registerPqc, uqorBalance } from "./lib/accounts";
+import { LocalAccount, assertDiana, broadcastNative, pqcRegistered, registerPqc, uqorBalance } from "./lib/accounts";
 
 const [cmd, folder, ...rest] = process.argv.slice(2);
-if (!["create", "status", "register"].includes(cmd ?? "") || !folder) { console.error("usage: v2-admin-key.ts create|status|register <folder> [--broadcast]"); process.exit(2); }
+if (!["create", "status", "register", "fund"].includes(cmd ?? "") || !folder) { console.error("usage: v2-admin-key.ts create|status|register|fund <folder> [--broadcast]"); process.exit(2); }
 const dir = resolve(process.cwd(), folder);
 const die = (m: string): never => { console.error(`REFUSED: ${m}`); process.exit(1); };
 
@@ -44,6 +48,21 @@ const status = async () => {
 const s = await status();
 console.log(`${a.pub.evmAddress} (${a.pub.qorAddress})\n  balance ${Number(s.bal) / 1e6} QOR\n  ML-DSA-87 key: ${s.reg.found ? `registered, possession ${s.reg.proven ? "proven" : "NOT proven"}, ${s.reg.pub === a.pub.mlDsa87PublicKey ? "matches this folder" : "DIFFERENT from this folder"}` : "not registered"}\n  as the vault sees it (precompile 0x…0a02): registered ${s.precompile.registered}, proven ${s.precompile.proven}, matches ${s.precompile.matches}`);
 if (cmd === "status") process.exit(0);
+
+if (cmd === "fund") {
+  if (s.bal >= 500_000n) { console.log("Already funded for the registration fee. Nothing to do."); process.exit(0); }
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+  const f = JSON.parse(readFileSync(resolve(root, ".secrets/category-proof-account.json"), "utf8")) as { qorAddress: string; secp256k1PrivateKey: string; mlDsa87PublicKey: string; mlDsa87SecretKey: string };
+  const unhex = (h: string) => Uint8Array.from(Buffer.from(h.replace(/^0x/, ""), "hex"));
+  const funder: UnifiedAccount = { ...unifiedAccountFromSeed(unhex(f.secp256k1PrivateKey), { pqcSecret: crypto.getRandomValues(new Uint8Array(32)) }), pqc: { publicKey: unhex(f.mlDsa87PublicKey), secretKey: unhex(f.mlDsa87SecretKey) } };
+  if (funder.cosmos !== f.qorAddress) die("funder key mismatch");
+  console.log(`${rest.includes("--broadcast") ? "BROADCAST" : "DRY RUN"}  send 1 testnet QOR from ${funder.cosmos} (category-proof account, balance ${Number(await uqorBalance(funder.cosmos)) / 1e6} QOR) to ${a.pub.qorAddress}`);
+  if (!rest.includes("--broadcast")) { console.log("Nothing was sent. Re-run with --broadcast."); process.exit(0); }
+  const r = await broadcastNative(funder, "hybrid", [msg.bank.send({ fromAddress: funder.cosmos, toAddress: a.pub.qorAddress, amount: [{ denom: "uqor", amount: "1000000" }] })], 300_000);
+  if (r.code !== 0) die(`funding failed: ${r.rawLog}`);
+  console.log(`funded: ${r.hash} (height ${r.height}); balance now ${Number(await uqorBalance(a.pub.qorAddress)) / 1e6} QOR`);
+  process.exit(0);
+}
 
 if (s.reg.found) {
   if (s.reg.pub !== a.pub.mlDsa87PublicKey || !s.reg.proven) die("a different or unproven key is registered for this account; use a new folder");

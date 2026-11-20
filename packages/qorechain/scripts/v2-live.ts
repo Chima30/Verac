@@ -1,4 +1,7 @@
 /**
+ * HISTORICAL RECORD of the 2026-11-19 run. admin-3 was replaced by admin-4 on 2026-11-20 (docs/RUNBOOK.md 2a), so
+ * running this again as it is would be refused by the vault. Kept unchanged so the published results can be traced.
+ *
  * Live active-attack test of TreasuryVault V2 on Diana testnet (the isolated environment from v2-setup.ts).
  * A legitimate payment succeeds while an attacker who holds EVERYTHING the application server holds (the agent key,
  * the relayer key, their ML-DSA keys, the database) tries to move money without the administrators.

@@ -18,7 +18,9 @@
     "admin: agent limits 1 QOR/payment, 2 QOR/day (2 of 3 signed)": "0x7db347d2d9a78e226e25b1f05e73766d00ee47430bcd73b78c1823b68372ca76",
     "admin: guardian = relayer (2 of 3 signed)": "0xf25f2bddd7af5a4058c948b3e5fcc4762e0ffa241caecb48b7f08d8856f8e62f",
     "fund vault 5 QOR": "0x1324fa7d59058bf175cc80baac973d7fc0b6d83167a6f83665b32d4a5c566173",
-    "relayer window close": "1CEADB72E9A1BD6D156894665E685A08496632EBEE3DBF47D2FD1FE912FE80BA"
+    "relayer window close": "1CEADB72E9A1BD6D156894665E685A08496632EBEE3DBF47D2FD1FE912FE80BA",
+    "fund admin-4": "E5E6EA98825BB4DFB0ED26126E901A7995A444DEE4E1E4AE1EC6F645E6CC7CB0",
+    "register pqc admin-4": "048CC2B38F098CC8B7A4EBE80CF1B9C04B12343C0BB2A1460CED792B87F8CEA3"
   },
   "accounts": {
     "admin-1": {
@@ -47,7 +49,7 @@
   "artifactSourceSha256": "47d21b393bcd4d5eb9c07e7aca5d721c92a67d5c03fcea11166c3647e5d4be86",
   "admins": [
     "0x0Bc2c79BEc67e686Eff84628F7A94661882Ded33",
-    "0x6A7354c2b61Be31abF7C8CB02feB235054df815d",
+    "0x02fF1D197E6be923231829E67e7C26e3A41a4e9f",
     "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
   ],
   "threshold": 2,
@@ -73,6 +75,42 @@
       "status": "success",
       "windowClose": "B7F22521505DA63DDF3BDCA5FA0E0A85103C16880AC0671957B33690DE33F7F8",
       "approvedRecipientAfter": true
+    },
+    {
+      "action": "Add administrator 0x02fF1D197E6be923231829E67e7C26e3A41a4e9f",
+      "at": "2026-11-20T12:54:09.926Z",
+      "adminNonce": "6",
+      "signers": [
+        "0x0Bc2c79BEc67e686Eff84628F7A94661882Ded33",
+        "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
+      ],
+      "windowOpen": "B3807C4A42D3328FE62E051A78C857557CCFBE6A7E360484D16A9577ACCAE57F",
+      "tx": "0x5577ec7deca44491f6afadc03c61b5287389c8f68592304e6a3c08e457b55ecb",
+      "block": "10433877",
+      "status": "success",
+      "windowClose": "87A5A0A42B14E64D6DF258E848F0B676B1EA7C40FC50E790F83B22D9069349B9",
+      "isAdminAfter": true
+    },
+    {
+      "action": "Remove administrator 0x6A7354c2b61Be31abF7C8CB02feB235054df815d",
+      "at": "2026-11-20T12:55:40.597Z",
+      "adminNonce": "7",
+      "signers": [
+        "0x02fF1D197E6be923231829E67e7C26e3A41a4e9f",
+        "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
+      ],
+      "windowOpen": "E6784798D40007CB8837FFDA00FE02A354F13153FA2240332EE5C33E2D33C4B5",
+      "tx": "0x4a3e51b7ad6a02d69af37e00c61da54ed1828a647cd440b74527c25e0610012d",
+      "block": "10433938",
+      "status": "success",
+      "windowClose": "764FD5CFD104EBBE12DE80F9AA734400DD5B7EEE41CE1FD850B9F141CAC5EA85",
+      "isAdminAfter": false
     }
-  ]
+  ],
+  "adminsAtDeployment": [
+    "0x0Bc2c79BEc67e686Eff84628F7A94661882Ded33",
+    "0x6A7354c2b61Be31abF7C8CB02feB235054df815d",
+    "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
+  ],
+  "adminsNote": "admin-3 (0x6A73\u2026815d) replaced by admin-4 (0x02fF\u20264e9f) on 2026-11-20; see adminActions and docs/V2_LIVE_2026-11-19.md"
 }

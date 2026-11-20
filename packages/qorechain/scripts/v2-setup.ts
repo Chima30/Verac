@@ -1,4 +1,7 @@
 /**
+ * HISTORICAL RECORD of the 2026-11-19 run. admin-3 was replaced by admin-4 on 2026-11-20 (docs/RUNBOOK.md 2a), so
+ * running this again as it is would be refused by the vault. Kept unchanged so the published results can be traced.
+ *
  * Sets up an ISOLATED TreasuryVault V2 environment on Diana testnet. It shares no key or contract with Verac's existing
  * treasury, which is not touched.
  *

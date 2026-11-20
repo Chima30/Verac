@@ -10,7 +10,7 @@
  *   tsx v2-admin-action.ts relay add.json add.signature-*.json [--broadcast]   anyone holding the relayer key
  *
  * All keys on this computer (testnet convenience):
- *   tsx v2-admin-action.ts add-admin 0xNEW [--signers admin-1,admin-3] [--broadcast]
+ *   tsx v2-admin-action.ts add-admin 0xNEW [--signers admin-1,admin-2] [--broadcast]
  *
  * Replacing a lost or exposed administrator key: add the new one first, then remove the old one (two changes, so the
  * vault never drops below its threshold). The new key must already be registered on QoreChain with proof of possession

@@ -74,7 +74,7 @@ catch (e) { const m = String((e as { stderr?: string }).stderr ?? e); step("tamp
 
 // ---- two administrators sign with the real tool
 const sigs: V2AdminSig[] = [];
-for (const name of ["admin-1", "admin-3"]) {
+for (const name of ["admin-1", "admin-4"]) { // admin-3 was replaced by admin-4 on 2026-11-20
   const out = tool(resolve(root, `.secrets/v2/${name}`), reqFile);
   const file = /Upload this file in Verac \(Approvals\): (.+)/.exec(out)?.[1]?.trim();
   if (!file) throw new Error(`signing tool gave no file for ${name}: ${out}`);

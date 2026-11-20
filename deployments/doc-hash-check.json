@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-20T12:16:01.414Z",
+  "checkedAt": "2026-11-20T12:57:36.743Z",
   "evmRpc": "https://evm-testnet.qore.host",
   "rpc": "https://rpc-testnet.qore.host",
   "failures": 0,
@@ -50,6 +50,15 @@
       ]
     },
     {
+      "hash": "0x4a3e51b7ad6a02d69af37e00c61da54ed1828a647cd440b74527c25e0610012d",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10433938",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
       "hash": "0x5007c5d6bbde27022f38958d4b6d1a7d78bf48d825e665be7ba04daeeb0a8dd6",
       "kind": "evm",
       "result": "mined, succeeded",
@@ -74,6 +83,15 @@
       "detail": "block 10132874",
       "docs": [
         "docs/LIVE_SETUP_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x5577ec7deca44491f6afadc03c61b5287389c8f68592304e6a3c08e457b55ecb",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10433877",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
       ]
     },
     {
@@ -230,6 +248,15 @@
       ]
     },
     {
+      "hash": "048CC2B38F098CC8B7A4EBE80CF1B9C04B12343C0BB2A1460CED792B87F8CEA3",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10433813",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
       "hash": "070B298989C01145604163E3FCB3612EAFE32A6F0293AEB561DED701354CEDDE",
       "kind": "native",
       "result": "included, code 0",
@@ -366,6 +393,15 @@
       ]
     },
     {
+      "hash": "E5E6EA98825BB4DFB0ED26126E901A7995A444DEE4E1E4AE1EC6F645E6CC7CB0",
+      "kind": "native",
+      "result": "included, code 0",
+      "detail": "height 10433799",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
+      ]
+    },
+    {
       "hash": "EA0B3C4D4D5458F3DBDC8FD7F962903E5B387B3C8561D054CADEF452A4EC8F0D",
       "kind": "native",
       "result": "included, code 0",
@@ -390,6 +426,15 @@
       "detail": "height 10081546",
       "docs": [
         "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0x02fF…4e9f",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x02ff1d197e6be923231829e67e7c26e3a41a4e9f",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
       ]
     },
     {
