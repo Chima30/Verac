@@ -206,14 +206,15 @@ tbody tr:hover { background-color: color-mix(in srgb, var(--surface-2) 60%, tran
 @keyframes shimmer { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }
 /* Page entrance: the header, banner, figures and content rise into place one after another, once per visit. */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.motion-page > * { animation: rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+/* "backwards", not "both": once finished the element keeps no transform, so fixed overlays inside a page stay fixed to the screen. */
+.motion-page > * { animation: rise 420ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 .motion-page > *:nth-child(2) { animation-delay: 50ms; }
 .motion-page > *:nth-child(3) { animation-delay: 100ms; }
 .motion-page > *:nth-child(4) { animation-delay: 150ms; }
 .motion-page > *:nth-child(5) { animation-delay: 200ms; }
 .motion-page > *:nth-child(n+6) { animation-delay: 240ms; }
 /* Figures in a tile row arrive one after another. */
-.stagger > * { animation: rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stagger > * { animation: rise 420ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 .stagger > *:nth-child(2) { animation-delay: 60ms; }
 .stagger > *:nth-child(3) { animation-delay: 120ms; }
 .stagger > *:nth-child(n+4) { animation-delay: 180ms; }
@@ -233,7 +234,7 @@ dialog.panel::backdrop { background: rgb(0 0 0 / 0.4); animation: scrim-in 200ms
 /* Proof stamp: the tick draws itself once, so "confirmed on chain" reads as earned. */
 @keyframes draw { to { stroke-dashoffset: 0; } }
 .stamp-tick { stroke-dasharray: 14; stroke-dashoffset: 14; animation: draw 520ms 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-[role="status"]:not(.no-reveal), [role="alert"] { animation: reveal 180ms cubic-bezier(0.2, 0, 0, 1) both; }
+[role="status"]:not(.no-reveal), [role="alert"] { animation: reveal 180ms cubic-bezier(0.2, 0, 0, 1) backwards; }
 .motion-scrim { animation: scrim-in 140ms ease-out both; }
 .motion-drawer { animation: drawer-in 180ms cubic-bezier(0.2, 0, 0, 1) both; }
 .motion-pop { animation: pop-in 140ms cubic-bezier(0.2, 0, 0, 1) both; }

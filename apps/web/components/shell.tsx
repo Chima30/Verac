@@ -275,7 +275,7 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
             </div>
           </div>
         </header>
-        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[105rem] px-4 pb-16 pt-7 sm:px-6 sm:pt-9 lg:px-10 2xl:px-14">
+        <main id="main" key={path} className="motion-page relative mx-auto w-full max-w-[105rem] px-4 pb-16 pt-7 sm:px-6 sm:pt-9 lg:px-10 2xl:px-14">
           {org?.role === "auditor" && (
             <p role="note" className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[4px] bg-[var(--tint-sky)] px-4 py-3 text-[14px] text-[var(--tint-ink)]">
               <span className="label-mono">Read-only</span><span>You are signed in as a reviewer. Open anything; the database refuses every change, so nothing here can be altered or paid.</span>

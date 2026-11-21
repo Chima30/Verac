@@ -206,7 +206,7 @@ export function Workforce({ agents, tasks, rules, aiOn, signedIn }: { agents: Ag
       {sheet && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={`${a.id} details`}>
           <button type="button" tabIndex={-1} aria-label="Close" onClick={() => setSheet(false)} className="motion-scrim absolute inset-0 bg-black/45" />
-          <div ref={detailRef} className="motion-pop scroll-quiet absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-xl border-t border-line bg-surface p-5 shadow-overlay">
+          <div ref={detailRef} className="motion-pop scroll-quiet absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-[4px] border-t border-line bg-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <Detail a={a} tasks={tasks} rules={rules} aiOn={aiOn} onClose={() => setSheet(false)} />
           </div>
         </div>
