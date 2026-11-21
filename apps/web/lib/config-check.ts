@@ -4,7 +4,7 @@
  * Nothing here returns or logs a value.
  */
 
-type Shape = "url" | "jwt" | "hex32" | "mldsa87Public" | "mldsa87Secret" | "address" | "bool" | "text";
+type Shape = "url" | "jwt" | "hex32" | "mldsa87Public" | "mldsa87Secret" | "address" | "bool" | "text" | "uuid";
 interface Setting { name: string; shape: Shape; note?: string }
 interface Group { id: string; label: string; required: boolean; settings: Setting[]; enabledBy?: string }
 
@@ -26,7 +26,7 @@ export const GROUPS: Group[] = [
   ] },
   { id: "cron", label: "Scheduled jobs", required: false, settings: [{ name: "CRON_SECRET", shape: "text", note: "Vercel sends it to /api/cron/*" }] },
   { id: "github", label: "GitHub evidence (higher rate limit)", required: false, settings: [{ name: "GITHUB_TOKEN", shape: "text" }] },
-  { id: "judge", label: "Read-only judge account", required: false, settings: [{ name: "JUDGE_EMAIL", shape: "text" }, { name: "JUDGE_PASSWORD", shape: "text", note: "an auditor in the demo organisation; see docs/JUDGE_ACCOUNT.md" }] },
+  { id: "demo", label: "Read-only demo for visitors", required: false, settings: [{ name: "DEMO_ORG_ID", shape: "uuid", note: "visitors who sign in can join this organisation as read-only auditors; see docs/JUDGE_ACCOUNT.md" }] },
 ];
 
 const hexLen = (v: string, bytes: number) => new RegExp(`^(0x)?[0-9a-fA-F]{${bytes * 2}}$`).test(v);
@@ -41,6 +41,7 @@ const CHECK: Record<Shape, (v: string) => boolean> = {
   address: (v) => /^0x[0-9a-fA-F]{40}$/.test(v),
   bool: (v) => v === "true" || v === "false",
   text: (v) => v.length >= 8,
+  uuid: (v) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v),
 };
 
 export type SettingState = "set" | "missing" | "malformed";

@@ -26,11 +26,33 @@ async function createOrganisation(formData: FormData) {
   redirect("/settings/organization");
 }
 
+/**
+ * Joins the demo organisation (DEMO_ORG_ID) as a read-only auditor, so anyone (a hackathon judge, for example) can sign
+ * in with their own email and explore real records. Auditors read what administrators read; the database refuses every
+ * change they attempt (migration 0023, tests/security/auditor-read.test.ts). The membership is added by the server, never
+ * by the browser, and only ever with the auditor role.
+ */
+async function joinDemo() {
+  "use server";
+  const demo = process.env.DEMO_ORG_ID?.trim();
+  if (!demo || !/^[0-9a-f-]{36}$/i.test(demo)) redirect("/onboarding?error=" + encodeURIComponent("The demo organisation is not set up on this server."));
+  const sb = await supabaseServer();
+  if (!sb) redirect("/login");
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth.user) redirect("/login?next=/onboarding");
+  const { serviceClient } = await import("@/lib/live/service");
+  const svc = serviceClient();
+  const { error } = await svc.from("memberships").upsert({ organization_id: demo, user_id: auth.user.id, role: "auditor", status: "active" }, { onConflict: "organization_id,user_id,role", ignoreDuplicates: true });
+  if (error) redirect("/onboarding?error=" + encodeURIComponent(`Could not join the demo: ${error.message}`));
+  redirect("/dashboard");
+}
+
 export default async function Onboarding({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const s = await getSession();
   if (!s.configured || !s.user) redirect("/login");
   if (s.org) redirect("/settings/organization");
   const { error } = await searchParams;
+  const demoReady = !!process.env.DEMO_ORG_ID?.trim();
   return (
     <>
       <PageHeader title="Set up Verac" eyebrow="Welcome"
@@ -48,6 +70,15 @@ export default async function Onboarding({ searchParams }: { searchParams: Promi
           ]} />
         </Card>
         <div className="min-w-0 space-y-6">
+          {demoReady && (
+            <form action={joinDemo} className="flex flex-col gap-4 rounded-[4px] bg-[var(--band)] p-6 text-white sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="label-mono flex items-center gap-2 text-[var(--accent)]"><span aria-hidden className="inline-block h-[2px] w-3 bg-[var(--accent)]" />Just exploring, or judging?</p>
+                <p className="mt-3 max-w-xl text-[20px] font-medium leading-[1.25] tracking-[-0.015em]">Explore the demo organisation, read-only. Real agent runs, grant reports and payments: look at everything, change nothing.</p>
+              </div>
+              <button className="inline-flex min-h-9 shrink-0 items-center justify-center rounded-[4px] bg-white px-4 py-2 font-mono text-[13px] font-medium uppercase text-black">Explore the demo</button>
+            </form>
+          )}
           <Card title="Create an organisation" description="An organisation owns treasuries, policies, agents and records. You become its owner. Row-level security keeps every row separate from other organisations.">
             <form action={createOrganisation} className="max-w-md space-y-4">
               <div><label htmlFor="name" className={labelCls}>Organisation name</label>
