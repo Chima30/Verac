@@ -1,4 +1,4 @@
-import { Activity, Atom, BadgeCheck, Banknote, Boxes, Building2, ClipboardCheck, FileLock2, Flag, FlaskConical, Gauge, Gavel, HandCoins, KeyRound, Landmark, ListChecks, Plug, Receipt, ScanSearch, ScrollText, ShieldAlert, TrendingUp, Users, Vote, Wallet, Waypoints, Bot, type LucideIcon } from "lucide-react";
+import { Activity, Atom, Compass, BadgeCheck, Banknote, Boxes, Building2, ClipboardCheck, FileLock2, Flag, FlaskConical, Gauge, Gavel, HandCoins, KeyRound, Landmark, ListChecks, Plug, Receipt, ScanSearch, ScrollText, ShieldAlert, TrendingUp, Users, Vote, Wallet, Waypoints, Bot, type LucideIcon } from "lucide-react";
 
 export type Tile = "blue" | "green" | "teal" | "violet" | "orange" | "pink" | "amber" | "red" | "slate";
 export interface NavItem { href: string; label: string; icon: LucideIcon; keywords?: string; tile?: Tile }
@@ -9,6 +9,7 @@ export const LABS = "Labs";
 
 export const NAV: NavSection[] = [
   { title: "Overview", items: [
+    { href: "/start", label: "Start here", icon: Compass, keywords: "tour introduction demo judges how it works guided" },
     { href: "/dashboard", label: "Dashboard", icon: Gauge, keywords: "home overview command centre" },
     { href: "/command-center", label: "AI Command Center", icon: Bot, keywords: "agents ai gemini workforce" },
     { href: "/tasks", label: "Tasks", icon: ListChecks, keywords: "work items agent tasks" },

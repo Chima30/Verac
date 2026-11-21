@@ -4,7 +4,7 @@
 
 **AI agents that do a DAO's treasury work, without unrestricted access to its funds.**
 
-**[Open Verac](https://verac-web.vercel.app/dashboard)** · Build Before Q-Day · Post-Quantum AI Agents · QoreChain Diana testnet (EVM chain ID `9800`)
+**[Start here: three one-minute tours, no account needed](https://verac-web.vercel.app/start)** · [Open Verac](https://verac-web.vercel.app/dashboard) · Build Before Q-Day · Post-Quantum AI Agents · QoreChain Diana testnet (EVM chain ID `9800`)
 
 Paying a contractor should be simple. In a DAO it rarely is: someone has to check the invoice, confirm the work was
 approved, make sure the payout address is right, check the treasury, and get the right people to sign off. Grants are
@@ -15,6 +15,8 @@ never be enough to move an organisation's money.
 
 I built Verac to show that AI agents can do the real checking work while people, and the chain, keep control of the
 money. **The agents investigate and prepare. People decide, with keys the server never sees. QoreChain enforces the limits.**
+
+<p align="center"><img src="docs/architecture.svg" alt="Verac architecture: an instruction goes to six agents and fixed rules inside the Verac server, which holds no administrator key; two administrators sign with post-quantum keys on their own devices; QoreChain enforces signatures, caps and vault-only windows; every result is a receipt on Live Proof." width="460"></p>
 
 ## What runs today
 

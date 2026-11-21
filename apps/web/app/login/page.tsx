@@ -54,7 +54,7 @@ function LoginForm() {
       <div className="rounded-2xl border border-[#d6d6d6] bg-white p-7 ">
         <h2 className="text-[20px] font-bold tracking-[-0.02em]">Sign-in is not configured</h2>
         <p className="mt-2 text-[14.5px] leading-relaxed text-muted">This deployment has no Supabase project connected, so there are no accounts yet. Every read-only page still works.</p>
-        <Link href="/dashboard" className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary text-[15px] font-semibold text-primary-ink hover:bg-primary-hover">Open the dashboard<ArrowRight size={16} aria-hidden /></Link>
+        <Link href="/dashboard" className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[4px] bg-primary font-mono text-[13px] font-medium uppercase text-primary-ink">Open the dashboard<ArrowRight size={16} aria-hidden /></Link>
       </div>
     );
   }
@@ -131,7 +131,7 @@ export default function LoginPage() {
         </span>
         <nav aria-label="Public pages" className="flex items-center gap-1 text-[14px] font-medium">
           <Link href="/proof" className="hidden rounded-md px-3 py-2 text-muted hover:text-ink sm:inline-block">Live Proof</Link>
-          <Link href="/dashboard" className="rounded-md px-3 py-2 text-muted hover:text-ink">Explore read-only</Link>
+          <Link href="/start" className="rounded-md px-3 py-2 text-muted hover:text-ink">Start here</Link>
         </nav>
       </header>
 
@@ -150,7 +150,7 @@ export default function LoginPage() {
 
         <section aria-label="Sign in" className="w-full lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
           <Suspense><LoginForm /></Suspense>
-          <p className="mt-5 text-center text-[13.5px] text-muted">Just looking? <Link href="/dashboard" className="font-semibold text-ink underline decoration-[#c9c9cf] underline-offset-4 hover:decoration-ink">Continue without signing in</Link></p>
+          <p className="mt-5 text-center text-[13.5px] text-muted">Just looking? <Link href="/start" className="font-semibold text-ink underline decoration-[#c9c9cf] underline-offset-4 hover:decoration-ink">Take the three one-minute tours</Link></p>
         </section>
         <ul aria-label="How Verac keeps control" className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3 lg:col-start-1 lg:row-start-2 lg:self-start">
           {FACTS.map(({ Icon, title, text }) => (

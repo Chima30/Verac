@@ -34,6 +34,9 @@ I built Verac to show that AI agents can do the real checking work while people,
 
 Everything is on testnet with testnet QOR, and every transaction I quote is re-checked against the chain every week.
 
+**Try it in three minutes, no account needed:** https://verac-web.vercel.app/start walks you through the invoice
+workflow, the attacks on the vault and a grant investigation, each with its on-chain transactions.
+
 ---
 
 ## How it's made

@@ -1,4 +1,5 @@
 import { AGENTS } from "@qoreops/agent-coordinator";
+import { Welcome } from "@/components/welcome";
 import { Activity, ArrowRight, Bot, ClipboardCheck, Flag, Gauge, Landmark, Plus, ShieldAlert, ShieldCheck, Waypoints } from "lucide-react";
 import Link from "next/link";
 import { Suspense, cache } from "react";
@@ -356,6 +357,7 @@ export default function Dashboard() {
   return (
     <>
       <Suspense fallback={<div className="mb-7 h-[5.5rem]" />}><Header /></Suspense>
+      <Welcome />
       <Suspense fallback={<div className="grid grid-cols-1 gap-5 xl:grid-cols-12"><CardSkeleton rows={8} className="h-[30rem] xl:col-span-8" /><CardSkeleton rows={6} className="xl:col-span-4" /></div>}>
         <OrgSections />
       </Suspense>
