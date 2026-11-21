@@ -27,6 +27,8 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
   const sp = await searchParams;
   const sb = (await supabaseServer())!;
   const admin = ADMIN.includes(s.org.role);
+  /** Administrators, or the read-only auditor (judge) account: sees everything an administrator reads, can change nothing. */
+  const viewer = admin || s.org.role === "auditor";
   const applicant = s.org.role === "grant_applicant";
 
   // Newer columns first; fall back to the original ones if migration 0019 has not been applied yet.
@@ -49,7 +51,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
 
   // Portfolio and alerts (administrators; needs migrations 0019 to 0021, otherwise empty).
   let pf: ReturnType<typeof portfolio> | null = null, al: ReturnType<typeof buildAlerts> = [];
-  if (admin && migrated) {
+  if (viewer && migrated) {
     const awardedIds = live.filter((a) => a.status === "awarded").map((a) => a.id);
     const { data: full } = await sb.from("grant_applications").select("id,applicant_name,status,requested_amount::text,grant_id,applicant_user_id,content").eq("organization_id", s.org.id).in("status", ["recommended", "awarded"]);
     const pApps: PApp[] = (full ?? []).map((a) => ({ id: a.id as string, name: a.applicant_name as string, status: a.status as string, requested: String(a.requested_amount), grantId: a.grant_id as string, applicantUserId: a.applicant_user_id as string, content: a.content as PApp["content"] }));
@@ -73,20 +75,13 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
   return (
     <>
       <PageHeader title="Grants" eyebrow="Operations"
-        description={admin ? "Programmes, applications and evidence-based reviews. Agents investigate and draft; people decide; funds move only through the treasury's approval path." : "Open grant programmes and your applications."}
+        description={viewer ? "Programmes, applications and evidence-based reviews. Agents investigate and draft; people decide; funds move only through the treasury's approval path." : "Open grant programmes and your applications."}
         badge={<Badge tone="sim" />}
         actions={admin ? <><form action={loadGrantDemo}><button className={btnSecondaryCls} title="Three fictional applications (Alpha, Beta, Gamma) in a 20,000 QOR round, clearly labelled SAMPLE">Load sample programme</button></form><a href="#create" className={btnCls}>Open a round</a></> : undefined} />
       <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
-      {admin && rounds.length > 0 && (
-        <StatRow>
-          <Stat tint="blush" label="Open budget" value={formatQor(sumWei(rounds.filter(isOpen).map((g) => g.budget)).toString())} sub={`QOR across ${rounds.filter(isOpen).length} open round${rounds.filter(isOpen).length === 1 ? "" : "s"}`} />
-          <Stat tint="blush" label="Awarded" value={formatQor(sumWei(live.filter((a) => a.status === "awarded").map((a) => a.requested_amount)).toString())} sub="QOR committed to awarded projects" />
-          <Stat tint="peach" label="Needs a person" value={String(live.filter((a) => ["submitted", "under_review", "clarification_requested", "recommended"].includes(a.status)).length)} sub="applications to review, clarify or award" />
-        </StatRow>
-      )}
       {!migrated && admin && <p className="mb-4 text-[13px] text-[var(--warn)]">The database is missing migration 0019 (structured applications and rubrics). Apply supabase/migrations/0019_grants_portal.sql to use the full grants workflow.</p>}
 
-      {admin && (
+      {viewer && (
         <section aria-label="Programme overview" className="mb-6 rounded-lg border border-line bg-surface p-5 shadow-card">
           <dl className="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4">
             <Metric label="Open rounds" value={open.length} sub={`${formatQor(budget.toString())} QOR budgeted in open rounds`} />
@@ -123,9 +118,9 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
           )}
 
           {rounds.length === 0 ? <EmptyState title="No grant rounds yet" action={admin ? <a href="#create" className={btnCls}>Open the first round</a> : undefined}>{admin ? "A round has a budget, requirements, categories, a deadline and a published rubric." : "No round is open right now. Check back later."}</EmptyState> : (
-            <Card title={admin ? "Rounds" : "Grant programmes"} flush>
+            <Card title={viewer ? "Rounds" : "Grant programmes"} flush>
               <ul className="divide-y divide-line">
-                {rounds.filter((g) => admin || isOpen(g) || myApps.some((a) => a.grant_id === g.id)).map((g) => {
+                {rounds.filter((g) => viewer || isOpen(g) || myApps.some((a) => a.grant_id === g.id)).map((g) => {
                   const ga = live.filter((a) => a.grant_id === g.id);
                   const aw = sumWei(ga.filter((a) => a.status === "awarded").map((a) => a.requested_amount));
                   const b = BigInt(wei(g.budget));
@@ -140,7 +135,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                       </div>
                       <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2 text-[12.5px]">
                         <span><span className="font-semibold tabular-nums">{formatQor(aw.toString())}</span> <span className="text-muted">of {formatQor(b.toString())} QOR awarded{admin ? ` · ${ga.length} application${ga.length === 1 ? "" : "s"}` : ""}</span></span>
-                        <Link href={`/grants/${g.id}`} className="font-medium text-accent-text hover:underline">{admin ? "Review applications" : isOpen(g) ? "Read and apply" : "View"}</Link>
+                        <Link href={`/grants/${g.id}`} className="font-medium text-accent-text hover:underline">{viewer ? "Review applications" : isOpen(g) ? "Read and apply" : "View"}</Link>
                       </div>
                       <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-3" role="img" aria-label={`${pct}% of the budget awarded`}><div className="h-full rounded-full bg-ink" style={{ width: `${Math.min(pct, 100)}%` }} /></div>
                     </li>

@@ -26,6 +26,7 @@ export const GROUPS: Group[] = [
   ] },
   { id: "cron", label: "Scheduled jobs", required: false, settings: [{ name: "CRON_SECRET", shape: "text", note: "Vercel sends it to /api/cron/*" }] },
   { id: "github", label: "GitHub evidence (higher rate limit)", required: false, settings: [{ name: "GITHUB_TOKEN", shape: "text" }] },
+  { id: "judge", label: "Read-only judge account", required: false, settings: [{ name: "JUDGE_EMAIL", shape: "text" }, { name: "JUDGE_PASSWORD", shape: "text", note: "an auditor in the demo organisation; see docs/JUDGE_ACCOUNT.md" }] },
 ];
 
 const hexLen = (v: string, bytes: number) => new RegExp(`^(0x)?[0-9a-fA-F]{${bytes * 2}}$`).test(v);

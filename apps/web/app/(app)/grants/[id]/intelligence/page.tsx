@@ -27,7 +27,7 @@ export default async function Intelligence({ params, searchParams }: { params: P
   const s = await getSession();
   if (!s.user) redirect(`/login?next=/grants/${id}/intelligence`);
   if (!s.org) redirect("/onboarding");
-  if (!["owner", "administrator", "security_reviewer"].includes(s.org.role)) return <EmptyState title="Reviewers only">Grant investigations are visible to owners, administrators and security reviewers.</EmptyState>;
+  if (!["owner", "administrator", "security_reviewer", "auditor"].includes(s.org.role)) return <EmptyState title="Reviewers only">Grant investigations are visible to owners, administrators and security reviewers.</EmptyState>;
   const admin = ["owner", "administrator"].includes(s.org.role);
   const sb = (await supabaseServer())!;
   const { data: g } = await sb.from("grants").select("id,title,budget::text").eq("id", id).eq("organization_id", s.org.id).maybeSingle();

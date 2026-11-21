@@ -12,8 +12,10 @@ const EV_TONE: Record<string, Tone> = { VERIFIED: "live", PARTIALLY_VERIFIED: "i
 const STATE_TEXT: Record<string, string> = { scored: "", missing: "Missing information", inapplicable: "Does not apply", source_failure: "Source unavailable", not_assessed: "Not assessed" };
 const REC_TEXT: Record<string, string> = { strong_candidate: "Strong candidate", needs_clarification: "Needs clarification", further_review: "Requires further review" };
 
-export function ReviewerPanels({ appId, evidence, review, overrides, flags, clars, conflicted, admin }: {
+export function ReviewerPanels({ appId, evidence, review, overrides, flags, clars, conflicted, admin, readOnly = false }: {
   appId: string; evidence: EvidenceRow[]; review: ReviewRow | null; overrides: OverrideRow[]; flags: FlagRow[]; clars: ClarRow[]; conflicted: boolean; admin: boolean;
+  /** The read-only auditor (judge) account: every record shown, every control hidden. The database refuses their writes anyway. */
+  readOnly?: boolean;
 }) {
   const refOf = new Map(evidence.map((e, i) => [`E${i + 1}`, e]));
   return (
@@ -93,7 +95,7 @@ export function ReviewerPanels({ appId, evidence, review, overrides, flags, clar
                 <div className="flex flex-wrap items-center gap-2"><Badge tone={f.severity === "high" ? "failed" : f.severity === "medium" ? "pending" : "neutral"}>{f.severity.toUpperCase()}</Badge><span className="font-medium">{f.code.replace(/_/g, " ")}</span><Badge tone={f.status === "open" ? "info" : "neutral"}>{f.status.toUpperCase()}</Badge></div>
                 <p className="mt-1 text-muted">{f.message}</p>
                 {f.decided_reason && <p className="mt-1 text-[12px]">Reviewer: {f.decided_reason}</p>}
-                {f.status === "open" && !conflicted && (
+                {f.status === "open" && !conflicted && !readOnly && (
                   <form action={decideFlag} className="mt-2 flex flex-wrap items-end gap-2">
                     <input type="hidden" name="app" value={appId} /><input type="hidden" name="flag" value={f.id} />
                     <input name="reason" aria-label="Reason" required minLength={5} maxLength={500} className={`${inputCls} min-w-[12rem] flex-1 text-[12.5px]`} placeholder="Reason (required)" />
@@ -130,7 +132,7 @@ export function ReviewerPanels({ appId, evidence, review, overrides, flags, clar
         )}
       </Card>
 
-      {!conflicted && (
+      {!conflicted && !readOnly && (
         <details className="rounded-lg border border-line bg-surface p-4 text-[13px] shadow-card">
           <summary className="cursor-pointer font-medium">Declare a conflict of interest</summary>
           <form action={declareConflict} className="mt-2 flex flex-wrap gap-2">

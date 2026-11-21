@@ -23,6 +23,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
   if (!s.org) redirect("/onboarding");
   const sb = (await supabaseServer())!;
   const admin = ADMIN.includes(s.org.role);
+  const viewer = admin || s.org.role === "auditor";
   const applicant = s.org.role === "grant_applicant";
 
   const { data: g, error } = await sb.from("grants").select("id,title,budget::text,status,description,requirements,categories,deadline,max_request::text,created_at,rules").eq("id", id).eq("organization_id", s.org.id).maybeSingle();
@@ -59,7 +60,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
         actions={<><Link href="/grants" className={btnSecondaryCls}>All rounds</Link>
           {applicant && open && !mine && <Link href={`/grants/${id}/apply`} className={btnCls}>Start an application</Link>}
           {applicant && mine && <Link href={mine.status === "draft" || mine.amendment_open ? `/grants/${id}/apply` : `/grants/applications/${mine.id}`} className={btnCls}>{mine.status === "draft" ? "Continue your draft" : mine.amendment_open ? "Amend your application" : "Your application"}</Link>}
-          {(admin || s.org.role === "security_reviewer") && <Link href={`/grants/${id}/intelligence`} className={btnCls}>Investigate with agents</Link>}</>} />
+          {(admin || s.org.role === "security_reviewer") && <Link href={`/grants/${id}/intelligence`} className={btnCls}>Investigate with agents</Link>}{s.org.role === "auditor" && <Link href={`/grants/${id}/intelligence`} className={btnCls}>Read the agents' report</Link>}</>} />
       <FlashMessages msg={sp.msg} error={sp.error} />
 
       <section aria-label="Round figures" className="mb-6 rounded-lg border border-line bg-surface p-5 shadow-card">
@@ -74,7 +75,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="min-w-0 space-y-6">
-          {admin ? (
+          {viewer ? (
             <Card title="Applications" description="Drafts are private to applicants and not listed." flush>
               <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3 text-[12.5px]">
                 <span className="text-muted">Status:</span>
@@ -113,7 +114,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
               <p className="mt-3 text-[13px] text-muted">Categories: {(round.categories ?? CATS).map((c) => CATEGORY_LABEL[c]).join(", ")}.</p>
             </Card>
           )}
-          {admin && round.requirements && <Card title="Programme requirements"><p className="whitespace-pre-wrap text-[14px]">{round.requirements}</p></Card>}
+          {viewer && round.requirements && <Card title="Programme requirements"><p className="whitespace-pre-wrap text-[14px]">{round.requirements}</p></Card>}
         </div>
 
         <div className="space-y-6">

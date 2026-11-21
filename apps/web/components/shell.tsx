@@ -219,7 +219,7 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
       <div className="min-w-0 lg:pl-[15.5rem] lg:transition-[padding] lg:duration-200 lg:collapsed:pl-16">
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-bg shadow-[var(--shadow-nav)] dark:border-b dark:border-line">
-          <div className="mx-auto flex h-14 max-w-[75rem] items-center gap-2 px-4 sm:gap-3 lg:px-8">
+          <div className="mx-auto flex h-14 max-w-[105rem] items-center gap-2 px-4 sm:gap-3 lg:px-10 2xl:px-14">
             <button type="button" onClick={() => setMobile(true)} aria-label="Open navigation" aria-expanded={mobile} className="grid size-9 place-items-center rounded-md border border-line bg-surface lg:hidden"><Menu size={17} aria-hidden /></button>
             <span className="lg:hidden"><Logo name={productName} hideText /></span>
 
@@ -275,7 +275,12 @@ export function Shell({ productName, account, org, pending, children }: ShellPro
             </div>
           </div>
         </header>
-        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[75rem] px-4 pb-16 pt-7 sm:pt-9 lg:px-8">
+        <main id="main" key={path} className="motion-page relative z-[1] mx-auto w-full max-w-[105rem] px-4 pb-16 pt-7 sm:px-6 sm:pt-9 lg:px-10 2xl:px-14">
+          {org?.role === "auditor" && (
+            <p role="note" className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[4px] bg-[var(--tint-sky)] px-4 py-3 text-[14px] text-[var(--tint-ink)]">
+              <span className="label-mono">Read-only</span><span>You are signed in as a reviewer. Open anything; the database refuses every change, so nothing here can be altered or paid.</span>
+            </p>
+          )}
           {here?.section.title === LABS && (
             <p role="note" className="mb-5 rounded-lg border border-line bg-surface-2 px-3.5 py-2.5 text-[13px] leading-relaxed text-muted">
               <span className="font-semibold text-ink">Labs.</span> This module works, but agents do not run it and it has no live on-chain proof yet. The proven core is Invoices, Approvals, Grants, Treasury and Live Proof.

@@ -13,7 +13,9 @@ const PATHS = [
 ] as const;
 
 /** The first page for someone who has never seen Verac: what it is in one picture, then three short guided proofs. */
-export default function StartHere() {
+export default async function StartHere({ searchParams }: { searchParams: Promise<{ judge?: string }> }) {
+  const { judge } = await searchParams;
+  const judgeReady = !!process.env.JUDGE_EMAIL?.trim() && !!process.env.JUDGE_PASSWORD?.trim();
   return (
     <>
       <header className="mb-12">
@@ -27,6 +29,17 @@ export default function StartHere() {
           testnet and can be checked on the chain.
         </p>
       </header>
+
+      {judgeReady && (
+        <form action="/auth/judge" method="post" className="mb-10 flex flex-col gap-4 rounded-[4px] bg-[var(--band)] p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div>
+            <p className="label-mono flex items-center gap-2 text-[var(--accent)]"><span aria-hidden className="inline-block h-[2px] w-3 bg-[var(--accent)]" />For judges</p>
+            <p className="mt-3 max-w-xl text-[20px] font-medium leading-[1.25] tracking-[-0.015em]">Open the live product with one click. Read-only: look at everything, change nothing.</p>
+          </div>
+          <button className="inline-flex min-h-9 shrink-0 items-center justify-center gap-2 rounded-[4px] bg-white px-4 py-2 font-mono text-[13px] font-medium uppercase text-black">Enter as a judge<ArrowRight size={14} aria-hidden /></button>
+        </form>
+      )}
+      {judge && <p role="alert" className="mb-10 rounded-[4px] bg-[var(--bad-bg)] px-4 py-3 text-[14px] text-[var(--bad)]">{judge}</p>}
 
       <section aria-labelledby="paths" className="mb-16">
         <h2 id="paths" className="sr-only">Three guided proofs</h2>

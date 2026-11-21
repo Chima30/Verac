@@ -50,7 +50,7 @@ export default async function Application({ params, searchParams }: { params: Pr
     msIds.length ? sb.from("grant_milestone_submissions").select("milestone_id,attempt,description,links,transactions,created_at").in("milestone_id", msIds) : Promise.resolve({ data: [] }),
     msIds.length ? sb.from("grant_funding_records").select("milestone_id,status,route,reasons,tx_hash,block_number,created_at,transaction_id").in("milestone_id", msIds).order("created_at", { ascending: false }) : Promise.resolve({ data: [] }),
   ]);
-  const { data: med } = msIds.length && ["owner", "administrator", "security_reviewer"].includes(s.org.role)
+  const { data: med } = msIds.length && ["owner", "administrator", "security_reviewer", "auditor"].includes(s.org.role)
     ? await sb.from("grant_evidence").select("milestone_id,claim,status,reason,url,retrieved_at").in("milestone_id", msIds).order("id")
     : { data: [] };
 
@@ -60,7 +60,8 @@ export default async function Application({ params, searchParams }: { params: Pr
     const awarded = sumWei((others ?? []).filter((o) => o.status === "awarded").map((o) => o.requested_amount));
     flags = checkApplication({ requested: wei(a.requested_amount), pitch: a.pitch ?? "", name: a.applicant_name }, { budget: wei(round.budget), awarded: awarded.toString(), otherPitches: (others ?? []).filter((o) => o.id !== a.id).map((o) => o.pitch ?? "") });
   }
-  const reviewer = admin || s.org.role === "security_reviewer";
+  const readOnly = s.org.role === "auditor";
+  const reviewer = admin || s.org.role === "security_reviewer" || readOnly;
   // Reviewer data (RLS: owners, administrators and security reviewers only). Applicants see only clarifications sent to them.
   let review: ReviewRow | null = null, evidence: EvidenceRow[] = [], overrides: OverrideRow[] = [], riskFlags: FlagRow[] = [], conflicted = false;
   if (reviewer) {
@@ -124,7 +125,7 @@ export default async function Application({ params, searchParams }: { params: Pr
           </Card>
 
           {mine && <ApplicantClarifications appId={a.id} clars={clars} amendmentOpen={a.amendment_open} grantId={a.grant_id} />}
-          {reviewer && !mine && <ReviewerPanels appId={a.id} evidence={evidence} review={review} overrides={overrides} flags={riskFlags} clars={clars} conflicted={conflicted} admin={admin} />}
+          {reviewer && !mine && <ReviewerPanels appId={a.id} evidence={evidence} review={review} overrides={overrides} flags={riskFlags} clars={clars} conflicted={conflicted} admin={admin} readOnly={readOnly} />}
 
           {(c.links || c.contracts?.length || c.transactions?.length) && (
             <Card title="7. Links and on-chain references" description="As submitted. Verac never runs applicant code.">

@@ -42,7 +42,7 @@ glow (`#ff8a3d` to transparent), drawn only from real vault history.
 
 - 4px corners on every card, tile, button, badge, input and panel. Pills only for dots.
 - No shadows except the sticky top bar's soft horizontal glow (`--shadow-nav`).
-- Content width 1200px. Every page: header (title, one plain line, status badge, main buttons), an alert banner only when
+- Content up to 1680px wide (side margins grow on large screens); paragraphs keep a readable line length. Every page: header (title, one plain line, status badge, main buttons), an alert banner only when
   something needs doing, a row of tinted figures, the work at full width, then collapsible "How it works" rows.
 - Forms never sit in a side column: they open in a **slide-in panel** (`Panel`), from the right on desktop and from the
   bottom on phones. Any link to `#<panel id>` opens it, so server-rendered buttons need no client code.
