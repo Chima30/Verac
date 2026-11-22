@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-21T00:20:27.981Z",
+  "checkedAt": "2026-11-22T09:50:08.458Z",
   "evmRpc": "https://evm-testnet.qore.host",
   "rpc": "https://rpc-testnet.qore.host",
   "failures": 0,
@@ -38,6 +38,15 @@
       "detail": "block 10141798",
       "docs": [
         "docs/LIVE_PAYMENT_2026-11-15.md"
+      ]
+    },
+    {
+      "hash": "0x3c7d5515013e3a0aadedaa08b8d87587984db3345f8869938096b291fe295cfa",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10547047",
+      "docs": [
+        "docs/V2_LIVE_2026-11-19.md"
       ]
     },
     {
@@ -191,6 +200,15 @@
       "detail": "block 10082177",
       "docs": [
         "docs/LIVE_RUN_2026-11-14.md"
+      ]
+    },
+    {
+      "hash": "0xc0000614ec871fb301f5e7f0c1e4faa9188cf8af4bbec49bfb0beb6eae40eedc",
+      "kind": "evm",
+      "result": "mined, succeeded",
+      "detail": "block 10547027",
+      "docs": [
+        "docs/SECURITY_UPGRADE_AUDIT.md"
       ]
     },
     {
@@ -520,6 +538,15 @@
       ]
     },
     {
+      "hash": "0x3c7d5515…5cfa",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0x3c7d5515013e3a0aadedaa08b8d87587984db3345f8869938096b291fe295cfa",
+      "docs": [
+        "docs/DEMO_SCRIPT.md"
+      ]
+    },
+    {
       "hash": "0x3ccc7984…0fb9",
       "kind": "abbreviated",
       "result": "matches one recorded hash",
@@ -745,6 +772,15 @@
       "detail": "0xbeb8d5639e5b3fa9e811fd773988cf519b15243a094de535c4e0dc4ec688171e",
       "docs": [
         "docs/CATEGORY_COMPLIANCE.md"
+      ]
+    },
+    {
+      "hash": "0xc0000614…eedc",
+      "kind": "abbreviated",
+      "result": "matches one recorded hash",
+      "detail": "0xc0000614ec871fb301f5e7f0c1e4faa9188cf8af4bbec49bfb0beb6eae40eedc",
+      "docs": [
+        "docs/DEMO_SCRIPT.md"
       ]
     },
     {

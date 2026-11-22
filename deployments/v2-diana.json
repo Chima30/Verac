@@ -105,6 +105,20 @@
       "status": "success",
       "windowClose": "764FD5CFD104EBBE12DE80F9AA734400DD5B7EEE41CE1FD850B9F141CAC5EA85",
       "isAdminAfter": false
+    },
+    {
+      "action": "Set agent 0x64D9B87fFeBee2723EeE437a2d5365c479A26FE9 limits: 1 per payment, 2 per day of native QOR, until 2026-12-23T23:59:59.000Z",
+      "at": "2026-11-22T09:49:19.701Z",
+      "adminNonce": "8",
+      "signers": [
+        "0x0Bc2c79BEc67e686Eff84628F7A94661882Ded33",
+        "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
+      ],
+      "windowOpen": "FC9E08026AA16358E87D9FC15F8626B8E797838A9B5B2017203FE25555185CCA",
+      "tx": "0x3c7d5515013e3a0aadedaa08b8d87587984db3345f8869938096b291fe295cfa",
+      "block": "10547047",
+      "status": "success",
+      "windowClose": "167F8BE85A6330056F547C7DF6CDB76C522FC2A7755E01B3AA2D3E3EE2E8BD70"
     }
   ],
   "adminsAtDeployment": [
@@ -112,5 +126,5 @@
     "0x6A7354c2b61Be31abF7C8CB02feB235054df815d",
     "0xd42C50139486a6ba177d0D37fd20135AE1F5C336"
   ],
-  "adminsNote": "admin-3 (0x6A73\u2026815d) replaced by admin-4 (0x02fF\u20264e9f) on 2026-11-20; see adminActions and docs/V2_LIVE_2026-11-19.md"
+  "adminsNote": "admin-3 (0x6A73…815d) replaced by admin-4 (0x02fF…4e9f) on 2026-11-20; see adminActions and docs/V2_LIVE_2026-11-19.md"
 }

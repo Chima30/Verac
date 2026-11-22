@@ -3,6 +3,7 @@
  * the relayer inside a short window that admits only the vault (closed again afterwards, even on failure).
  *
  * Changes:   recipient <0x> [--remove]  |  add-admin <0x>  |  remove-admin <0x>
+ *            agent-limits <0x agent> --until YYYY-MM-DD   keeps the current caps; valid to the end of that UTC day (max 60 days)
  *
  * Each administrator on their OWN computer (recommended; keys never meet):
  *   tsx v2-admin-action.ts prepare add-admin 0xNEW --out add.json        anyone: writes a signing request (no key used)
@@ -24,7 +25,7 @@ import { closeEvmWindowMsg, openEvmWindowMsg } from "@qorechain/sdk";
 import { createWalletClient, getAddress, http, parseAbi, type Hex } from "viem";
 import { QORE_NETWORK } from "@qoreops/shared-types";
 import { QoreReader, qoreDianaTestnet } from "../src/index";
-import { AdminOp, adminDigestV2, signApprovalV2, sortSigs, treasuryVaultV2Abi, verifyApprovalV2, type V2AdminSig } from "../src/v2";
+import { AdminOp, adminData, adminDigestV2, signApprovalV2, sortSigs, treasuryVaultV2Abi, verifyApprovalV2, type V2AdminSig } from "../src/v2";
 import { LocalAccount, broadcastNative } from "./lib/accounts";
 import { ADMIN_REQUEST_FORMAT, adminSubject, buildAdminOp, describeAdminOp, type AdminRequest } from "./lib/v2-admin-ops";
 
@@ -34,7 +35,7 @@ const argv = process.argv.slice(2);
 const BROADCAST = argv.includes("--broadcast");
 const flag = (n: string) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : undefined; };
 const die = (m: string): never => { console.error(`REFUSED: ${m}`); process.exit(1); };
-const USAGE = "usage: v2-admin-action.ts [prepare] recipient|add-admin|remove-admin <0x> [--remove] [--signers a,b] [--out file] [--broadcast]\n       v2-admin-action.ts relay <request.json> <signature.json>... [--broadcast]";
+const USAGE = "usage: v2-admin-action.ts [prepare] recipient|add-admin|remove-admin|agent-limits <0x> [--remove] [--until YYYY-MM-DD] [--signers a,b] [--out file] [--broadcast]\n       v2-admin-action.ts relay <request.json> <signature.json>... [--broadcast]";
 
 const state = JSON.parse(readFileSync(OUT, "utf8")) as Record<string, unknown> & { TreasuryVaultV2: Hex; adminActions?: unknown[] };
 const vault = getAddress(state.TreasuryVaultV2);
@@ -128,7 +129,21 @@ if (argv[0] === "relay") {
   const prepare = argv[0] === "prepare";
   const [cmd, target] = prepare ? [argv[1], argv[2]] : [argv[0], argv[1]];
   let built;
-  try { built = buildAdminOp(cmd ?? "", target, argv.includes("--remove")); } catch (e) { console.error((e as Error).message); console.error(USAGE); process.exit(2); }
+  if (cmd === "agent-limits") {
+    if (!target || !/^0x[0-9a-fA-F]{40}$/.test(target)) die("agent-limits needs the agent's 0x address");
+    const until = flag("--until") ?? die("agent-limits needs --until YYYY-MM-DD");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(until)) die("--until must be a date like 2026-12-23");
+    const end = BigInt(Math.floor(Date.parse(`${until}T23:59:59Z`) / 1000)), now = BigInt(Math.floor(Date.now() / 1000));
+    if (end < now + 3600n || end > now + 60n * 86_400n) die("--until must be at least an hour and at most 60 days ahead");
+    const agent = getAddress(target!);
+    if (await read<boolean>("isAdmin", [agent])) die("an administrator can never be an agent");
+    const [, , perTx, daily] = await read<readonly [boolean, bigint, bigint, bigint]>("limits", [agent, "0x0000000000000000000000000000000000000000"]);
+    if (perTx === 0n) die(`${agent} has no limits on this vault yet; set its caps first`);
+    const q = (v: bigint) => Number(v / 10n ** 12n) / 1e6;
+    built = { op: AdminOp.SetAgentLimits, data: adminData.setAgentLimits(agent, "0x0000000000000000000000000000000000000000", perTx, daily, end), summary: `Set agent ${agent} limits: ${q(perTx)} per payment, ${q(daily)} per day of native QOR, until ${new Date(Number(end) * 1000).toISOString()}` };
+  } else {
+    try { built = buildAdminOp(cmd ?? "", target, argv.includes("--remove")); } catch (e) { console.error((e as Error).message); console.error(USAGE); process.exit(2); }
+  }
   await preflight(built.op, built.data);
   const nonce = await read<bigint>("adminNonce");
   const expiry = (await evm.getBlock()).timestamp + BigInt(prepare ? 86_400 : 3_600);

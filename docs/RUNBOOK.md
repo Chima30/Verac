@@ -68,7 +68,7 @@ only until any other administrative change is made (the admin nonce moves on).
 | Contract changes | Foundry unit, fuzz and invariant tests | GitHub Actions `Contracts` |
 | Weekly and on doc changes | Every transaction quoted in docs/ is on chain with the stated outcome | GitHub Actions `Proof` (`pnpm proof:check`) |
 | Daily 06:00 UTC | Funded grants' repository activity re-read | Vercel cron `/api/cron/grants-monitor` |
-| Before agent rights expire | V1 agent valid to 2026-12-06, V2 agent to about 2026-12-03 | `owner-ops.ts set-agent-limits --days N`; V2 by two administrators |
+| Before agent rights expire | Both agents valid to 2026-12-23 23:59 UTC | `owner-ops.ts set-agent-limits --until YYYY-MM-DD`; V2: `v2-admin-action.ts agent-limits <agent> --until YYYY-MM-DD` signed by two administrators |
 
 ## 5. Data
 

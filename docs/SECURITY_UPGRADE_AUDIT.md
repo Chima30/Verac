@@ -29,6 +29,8 @@ row, relay an on-chain approval and execute. What still stops it (read on chain)
   until the owner renews them. This also stops the website's own payment path before the 2 December deadline.
   **Renewed on 2026-11-20** with the same caps (10 QOR per payment, 20 per day, no auto-approval) until 2026-12-06:
   `0xd2720eb7fd78893644ab89518f54b90fbf795e047aaf73af23a4d0ede90e6609` (block 10404324), `owner-ops.ts set-agent-limits --days 16`.
+  **Renewed again on 2026-11-22**, same caps, until 2026-12-23 23:59 UTC to cover judging:
+  `0xc0000614ec871fb301f5e7f0c1e4faa9188cf8af4bbec49bfb0beb6eae40eedc` (block 10547027), `owner-ops.ts set-agent-limits --until 2026-12-23`.
 
 So the evaluation is right that human approval is not independent of the server, and slightly overstated in impact:
 a compromised server can pay **approved recipients only, within the caps**. It can also spend the agent's and approver's

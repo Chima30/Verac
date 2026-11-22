@@ -53,6 +53,7 @@ For a three-minute cut, drop the V2 attack table (2:00–2:30) and shorten grant
 | TreasuryVault V2 | `0xAbd8CB36dd17b7aC35432c4A04f44f2d197504E2`; payments `0x03994ae3…7ed5` and `0xb875d941…b64f`; the website's own Execute path, end to end: `0x50dbd924…3afd` (block 10393451) |
 | Original vault (V1) | `0xa343930CE94b1d1629791823A75fb14a1D7C7Ab8`; first website payment `0x75ac37df…0636` (block 10141804) |
 | V1 agent rights renewed (2026-11-20, valid to 2026-12-06) | `0xd2720eb7…6609` (block 10404324) |
+| Both agents renewed to 2026-12-23 23:59 UTC (2026-11-22) | V1 `0xc0000614…eedc` (block 10547027); V2, signed by two administrators, `0x3c7d5515…5cfa` (block 10547047) |
 | Q-Day drill proof | `268BD3F41560BD4408D9528E6BB7F71263797E7CE7D015196071B8FE3F26807E` (block 10284265) |
 | Grants live dry run | `deployments/grants-sample-dryrun.json` |
 
