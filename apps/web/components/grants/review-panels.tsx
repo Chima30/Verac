@@ -1,4 +1,5 @@
 import { Badge, Card, Notice, Source, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
+import { toneMap } from "@/lib/states";
 import { answerClarification, decideFlag, declareConflict, discardClarification, overrideScore, sendClarification } from "@/app/(app)/grants/actions";
 
 export interface EvidenceRow { id: number; source: string; subject: string; claim: string; status: string; reason: string; url: string; retrieved_at: string; task_id: string | null; observed: Record<string, unknown> }
@@ -8,7 +9,7 @@ export interface FlagRow { id: string; code: string; severity: string; message: 
 export interface ClarRow { id: string; questions: Array<{ question: string; about?: string }>; status: string; drafted_by: string; sent_at: string | null; response: string | null; responded_at: string | null; created_at: string }
 export interface OverrideRow { criterion: string; new_score: number; reason: string; by_user: string; created_at: string }
 
-const EV_TONE: Record<string, Tone> = { VERIFIED: "live", PARTIALLY_VERIFIED: "info", UNVERIFIED: "neutral", CONTRADICTED: "failed", UNAVAILABLE: "pending" };
+const EV_TONE = toneMap("grant_evidence");
 const STATE_TEXT: Record<string, string> = { scored: "", missing: "Missing information", inapplicable: "Does not apply", source_failure: "Source unavailable", not_assessed: "Not assessed" };
 const REC_TEXT: Record<string, string> = { strong_candidate: "Strong candidate", needs_clarification: "Needs clarification", further_review: "Requires further review" };
 

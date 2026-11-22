@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { labelMap, toneMap } from "@/lib/states";
 import { redirect } from "next/navigation";
 import type { PayrollItem } from "@qoreops/policy-engine";
 import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Metric, PageHeader, ShortHash, Source, Steps } from "@/components/ui";
@@ -10,8 +11,8 @@ import { supabaseServer } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Payroll" };
 
-const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral" | "info"> = { draft: "pending", awaiting_approval: "approval", approved: "info", paid: "live", failed: "failed" };
-const LABEL: Record<string, string> = { draft: "DRAFT", awaiting_approval: "AWAITING APPROVAL", approved: "APPROVED IN APP", paid: "PAID", failed: "FAILED" };
+const TONE = toneMap("payroll");
+const LABEL = labelMap("payroll");
 const FINANCE = ["owner", "administrator", "finance_manager"];
 
 export default async function Payroll() {

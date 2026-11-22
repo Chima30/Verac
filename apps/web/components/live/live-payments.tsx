@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { labelMap, toneMap } from "@/lib/states";
 import { useState } from "react";
 import { Badge, Notice, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
 import { CopyButton } from "@/components/ui-client";
@@ -12,18 +13,8 @@ export interface LiveOp {
 }
 export interface V2Status { ready: boolean; switchOn: boolean; vault: string | null }
 
-// The states a reader sees. READY means the server has claimed the operation and is sending it.
-const LABEL: Record<string, { text: string; tone: Tone }> = {
-  PROPOSED: { text: "PROPOSED", tone: "pending" },
-  AWAITING_APPROVAL: { text: "AWAITING APPROVAL", tone: "approval" },
-  APPROVED: { text: "APPROVED", tone: "neutral" },
-  READY: { text: "APPROVED, EXECUTING", tone: "neutral" },
-  SUBMITTED: { text: "SUBMITTED", tone: "sim" },
-  CONFIRMED: { text: "CONFIRMED, LIVE TESTNET", tone: "live" },
-  REJECTED: { text: "REJECTED", tone: "failed" },
-  FAILED: { text: "FAILED", tone: "failed" },
-  CANCELLED: { text: "EXPIRED", tone: "pending" },
-};
+// The states a reader sees, from the shared registry. A confirmed payment also says LIVE TESTNET (a product wording rule).
+const LABEL: Record<string, { text: string; tone: Tone }> = Object.fromEntries(Object.entries(labelMap("payment")).map(([k, text]) => [k, { text: k === "CONFIRMED" ? `${text}, live testnet` : text, tone: toneMap("payment")[k]! }]));
 
 const qor = (wei: string) => {
   const n = BigInt(wei);

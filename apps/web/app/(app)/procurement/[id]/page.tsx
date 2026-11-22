@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { stagesOf, toneMap } from "@/lib/states";
 import { notFound, redirect } from "next/navigation";
 import { Badge, Card, PageHeader, Pipeline, btnCls, inputCls } from "@/components/ui";
 import { BidForm } from "@/components/procurement/bid-form";
@@ -12,8 +13,8 @@ import { closeBidding, openTender } from "../actions";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Tender" };
 
-const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral" | "info"> = { draft: "pending", open: "info", review: "approval", awarded: "live", closed: "neutral" };
-const STAGES = [{ key: "draft", label: "Draft" }, { key: "open", label: "Open for bids" }, { key: "review", label: "Reviewing bids" }, { key: "awarded", label: "Awarded" }, { key: "closed", label: "Closed" }];
+const TONE = toneMap("tender");
+const STAGES = stagesOf("tender", ["draft", "open", "review", "awarded", "closed"]);
 const NEXT: Record<string, string> = {
   draft: "Next: a reviewer opens the tender for bids.",
   open: "Next: vendors submit sealed bids; a reviewer closes bidding to release them.",

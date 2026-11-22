@@ -1,4 +1,5 @@
 import { Badge, type Tone } from "@/components/ui";
+import { stateOf, toneMap } from "@/lib/states";
 import { StartNav, recordedLabel } from "@/components/start-nav";
 import { GRANTS_RUN as R } from "@/lib/start";
 
@@ -9,7 +10,7 @@ const REC: Record<string, { text: string; tint: string }> = {
   needs_clarification: { text: "Needs clarification", tint: "peach" },
   further_review: { text: "Further review", tint: "blush" },
 };
-const EV: Record<string, Tone> = { VERIFIED: "live", PARTIALLY_VERIFIED: "info", UNVERIFIED: "pending", CONTRADICTED: "failed", UNAVAILABLE: "unavailable" };
+const EV = toneMap("grant_evidence");
 
 /** Replay of the grants dry run (deployments/grants-sample-dryrun.json): real GitHub, Diana and Gemini on fictional applications. */
 export default function GrantsReplay() {
@@ -47,7 +48,7 @@ export default function GrantsReplay() {
                   <ul className="mt-3 space-y-3">
                     {r.evidence.slice(0, 5).map((e) => (
                       <li key={e.ref + e.claim} className="text-[14px] leading-[1.35] tracking-[-0.01em]">
-                        <span className="flex flex-wrap items-center gap-2"><Badge tone={EV[e.status] ?? "neutral"}>{e.status.replace("_", " ")}</Badge><span className="font-medium">{e.claim}</span></span>
+                        <span className="flex flex-wrap items-center gap-2"><Badge tone={EV[e.status] ?? "neutral"}>{stateOf("grant_evidence", e.status).label}</Badge><span className="font-medium">{e.claim}</span></span>
                         <span className="mt-1 block text-muted">{e.reason}</span>
                       </li>
                     ))}

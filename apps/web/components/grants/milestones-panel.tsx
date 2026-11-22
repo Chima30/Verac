@@ -1,4 +1,5 @@
 import { Badge, Card, Metric, Notice, Source, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
+import { labelMap, stateOf, toneMap } from "@/lib/states";
 import { checkMilestone, decideMilestone, fundMilestone, submitMilestoneEvidence } from "@/app/(app)/grants/milestone-actions";
 import { formatQor } from "@/lib/approvals";
 
@@ -8,9 +9,9 @@ export interface MsEvidence { milestone_id: string; claim: string; status: strin
 export interface FundRow { milestone_id: string | null; status: string; route: string; reasons: string[]; tx_hash: string | null; block_number: number | null; created_at: string; transaction_id: string | null }
 export interface PlanMs { title: string; deliverable: string; verification: string; due: string }
 
-const MS_TONE: Record<string, Tone> = { pending: "neutral", evidence_submitted: "approval", approved: "info", released: "live", disputed: "failed" };
-const EV_TONE: Record<string, Tone> = { VERIFIED: "live", PARTIALLY_VERIFIED: "info", UNVERIFIED: "neutral", CONTRADICTED: "failed", UNAVAILABLE: "pending" };
-const FUND_TEXT: Record<string, string> = { awaiting_authorised_path: "AWAITING AN AUTHORISED FUNDING PATH", requested: "PAYMENT REQUESTED", confirmed: "PAID, CONFIRMED ON CHAIN", failed: "PAYMENT FAILED", cancelled: "PAYMENT CANCELLED" };
+const MS_TONE = toneMap("milestone");
+const EV_TONE = toneMap("grant_evidence");
+const FUND_TEXT = labelMap("grant_funding");
 const EXPLORER = "https://explore.qore.network";
 const w = (v: unknown) => BigInt(String(v ?? "0").split(".")[0]!);
 
@@ -48,7 +49,7 @@ export function MilestonesPanel({ appId, milestones, plan, subs, evidence, fundi
             <li key={m.id} className="rounded-lg border border-line p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[14px] font-semibold">{m.idx}. {m.title} <span className="font-normal text-muted">· {formatQor(String(m.amount))} QOR{p?.due ? ` · due ${p.due}` : ""}</span></p>
-                <Badge tone={MS_TONE[m.status] ?? "neutral"}>{m.status.replace("_", " ").toUpperCase()}</Badge>
+                <Badge tone={MS_TONE[m.status] ?? "neutral"}>{stateOf("milestone", m.status).label}</Badge>
               </div>
               {p && <p className="mt-1 text-[13px] text-muted">{p.deliverable} <span className="block text-[12px]">Verified by: {p.verification}</span></p>}
 
@@ -67,7 +68,7 @@ export function MilestonesPanel({ appId, milestones, plan, subs, evidence, fundi
 
               {reviewer && myEv.length > 0 && (
                 <ul className="mt-3 space-y-1.5 text-[12.5px]">
-                  {myEv.map((e, i) => <li key={i}><Badge tone={EV_TONE[e.status] ?? "neutral"}>{e.status.replace("_", " ")}</Badge> {e.claim.replace(/^Milestone evidence \(attempt \d+\): /, "")}. <span className="text-muted">{e.reason}</span> <a className="text-muted underline" href={e.url} target="_blank" rel="noreferrer">source</a></li>)}
+                  {myEv.map((e, i) => <li key={i}><Badge tone={EV_TONE[e.status] ?? "neutral"}>{stateOf("grant_evidence", e.status).label}</Badge> {e.claim.replace(/^Milestone evidence \(attempt \d+\): /, "")}. <span className="text-muted">{e.reason}</span> <a className="text-muted underline" href={e.url} target="_blank" rel="noreferrer">source</a></li>)}
                 </ul>
               )}
 

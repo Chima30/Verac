@@ -1,13 +1,11 @@
 /** Shared types and small helpers for the Grants pages. Pure: no database access here. */
 import type { Tone } from "@/components/ui";
+import { labelMap, toneMap } from "@/lib/states";
 
 export const CATEGORY_LABEL: Record<string, string> = { software: "Software", research: "Research", education: "Developer education", community: "Community / public goods", other: "Other" };
-export const STATUS_TONE: Record<string, Tone> = {
-  draft: "neutral", submitted: "pending", under_review: "info", clarification_requested: "approval", recommended: "approval", awarded: "live", rejected: "failed",
-};
-export const STATUS_TEXT: Record<string, string> = {
-  draft: "DRAFT", submitted: "SUBMITTED", under_review: "UNDER REVIEW", clarification_requested: "CLARIFICATION REQUESTED", recommended: "RECOMMENDED", awarded: "AWARDED", rejected: "REJECTED",
-};
+/** Grant application states: from the shared state-machine registry, so every page says the same thing. */
+export const STATUS_TONE: Record<string, Tone> = toneMap("grant_application");
+export const STATUS_TEXT: Record<string, string> = labelMap("grant_application");
 
 export interface RoundRow {
   id: string; title: string; budget: string; status: string; description: string | null; requirements: string | null;

@@ -29,6 +29,7 @@
     "v2:admin-key": "tsx packages/qorechain/scripts/v2-admin-key.ts",
     "v2:guardian": "tsx packages/qorechain/scripts/v2-guardian.ts",
     "proof:check": "tsx scripts/verify-doc-hashes.mts",
+    "state:docs": "tsx scripts/state-docs.mts",
     "ai:probe": "tsx --env-file=apps/web/.env.local packages/ai-provider/scripts/probe.ts"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { stateOf, toneMap } from "@/lib/states";
 import { Badge, Card, EmptyState, FlashMessages, HowItWorks, PageHeader, SectionHeading, StatusDot, btnCls, btnSecondaryCls, fmtUtc, inputCls, labelCls, relTime } from "@/components/ui";
 import { Panel } from "@/components/ui-client";
 import { AnalyseButton } from "@/components/governance/analyse-button";
@@ -9,7 +10,7 @@ import { castVote, createProposal, finalizeProposal, openVoting } from "./action
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Governance" };
 
-const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral" | "info"> = { discussion: "pending", voting: "approval", passed: "info", failed: "failed", executed: "info" };
+const TONE = toneMap("proposal");
 const ADMIN = ["owner", "administrator"];
 const VOTER = ["dao_member", "owner", "administrator"];
 
@@ -52,7 +53,7 @@ export default async function Governance({ searchParams }: { searchParams: Promi
     const r = p.result; const cast = r ? r.for + r.against + r.abstain : 0;
     const pct = (n: number) => (cast ? (n / cast) * 100 : 0);
     return (
-      <Card key={p.id} title={p.title} right={<Badge tone={TONE[p.status] ?? "neutral"}>{p.status.toUpperCase()}</Badge>}>
+      <Card key={p.id} title={p.title} right={<Badge tone={TONE[p.status] ?? "neutral"}>{stateOf("proposal", p.status).label}</Badge>}>
         <div className="flex flex-wrap gap-x-5 gap-y-1 text-[12.5px] text-muted">
           <span>Quorum {p.quorum} vote{p.quorum === 1 ? "" : "s"}</span><span>Passes above {p.pass_pct}% for</span>
           {p.voting_ends_at && <span className={!ended && p.status === "voting" ? "font-medium text-ink" : ""}>Voting {ended ? "ended" : "ends"} {relTime(p.voting_ends_at)} ({fmtUtc(p.voting_ends_at)})</span>}

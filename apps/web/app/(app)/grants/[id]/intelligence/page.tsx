@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { labelMap } from "@/lib/states";
 import { redirect } from "next/navigation";
 import { allocate, type Score } from "@qoreops/agent-coordinator";
 import { InvestigationControls } from "@/components/grants/investigation";
@@ -17,7 +18,7 @@ export const metadata = { title: "Grant intelligence" };
 const REC: Record<string, { text: string; tone: "live" | "approval" | "pending" }> = {
   strong_candidate: { text: "STRONG CANDIDATE", tone: "live" }, needs_clarification: { text: "NEEDS CLARIFICATION", tone: "approval" }, further_review: { text: "FURTHER REVIEW", tone: "pending" },
 };
-const STATE_TEXT: Record<string, string> = { QUEUED: "Queued", RUNNING: "Running", AWAITING_HUMAN: "Package ready for reviewers", COMPLETED: "Completed", FAILED: "Failed", CANCELLED: "Cancelled", PAUSED_AI_UNAVAILABLE: "Paused: AI unavailable" };
+const STATE_TEXT = labelMap("workflow");
 
 interface Rev { id: string; application_id: string; recommendation: string; scored_points: number; scored_max: number; applicable_max: number; scores: Score[]; report: { missing?: Array<{ about: string; question: string }>; budget?: { rules?: Array<{ text: string }> } }; created_at: string; rubric_version: number }
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { stateOf, toneMap } from "@/lib/states";
 import { redirect } from "next/navigation";
 import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, fmtUtc, relTime } from "@/components/ui";
 import { getSession } from "@/lib/session";
@@ -7,9 +8,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Tasks" };
 
-const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral" | "info"> = {
-  QUEUED: "pending", RUNNING: "neutral", AWAITING_HUMAN: "approval", COMPLETED: "info", FAILED: "failed", PAUSED_AI_UNAVAILABLE: "pending",
-};
+const TONE = toneMap("workflow");
 const STATES: Array<[string, string]> = [["AWAITING_HUMAN", "Waiting for a person"], ["RUNNING", "Running"], ["QUEUED", "Queued"], ["COMPLETED", "Completed"], ["FAILED", "Failed"], ["PAUSED_AI_UNAVAILABLE", "Paused, AI unavailable"]];
 
 export default async function Tasks() {
@@ -40,7 +39,7 @@ export default async function Tasks() {
                   <tr key={t.id}>
                     <td className="whitespace-nowrap font-mono text-[12.5px]">{t.agent_id}</td>
                     <td><p className="text-[13.5px]">{t.intent}</p>{t.error && <p className="mt-0.5 text-[12.5px] text-[var(--bad)]">{t.error}</p>}{txId && <Link className="text-[12.5px] font-medium text-accent-text hover:underline" href="/approvals">View the payment request</Link>}</td>
-                    <td><Badge tone={TONE[t.state] ?? "neutral"}>{t.state.replaceAll("_", " ")}</Badge></td>
+                    <td><Badge tone={TONE[t.state] ?? "neutral"}>{stateOf("workflow", t.state).label}</Badge></td>
                     <td className="whitespace-nowrap text-[12.5px] text-muted" title={fmtUtc(t.updated_at)}>{relTime(t.updated_at)}</td>
                   </tr>
                 );

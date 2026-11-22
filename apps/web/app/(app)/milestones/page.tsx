@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { labelMap, stagesOf, toneMap } from "@/lib/states";
 import { redirect } from "next/navigation";
 import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Notice, PageHeader, Pipeline, Source, Steps, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { Panel } from "@/components/ui-client";
@@ -13,10 +14,10 @@ import { requestMilestonePayment, setPayoutAddress } from "./actions";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Milestones" };
 
-const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral" | "info"> = { pending: "pending", evidence_submitted: "approval", approved: "info", released: "live", disputed: "failed" };
-const LABEL: Record<string, string> = { pending: "WAITING FOR EVIDENCE", evidence_submitted: "EVIDENCE SUBMITTED", approved: "ACCEPTED", released: "RELEASED", disputed: "DISPUTED" };
+const TONE = toneMap("milestone");
+const LABEL = labelMap("milestone");
 const FINANCE = ["owner", "administrator", "finance_manager"];
-const STAGES = [{ key: "pending", label: "Waiting for evidence" }, { key: "evidence_submitted", label: "Evidence submitted" }, { key: "approved", label: "Accepted" }, { key: "released", label: "Released" }, { key: "disputed", label: "Disputed" }];
+const STAGES = stagesOf("milestone", ["pending", "evidence_submitted", "approved", "released", "disputed"]);
 
 interface Reviewer { user_id: string; mlkem_public: string; x25519_public: string }
 interface M { id: string; parent_id: string; idx: number; title: string; amount: string; status: string; review: { decision?: string; note?: string; at?: string } | null }

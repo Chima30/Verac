@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { stagesOf, toneMap } from "@/lib/states";
 import { redirect } from "next/navigation";
 import { KeyRound } from "lucide-react";
 import { Badge, Card, EmptyState, HowItWorks, PageHeader, Pipeline, btnCls, btnSecondaryCls, inputCls, relTime } from "@/components/ui";
@@ -13,9 +14,9 @@ import { createTender } from "./actions";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Procurement" };
 
-const TONE: Record<string, "approval" | "live" | "failed" | "pending" | "neutral" | "info"> = { draft: "pending", open: "info", review: "approval", awarded: "live", closed: "neutral" };
+const TONE = toneMap("tender");
 /** The stages the database allows (procurements.status). Funding, delivery and disputes are tracked on Milestones and Disputes. */
-const STAGES = [{ key: "draft", label: "Draft" }, { key: "open", label: "Open for bids" }, { key: "review", label: "Reviewing bids" }, { key: "awarded", label: "Awarded" }, { key: "closed", label: "Closed" }];
+const STAGES = stagesOf("tender", ["draft", "open", "review", "awarded", "closed"]);
 
 export default async function Procurement({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const s = await getSession();
