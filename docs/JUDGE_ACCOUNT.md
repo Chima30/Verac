@@ -13,7 +13,7 @@ refuses every change they attempt (`supabase/migrations/0023_auditor_read.sql`, 
    addresses on the Team page, so use a separate account with no personal email (for example a new mailbox you made
    for the demo). Sign up with it, create an organisation such as "Verac demo", then fill it with the existing buttons:
    - Grants → **Load sample programme**, open the round, **Investigate with agents**;
-   - Bills & Invoices → **Load the demo**, then run the invoice workflow from the AI Command Center.
+   - Bills & Invoices → **Demo data** → **Reset and load a fresh demo**, then run the invoice workflow from the AI Command Center.
 3. **Copy the organisation's id.** In Supabase → Table Editor → `organizations`, copy the `id` of "Verac demo".
 4. **Add `DEMO_ORG_ID`** with that id to Vercel (Settings → Environment Variables) and redeploy. `/api/health` then shows
    `"demo": "ready"`, `/start` shows **Sign in to explore**, and the welcome screen offers **Explore the demo**.

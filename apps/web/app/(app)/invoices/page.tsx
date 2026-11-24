@@ -116,7 +116,7 @@ export default async function Invoices({ searchParams }: { searchParams: Promise
           {admin && invoices.length > 0 && (
             <Panel id="demo" title="Demo data" description="Three synthetic DEMO-* invoices: one eligible, one waiting for its milestone, one with a suspicious payout address.">
               <form action={resetDemo}><button className={`${btnSecondaryCls} w-full`}>Reset and load a fresh demo</button></form>
-              <p className="mt-2 text-[12px] text-muted">Replaces the open DEMO-* invoices with a fresh set (invoice A is 1.25 QOR). Demo invoices already linked to a payment request are kept, as part of the record.</p>
+              <p className="mt-2 text-[12px] text-muted">Replaces the open DEMO-* invoices with a fresh set (invoice A is 0.75 QOR, under the V2 agent cap). Demo invoices already linked to a payment request are kept, as part of the record.</p>
             </Panel>
           )}
         </>

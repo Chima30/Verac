@@ -16,7 +16,7 @@ Ada cannot approve her own request. The database refuses it, and the video can s
 
 **Starting data:**
 
-* Bills & Invoices → **Load the demo** (an administrator) creates:
+* Bills & Invoices → **Demo data** → **Reset and load a fresh demo** (an administrator) creates:
 
   | Invoice | Amount | Milestone | Pay to |
   |---|---|---|---|
@@ -87,7 +87,7 @@ database, the code or the pages disagree with it.
   as not scored rather than invented.
 * **GitHub rate limit** during the grants investigation: evidence shows UNAVAILABLE, not failed. Re-run later, or rely
   on `GITHUB_TOKEN` being set in Vercel.
-* **Re-recording**: on Bills & Invoices, click **Clear the open demo invoices**, then load the demo again. Invoices already
+* **Re-recording**: on Bills & Invoices, open **Demo data** and click **Reset and load a fresh demo**. Invoices already
   linked to a payment are kept as part of the record.
 * **Why 0.75 QOR**: it fits under V2's agent cap of 1 QOR a payment, so the eligible invoice becomes a real request on
   V2. (At 1.25 QOR, used for the 2026-11-16 V1 run, V2 refuses to prepare it and Approvals stays empty.) Exactly 1 QOR
