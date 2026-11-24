@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { labelMap, toneMap } from "@/lib/states";
 import { useState } from "react";
-import { Badge, Notice, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
+import { Badge, Notice, fmtUtc, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
 import { CopyButton } from "@/components/ui-client";
 
 export interface LiveOp {
@@ -154,7 +154,9 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status, v2 
       {ops.length === 0 ? <p className="py-4 text-center text-[13.5px] text-muted">No live payment requests yet.</p> : (
         <ul className="space-y-3">
           {ops.map((o) => {
-            const l = LABEL[o.state] ?? { text: o.state, tone: "neutral" as Tone };
+            // A request nobody signed in time stays AWAITING_APPROVAL in the database; the vault would refuse it after its expiry.
+            const lapsed = (o.state === "AWAITING_APPROVAL" || o.state === "APPROVED") && Date.parse(o.expiresAt) < Date.now();
+            const l = lapsed ? { text: "Expired, not paid", tone: "neutral" as Tone } : LABEL[o.state] ?? { text: o.state, tone: "neutral" as Tone };
             return (
               <li key={o.id} className="rounded-lg border border-line bg-surface p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -174,13 +176,13 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status, v2 
                   ) : (
                     <><dt className="text-muted">Approvals</dt><dd>{o.approvals} of {o.required} administrator{o.required === 1 ? "" : "s"}</dd></>
                   )}
-                  <dt className="text-muted">Expires</dt><dd>{new Date(o.expiresAt).toLocaleString()}</dd>
+                  <dt className="text-muted">{lapsed ? "Expired" : "Expires"}</dt><dd>{fmtUtc(o.expiresAt)}{lapsed && <span className="block text-muted">Live requests last a few hours by design. It lapsed before {o.vaultVersion === 2 ? "two administrators signed it" : "it was approved and executed"}, so the vault would refuse it and nothing was paid.</span>}</dd>
                   {o.approvalTx && (<><dt className="text-muted">Approval tx</dt><dd className="break-all font-mono"><a className="underline" href={txUrl(o.approvalTx)} target="_blank" rel="noreferrer">{o.approvalTx}</a> (submitted by the Verac server on the administrators&apos; behalf)</dd></>)}
                   {o.txHash && (<><dt className="text-muted">Transaction</dt><dd className="break-all font-mono"><a className="underline" href={txUrl(o.txHash)} target="_blank" rel="noreferrer">{o.txHash}</a>{o.block ? ` · block ${o.block}` : ""}</dd></>)}
                   {o.failure && (<><dt className="text-muted">Why it did not pay</dt><dd>{o.failure}</dd></>)}
                 </dl>
 
-                {o.state === "AWAITING_APPROVAL" && o.vaultVersion === 2 && (canDecide || canRequest) && (
+                {!lapsed && o.state === "AWAITING_APPROVAL" && o.vaultVersion === 2 && (canDecide || canRequest) && (
                   <div className="mt-4 space-y-3 border-t border-line pt-4 text-[13px]">
                     <p className="text-muted">
                       Two administrators approve this payment on their own computers. The Verac server holds no administrator key and cannot sign for them.
@@ -203,7 +205,7 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status, v2 
                   </div>
                 )}
 
-                {o.state === "AWAITING_APPROVAL" && o.vaultVersion !== 2 && canDecide && (
+                {!lapsed && o.state === "AWAITING_APPROVAL" && o.vaultVersion !== 2 && canDecide && (
                   o.requestedByMe ? <p className="mt-3 text-[12.5px] text-muted">You made this request, so someone else must decide it.</p> : (
                     <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-line pt-4">
                       <div>
@@ -216,7 +218,7 @@ export function LivePayments({ ops, canRequest, canDecide, explorer, status, v2 
                   )
                 )}
 
-                {o.state === "APPROVED" && canRequest && (
+                {!lapsed && o.state === "APPROVED" && canRequest && (
                   <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4">
                     <button className={btnCls} disabled={busy !== null || (o.vaultVersion === 2 ? !v2Ready : !status.switchOn || !status.ready)} onClick={() => call("/api/live/execute", { id: o.id }, `execute-${o.id}`, (j) => `Confirmed on Diana testnet: ${(j.result as { txHash?: string } | undefined)?.txHash ?? ""}`)}>
                       {busy === `execute-${o.id}` ? "Sending and waiting for the chain…" : "Execute on Diana testnet"}

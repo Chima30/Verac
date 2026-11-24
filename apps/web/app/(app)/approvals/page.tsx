@@ -76,7 +76,7 @@ export default async function Approvals({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader title="Approvals" eyebrow="Overview" description="Payments that need a person's yes. Each request is bound to its exact amount, recipient and expiry by a hash that is re-checked before you can approve. Whoever made a request can never approve it."
-        meta={<><span><strong className="font-semibold text-ink tabular-nums">{live.ops.filter((o) => o.state === "AWAITING_APPROVAL").length}</strong> live waiting</span><span><strong className="font-semibold text-ink tabular-nums">{list.filter((t) => t.state === "AWAITING_APPROVAL").length}</strong> simulated waiting</span></>}
+        meta={<><span><strong className="font-semibold text-ink tabular-nums">{live.ops.filter((o) => o.state === "AWAITING_APPROVAL" && Date.parse(o.expiresAt) >= Date.now()).length}</strong> live waiting</span><span><strong className="font-semibold text-ink tabular-nums">{list.filter((t) => t.state === "AWAITING_APPROVAL").length}</strong> simulated waiting</span></>}
         actions={canAct ? <a href="#request" className={btnCls}>New simulated request</a> : undefined} />
       <FlashMessages msg={sp.msg} error={sp.error ?? error?.message} />
 
