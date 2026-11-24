@@ -66,7 +66,13 @@ export function diffVersions(a: VersionRow, b: VersionRow): Array<{ field: strin
 }
 
 /** What the person looking at an application should do next, in one sentence. */
-export function nextAction(a: Pick<AppRow, "status" | "recommended_by" | "amendment_open">, admin: boolean, me: string): string {
+export function nextAction(a: Pick<AppRow, "status" | "recommended_by" | "amendment_open">, admin: boolean, me: string, observer = false): string {
+  // A security reviewer or read-only auditor who is not the applicant: describe where it stands, not what an applicant must do.
+  if (observer && !admin) switch (a.status) {
+    case "submitted": case "under_review": return "Under review. The agents' evidence, scores and flags are below; administrators decide.";
+    case "clarification_requested": return "Waiting for the applicant to answer the reviewers' questions.";
+    case "recommended": return "Recommended by one administrator. A different administrator must award it.";
+  }
   switch (a.status) {
     case "draft": return admin ? "Draft: not visible to reviewers until submitted." : "Finish and submit your draft. Reviewers cannot see it yet.";
     case "submitted": case "under_review": return admin ? "Investigate it, read the evidence, then recommend, request clarification or reject with a reason." : "Under review. You will see questions here if reviewers need more information.";

@@ -49,7 +49,7 @@ export default async function CommandCenter({ searchParams }: { searchParams: Pr
   return (
     <>
       <PageHeader title="AI Command Center" eyebrow="AI workforce"
-        description="Fifteen agents, each with a fixed list of tools enforced in code. Gemini-backed agents share one rate-limited service and only ever advise. PaymentAgent alone can submit a payment, and only after policy checks and human approval."
+        description={`${all.length} agents, each with a fixed list of tools enforced in code. Gemini-backed agents share one rate-limited service and only ever advise. PaymentAgent alone can submit a payment, and only after policy checks and human approval.`}
         badge={<Badge tone={ai.status === "configured" ? "live" : "unavailable"}>{ai.status === "configured" ? "GEMINI CONFIGURED" : "GEMINI UNAVAILABLE"}</Badge>}
         meta={<><span><strong className="font-semibold text-ink">{all.length}</strong> agents</span><span><strong className="font-semibold text-ink">{usesAi}</strong> use Gemini{ai.status === "configured" ? ` (${ai.model})` : ""}</span><span><strong className="font-semibold text-ink">{proposers}</strong> may propose payments</span><span><strong className="font-semibold text-ink">1</strong> may submit them</span></>} />
       {ai.status !== "configured" && <Notice tone="warn" className="mb-6" title="AI features are paused on this server">{ai.message} Deterministic agents (payments, payroll, revenue, documents, strategies, arbitrage) are unaffected.</Notice>}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, FlashMessages, HowItWorks, Metric, PageHeader, Pipeline, Source, Stat, StatRow, Steps, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Badge, fmtUtc, Card, EmptyState, FlashMessages, HowItWorks, Metric, PageHeader, Pipeline, Source, Stat, StatRow, Steps, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { Panel } from "@/components/ui-client";
 import { formatQor } from "@/lib/approvals";
 import { CATEGORY_LABEL, STATUS_TEXT, STATUS_TONE, nextAction, sumWei, wei, type AppRow, type RoundRow } from "@/lib/grants";
@@ -130,7 +130,7 @@ export default async function Grants({ searchParams }: { searchParams: Promise<{
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <span className="min-w-0"><Link href={`/grants/${g.id}`} className="text-[15px] font-semibold hover:underline">{g.title}</Link>
                           <span className="block text-[12.5px] text-muted">{g.description ? `${g.description.slice(0, 160)}${g.description.length > 160 ? "…" : ""}` : "No description."}</span>
-                          <span className="block text-[12px] text-muted">{(g.categories ?? CATS).map((c) => CATEGORY_LABEL[c]).join(" · ")}{g.deadline ? ` · closes ${new Date(g.deadline).toLocaleDateString()}` : ""}</span></span>
+                          <span className="block text-[12px] text-muted">{(g.categories ?? CATS).map((c) => CATEGORY_LABEL[c]).join(" · ")}{g.deadline ? ` · closes ${fmtUtc(g.deadline).slice(0, 10)}` : ""}</span></span>
                         <Badge tone={isOpen(g) ? "info" : "neutral"}>{isOpen(g) ? "OPEN" : g.status === "open" ? "DEADLINE PASSED" : g.status.toUpperCase()}</Badge>
                       </div>
                       <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2 text-[12.5px]">

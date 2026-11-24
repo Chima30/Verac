@@ -6,7 +6,7 @@ import { ReviewButton } from "@/components/grants/review-button";
 import { history as grantHistory } from "@/lib/grants/portfolio";
 import { MilestonesPanel, type FundRow, type MsEvidence, type MsRow, type SubRow } from "@/components/grants/milestones-panel";
 import { ApplicantClarifications, ReviewerPanels, type ClarRow, type EvidenceRow, type FlagRow, type OverrideRow, type ReviewRow } from "@/components/grants/review-panels";
-import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, Source, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Badge, Card, EmptyState, FlashMessages, fmtUtc, Notice, PageHeader, Source, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { CATEGORY_LABEL, STATUS_TEXT, STATUS_TONE, diffVersions, nextAction, sumWei, wei, type AppRow, type RoundRow, type VersionRow } from "@/lib/grants";
 import { getSession } from "@/lib/session";
@@ -100,14 +100,14 @@ export default async function Application({ params, searchParams }: { params: Pr
   return (
     <>
       <PageHeader title={a.applicant_name} eyebrow={round ? <Link href={`/grants/${round.id}`} className="hover:underline">{round.title}</Link> : "Grant application"}
-        description={nextAction(a, admin, s.user.id)}
+        description={nextAction(a, admin, s.user.id, reviewer && !mine)}
         badge={<Badge tone={STATUS_TONE[a.status] ?? "neutral"}>{STATUS_TEXT[a.status] ?? a.status}</Badge>}
         actions={mine && (a.status === "draft" || a.amendment_open) ? <Link href={`/grants/${a.grant_id}/apply`} className={btnCls}>{a.status === "draft" ? "Continue the draft" : "Amend and resubmit"}</Link> : undefined} />
       <FlashMessages msg={sp.msg} error={sp.error} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="min-w-0 space-y-6">
-          <Card title="Application" description={`Version ${a.version || 1}${a.submitted_at ? `, submitted ${new Date(a.submitted_at).toLocaleString()}` : ""}. Applicant-provided: these are claims until evidence verifies them.`}>
+          <Card title="Application" description={`Version ${a.version || 1}${a.submitted_at ? `, submitted ${fmtUtc(a.submitted_at)}` : ""}. Applicant-provided: these are claims until evidence verifies them.`}>
             <div className="space-y-4">
               {!a.content || !Object.keys(a.content).length ? <Section title="Pitch (submitted before structured applications existed)" text={a.pitch ?? ""} /> : (
                 <>
@@ -164,7 +164,7 @@ export default async function Application({ params, searchParams }: { params: Pr
 
           {versions.length > 0 && (
             <Card title="Version history" description="Every submitted state is kept. Nothing is overwritten.">
-              <ol className="space-y-1 text-[13px]">{versions.map((v) => <li key={v.version}><span className="font-medium">v{v.version}</span> <span className="text-muted">· {new Date(v.created_at).toLocaleString()} · {v.reason}</span></li>)}</ol>
+              <ol className="space-y-1 text-[13px]">{versions.map((v) => <li key={v.version}><span className="font-medium">v{v.version}</span> <span className="text-muted">· {fmtUtc(v.created_at)} · {v.reason}</span></li>)}</ol>
               {changes.length > 0 && (
                 <div className="mt-4 border-t border-line pt-4">
                   <p className="text-[13px] font-medium">Changes from v{from!.version} to v{to!.version}</p>

@@ -1,4 +1,4 @@
-import { Badge, Card, Metric, Notice, Source, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
+import { Badge, fmtUtc, Card, Metric, Notice, Source, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
 import { labelMap, stateOf, toneMap } from "@/lib/states";
 import { checkMilestone, decideMilestone, fundMilestone, submitMilestoneEvidence } from "@/app/(app)/grants/milestone-actions";
 import { formatQor } from "@/lib/approvals";
@@ -57,7 +57,7 @@ export function MilestonesPanel({ appId, milestones, plan, subs, evidence, fundi
                 <div className="mt-3 space-y-2">
                   {mySubs.map((s) => (
                     <div key={s.attempt} className="rounded-md bg-surface-2/60 p-3 text-[13px]">
-                      <p className="text-[12px] text-muted">Evidence, attempt {s.attempt} · {new Date(s.created_at).toLocaleString()}</p>
+                      <p className="text-[12px] text-muted">Evidence, attempt {s.attempt} · {fmtUtc(s.created_at)}</p>
                       <p className="mt-1 whitespace-pre-wrap">{s.description}</p>
                       {[...s.links, ...s.transactions].length > 0 && <ul className="mt-1 space-y-0.5 text-[12px]">{s.links.map((l) => <li key={l} className="break-all">{l}</li>)}{s.transactions.map((t) => <li key={t}><a className="break-all font-mono underline" href={`${EXPLORER}/tx/${t}`} target="_blank" rel="noreferrer">{t}</a></li>)}</ul>}
                     </div>
@@ -104,7 +104,7 @@ export function MilestonesPanel({ appId, milestones, plan, subs, evidence, fundi
                 <ul className="mt-3 space-y-2 text-[12.5px]">
                   {myFund.map((f, i) => (
                     <li key={i} className="rounded-md border border-line p-2.5">
-                      <Badge tone={f.status === "confirmed" ? "live" : f.status === "requested" ? "approval" : f.status === "awaiting_authorised_path" ? "pending" : "failed"}>{FUND_TEXT[f.status] ?? f.status}</Badge> <span className="text-muted">{new Date(f.created_at).toLocaleString()}{f.route !== "none" ? ` · ${f.route === "treasury_v2" ? "TreasuryVault V2" : "TreasuryVault"}` : ""}</span>
+                      <Badge tone={f.status === "confirmed" ? "live" : f.status === "requested" ? "approval" : f.status === "awaiting_authorised_path" ? "pending" : "failed"}>{FUND_TEXT[f.status] ?? f.status}</Badge> <span className="text-muted">{fmtUtc(f.created_at)}{f.route !== "none" ? ` · ${f.route === "treasury_v2" ? "TreasuryVault V2" : "TreasuryVault"}` : ""}</span>
                       {f.reasons.length > 0 && <ul className="mt-1 list-disc pl-5 text-muted">{f.reasons.map((r, j) => <li key={j}>{r}</li>)}</ul>}
                       {f.tx_hash && <p className="mt-1"><a className="break-all font-mono underline" href={`${EXPLORER}/tx/${f.tx_hash}`} target="_blank" rel="noreferrer">{f.tx_hash}</a>{f.block_number ? ` · block ${f.block_number}` : ""}</p>}
                       {f.status === "requested" && <p className="mt-1 text-muted">Waiting for administrators&apos; signatures and execution in <a className="underline" href="/approvals">Approvals</a>.</p>}

@@ -1,4 +1,4 @@
-import { Badge, Card, Notice, Source, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
+import { Badge, fmtUtc, Card, Notice, Source, btnCls, btnSecondaryCls, inputCls, labelCls, type Tone } from "@/components/ui";
 import { toneMap } from "@/lib/states";
 import { answerClarification, decideFlag, declareConflict, discardClarification, overrideScore, sendClarification } from "@/app/(app)/grants/actions";
 
@@ -30,7 +30,7 @@ export function ReviewerPanels({ appId, evidence, review, overrides, flags, clar
               <li key={e.id} className="rounded-md border border-line p-3">
                 <div className="flex flex-wrap items-center gap-2"><span className="font-mono text-[11.5px] text-muted">E{i + 1}</span><Badge tone={EV_TONE[e.status] ?? "neutral"}>{e.status.replace("_", " ")}</Badge><span className="font-medium">{e.claim}</span></div>
                 <p className="mt-1 text-muted">{e.reason}</p>
-                <p className="mt-1 break-all text-[11.5px] text-muted">{e.source} · <a className="underline" href={e.url} target="_blank" rel="noreferrer">{e.url}</a> · retrieved {new Date(e.retrieved_at).toLocaleString()}</p>
+                <p className="mt-1 break-all text-[11.5px] text-muted">{e.source} · <a className="underline" href={e.url} target="_blank" rel="noreferrer">{e.url}</a> · retrieved {fmtUtc(e.retrieved_at)}</p>
               </li>
             ))}
           </ol>

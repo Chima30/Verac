@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge, Card, EmptyState, FlashMessages, Metric, PageHeader, Pipeline, Source, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Badge, fmtUtc, Card, EmptyState, FlashMessages, Metric, PageHeader, Pipeline, Source, btnCls, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { CATEGORY_LABEL, STATUS_TEXT, STATUS_TONE, criteriaFor, sumWei, wei, type AppRow, type RoundRow, type RubricRow } from "@/lib/grants";
 import { getSession } from "@/lib/session";
@@ -68,7 +68,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
           <Metric label="Budget" value={<>{formatQor(budget.toString())} <span className="text-[13px] font-medium text-muted">QOR</span></>} sub={round.max_request ? `max ${formatQor(wei(round.max_request))} QOR each` : "no per-application maximum"} />
           <Metric label="Awarded" value={<>{formatQor(awarded.toString())} <span className="text-[13px] font-medium text-muted">QOR</span></>} sub={`${formatQor((budget - awarded).toString())} QOR left`} />
           <Metric label="Requested (not rejected)" value={<>{formatQor(requested.toString())} <span className="text-[13px] font-medium text-muted">QOR</span></>} tone={requested > budget - awarded ? "warn" : undefined} sub={requested > budget - awarded ? "more than the budget left" : "within the budget left"} />
-          <Metric label="Applications" value={live.length} sub={round.deadline ? `deadline ${new Date(round.deadline).toLocaleDateString()}` : "no deadline"} />
+          <Metric label="Applications" value={live.length} sub={round.deadline ? `deadline ${fmtUtc(round.deadline).slice(0, 10)}` : "no deadline"} />
         </dl>
         {live.length > 0 && <div className="mt-5 border-t border-line pt-5"><Pipeline label="Applications by stage" stages={STAGES} counts={live.reduce<Record<string, number>>((c, a) => ({ ...c, [a.status]: (c[a.status] ?? 0) + 1 }), {})} /></div>}
       </section>
@@ -100,7 +100,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
                           <td className="px-3 py-2.5 text-right font-semibold tabular-nums">{formatQor(wei(a.requested_amount))} <span className="text-[11.5px] font-medium text-muted">QOR</span></td>
                           <td className="px-3 py-2.5"><Badge tone={STATUS_TONE[a.status] ?? "neutral"}>{STATUS_TEXT[a.status] ?? a.status}</Badge></td>
                           <td className="px-3 py-2.5 tabular-nums text-muted">v{a.version || 1}</td>
-                          <td className="px-5 py-2.5 text-muted">{a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : new Date(a.created_at).toLocaleDateString()}</td>
+                          <td className="px-5 py-2.5 text-muted">{a.submitted_at ? fmtUtc(a.submitted_at).slice(0, 10) : fmtUtc(a.created_at).slice(0, 10)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -118,7 +118,7 @@ export default async function Round({ params, searchParams }: { params: Promise<
         </div>
 
         <div className="space-y-6">
-          <Card title={`Evaluation rubric${rubric ? ` · version ${rubric.version}` : ""}`} description={rubric?.locked_at ? `Locked by the first evaluation on ${new Date(rubric.locked_at).toLocaleDateString()}. Changes create a new version; earlier reports keep theirs.` : "Editable until the first evaluation."}>
+          <Card title={`Evaluation rubric${rubric ? ` · version ${rubric.version}` : ""}`} description={rubric?.locked_at ? `Locked by the first evaluation on ${fmtUtc(rubric.locked_at).slice(0, 10)}. Changes create a new version; earlier reports keep theirs.` : "Editable until the first evaluation."}>
             {!rubric ? <p className="text-[13.5px] text-muted">This round was opened before rubrics existed. An administrator can add one below.</p> : (
               <ul className="space-y-2 text-[13.5px]">
                 {rubric.criteria.map((c) => (

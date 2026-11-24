@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ApplicationForm, type AppFormValue } from "@/components/grants/application-form";
-import { Badge, EmptyState, FlashMessages, Notice, PageHeader } from "@/components/ui";
+import { Badge, fmtUtc, EmptyState, FlashMessages, Notice, PageHeader } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { weiToQorInput, wei, type AppRow, type RoundRow } from "@/lib/grants";
 import { getSession } from "@/lib/session";
@@ -49,7 +49,7 @@ export default async function Apply({ params, searchParams }: { params: Promise<
   return (
     <>
       <PageHeader title={a?.amendment_open ? "Amend your application" : "Apply"} eyebrow={round.title}
-        description={`Budget ${formatQor(wei(round.budget))} QOR${round.max_request ? `, at most ${formatQor(wei(round.max_request))} QOR per application` : ""}${round.deadline ? `, closes ${new Date(round.deadline).toLocaleDateString()}` : ""}.`}
+        description={`Budget ${formatQor(wei(round.budget))} QOR${round.max_request ? `, at most ${formatQor(wei(round.max_request))} QOR per application` : ""}${round.deadline ? `, closes ${fmtUtc(round.deadline).slice(0, 10)}` : ""}.`}
         badge={<Badge tone={a ? "neutral" : "info"}>{a ? (a.amendment_open ? "AMENDMENT OPEN" : "DRAFT") : "NEW"}</Badge>} />
       <FlashMessages msg={sp.msg} error={sp.error} />
       {round.requirements && <Notice tone="info" title="Programme requirements" className="mb-6"><p className="whitespace-pre-wrap">{round.requirements}</p></Notice>}

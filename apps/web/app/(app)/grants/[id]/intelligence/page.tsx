@@ -3,7 +3,7 @@ import { labelMap } from "@/lib/states";
 import { redirect } from "next/navigation";
 import { allocate, type Score } from "@qoreops/agent-coordinator";
 import { InvestigationControls } from "@/components/grants/investigation";
-import { Badge, Card, EmptyState, FlashMessages, Notice, PageHeader, Source, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
+import { Badge, fmtUtc, Card, EmptyState, FlashMessages, Notice, PageHeader, Source, btnSecondaryCls, inputCls, labelCls } from "@/components/ui";
 import { formatQor } from "@/lib/approvals";
 import { G_STEPS, G_STEP_LABEL, type GResult, type GStep } from "@/lib/grants/engine";
 import { classify } from "@/lib/grants/queries";
@@ -64,7 +64,7 @@ export default async function Intelligence({ params, searchParams }: { params: P
     answer = hits.length ? <ul className="list-disc space-y-1 pl-5">{hits.map((r) => <li key={r.id}><Link className="underline" href={`/grants/applications/${r.application_id}`}>{appName.get(r.application_id)}</Link>: {(r.report.missing ?? []).filter((m) => m.about === "budget").map((m) => m.question).join(" ")}</li>)}</ul> : <p>No application's latest report has a budget question.</p>;
   } else if (kind === "verified_deployments") {
     const { data: ev } = await sb.from("grant_evidence").select("application_id,subject,claim,url,status,retrieved_at").eq("source", "qorechain").eq("status", "VERIFIED").in("application_id", (apps ?? []).map((a) => a.id as string));
-    answer = ev?.length ? <ul className="list-disc space-y-1 pl-5">{ev.map((e, i) => <li key={i}><span className="font-medium">{appName.get(e.application_id as string)}</span>: {e.claim} (<a className="font-mono text-[12px] underline" href={e.url as string} target="_blank" rel="noreferrer">{String(e.subject).slice(0, 14)}…</a>, checked {new Date(e.retrieved_at as string).toLocaleString()})</li>)}</ul> : <p>No application has QoreChain evidence classified as verified. Run an investigation first, or no contracts or transactions were supplied.</p>;
+    answer = ev?.length ? <ul className="list-disc space-y-1 pl-5">{ev.map((e, i) => <li key={i}><span className="font-medium">{appName.get(e.application_id as string)}</span>: {e.claim} (<a className="font-mono text-[12px] underline" href={e.url as string} target="_blank" rel="noreferrer">{String(e.subject).slice(0, 14)}…</a>, checked {fmtUtc(e.retrieved_at as string)})</li>)}</ul> : <p>No application has QoreChain evidence classified as verified. Run an investigation first, or no contracts or transactions were supplied.</p>;
   } else if (kind === "milestones") {
     const funded = (apps ?? []).filter((a) => a.status === "awarded");
     const { data: ms } = await sb.from("milestones").select("parent_id,idx,title,status,amount::text").eq("parent_type", "grant").in("parent_id", funded.map((a) => a.id as string)).order("idx");
@@ -97,7 +97,7 @@ export default async function Intelligence({ params, searchParams }: { params: P
           {sp.q && <Card title="Answer from stored results" description={`"${sp.q.slice(0, 160)}"`}><div className="text-[13.5px]">{answer}</div><Source>Computed from Verac's records and recorded evidence. No model was used.</Source></Card>}
 
           {!task ? <EmptyState title="No investigation yet">{admin ? "Run the instruction above to have the agents review this round." : "An administrator has not run an investigation for this round."}</EmptyState> : (
-            <Card title="Investigation" description={`${STATE_TEXT[task.state] ?? task.state} · started ${new Date(task.created_at).toLocaleString()}`}>
+            <Card title="Investigation" description={`${STATE_TEXT[task.state] ?? task.state} · started ${fmtUtc(task.created_at)}`}>
               {task.instruction && <p className="mb-4 rounded-md bg-surface-2/60 p-3 text-[13px] text-muted">{task.instruction}</p>}
               <ol className="space-y-3">
                 {G_STEPS.map((k) => {
@@ -108,7 +108,7 @@ export default async function Intelligence({ params, searchParams }: { params: P
                       <span aria-hidden className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${!st ? "bg-surface-3" : st.status === "done" ? "bg-[var(--live)]" : "bg-[var(--accent)]"}`} />
                       <div className="min-w-0">
                         <p className="text-[13.5px] font-medium">{G_STEP_LABEL[k]} <Badge tone={tone}>{!st ? "NOT STARTED" : st.status === "done" ? "DONE" : st.status.toUpperCase()}</Badge></p>
-                        {st && <p className="text-[12.5px] text-muted">{st.summary}{st.finishedAt ? ` · ${new Date(st.finishedAt).toLocaleTimeString()}` : ""}</p>}
+                        {st && <p className="text-[12.5px] text-muted">{st.summary}{st.finishedAt ? ` · ${fmtUtc(st.finishedAt).slice(11)}` : ""}</p>}
                       </div>
                     </li>
                   );
@@ -189,7 +189,7 @@ export default async function Intelligence({ params, searchParams }: { params: P
           </Card>
           {tasks.length > 1 && (
             <Card title="Earlier investigations">
-              <ul className="space-y-1 text-[13px]">{tasks.map((t) => <li key={t.id}><Link className={t.id === task?.id ? "font-semibold" : "underline"} href={`?task=${t.id}`}>{new Date(t.created_at).toLocaleString()}</Link> <span className="text-muted">· {STATE_TEXT[t.state] ?? t.state}</span></li>)}</ul>
+              <ul className="space-y-1 text-[13px]">{tasks.map((t) => <li key={t.id}><Link className={t.id === task?.id ? "font-semibold" : "underline"} href={`?task=${t.id}`}>{fmtUtc(t.created_at)}</Link> <span className="text-muted">· {STATE_TEXT[t.state] ?? t.state}</span></li>)}</ul>
             </Card>
           )}
         </div>
