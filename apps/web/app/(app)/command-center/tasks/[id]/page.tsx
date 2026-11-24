@@ -47,8 +47,8 @@ export default async function WorkflowPage({ params }: { params: Promise<{ id: s
 
   const prepared = r.prepared ?? [];
   const txIds = prepared.map((p) => p.transactionId).filter(Boolean) as string[];
-  const { data: txRows } = txIds.length ? await sb.from("transactions").select("id,state,source,tx_hash,block_number,payment_hash,required_approvals").in("id", txIds) : { data: [] };
-  const tx = new Map(((txRows ?? []) as Array<{ id: string; state: string; source: string; tx_hash: string | null; block_number: number | null; payment_hash: string; required_approvals: number }>).map((t) => [t.id, t]));
+  const { data: txRows } = txIds.length ? await sb.from("transactions").select("id,state,source,tx_hash,block_number,payment_hash,required_approvals,vault_version").in("id", txIds) : { data: [] };
+  const tx = new Map(((txRows ?? []) as Array<{ id: string; state: string; source: string; tx_hash: string | null; block_number: number | null; payment_hash: string; required_approvals: number; vault_version?: number | null }>).map((t) => [t.id, t]));
   const mine = w.requested_by === s.user.id;
   const t = r.snapshot?.treasury;
 
@@ -132,7 +132,7 @@ export default async function WorkflowPage({ params }: { params: Promise<{ id: s
                             <div><dt className="text-muted">Pay to</dt><dd><ShortHash value={d.recipient} /></dd></div>
                             {v && <div><dt className="text-muted">Vendor record</dt><dd>{v.payoutAddress ? <ShortHash value={v.payoutAddress} /> : "no payout on file"}{v.verified ? "" : " · not verified"}</dd></div>}
                             <div><dt className="text-muted">Milestone</dt><dd>{m ? <Link href="/milestones" className="hover:underline">{m.parentTitle ? `${m.parentTitle}, ` : ""}{m.idx}. {m.title}</Link> : "none"}{m && <span className="block text-muted">{m.status.replace("_", " ")} · {formatQor(m.amountWei)} QOR</span>}</dd></div>
-                            <div><dt className="text-muted">Approvals required</dt><dd>{d.requiredApprovals} administrator{d.requiredApprovals === 1 ? "" : "s"} · policy v{d.policyVersion ?? "none"}</dd></div>
+                            <div><dt className="text-muted">Approvals required</dt><dd>{txr && Number(txr.vault_version) === 2 ? `${txr.required_approvals} administrators, each signing with their own ML-DSA-87 key on TreasuryVault V2` : `${d.requiredApprovals} administrator${d.requiredApprovals === 1 ? "" : "s"}`} · policy v{d.policyVersion ?? "none"}</dd></div>
                             {p && <div><dt className="text-muted">Payment</dt><dd>{p.mode === "NOT_PREPARED" ? <span className="text-[var(--bad)]">Not prepared: {p.error}</span> : txr ? <><Badge tone={TX_STATE[txr.state]?.tone ?? "neutral"}>{p.mode === "LIVE_TESTNET" ? "LIVE" : "SIMULATION"}</Badge><span className="mt-1 block">{TX_STATE[txr.state]?.text ?? txr.state}</span>{txr.tx_hash && <a className="block font-mono text-[11.5px] text-accent-text hover:underline" href={`https://explore.qore.network/tx/${txr.tx_hash}`} target="_blank" rel="noreferrer">{txr.tx_hash.slice(0, 12)}… block {txr.block_number}</a>}<Link href="/approvals" className="mt-1 block font-medium text-accent-text hover:underline">Open in Approvals</Link></> : <span className="text-muted">Visible to finance roles</span>}</dd></div>}
                           </dl>
                         </div>
